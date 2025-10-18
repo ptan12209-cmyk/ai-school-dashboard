@@ -1,0 +1,307 @@
+/**
+ * User Controller
+ * ===============
+ * CRUD operations for user management
+ * 
+ * Week 3-4 Day 4
+ */
+
+const { User, Teacher, Student } = require('../models');
+const { catchAsync, NotFoundError, ConflictError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');const { Op } = require('sequelize');
+
+/**
+ * @route   GET /api/users
+ * @desc    Get all users with pagination, filtering, and search
+ * @access  Admin only
+ */
+exports.getAllUsers = catchAsync(async (req, res) => {
+  // Pagination
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+  
+  // Filtering
+  const where = {};
+  
+  if (req.query.role) {
+    where.role = req.query.role;
+  }
+  
+  if (req.query.is_active !== undefined) {
+    where.is_active = req.query.is_active === 'true';
+  }
+  
+  // Search by email
+  if (req.query.search) {
+    where.email = {
+      [Op.iLike]: `%${req.query.search}%`
+    };
+  }
+  
+  // Sorting
+  const order = [];
+  if (req.query.sort) {
+    const sortField = req.query.sort.startsWith('-') 
+      ? req.query.sort.substring(1) 
+      : req.query.sort;
+    const sortOrder = req.query.sort.startsWith('-') ? 'DESC' : 'ASC';
+    order.push([sortField, sortOrder]);
+  } else {
+    order.push(['created_at', 'DESC']);
+  }
+  
+  // Query
+  const { count, rows } = await User.findAndCountAll({
+    where,
+    limit,
+    offset,
+    order,
+    attributes: { exclude: ['password_hash'] }
+  });
+  
+  res.json({
+    success: true,
+    data: {
+      users: rows,
+      pagination: {
+        total: count,
+        page,
+        pages: Math.ceil(count / limit),
+        limit
+      }
+    }
+  });
+});
+
+/**
+ * @route   GET /api/users/:id
+ * @desc    Get user by ID with profile
+ * @access  Admin, Teacher (limited), or Self
+ */
+exports.getUserById = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  
+  // Check permissions
+  const isAdmin = req.user.role === 'admin';
+  const isSelf = req.user.id === id;
+  
+  if (!isAdmin && !isSelf) {
+    throw new AuthorizationError('You can only view your own profile');
+  }
+  
+  const user = await User.findByPk(id, {
+    attributes: { exclude: ['password_hash'] }
+  });
+  
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  
+  // Get profile based on role
+  let profile = null;
+  
+  if (user.role === 'teacher') {
+    profile = await Teacher.findOne({ where: { user_id: id } });
+  } else if (user.role === 'student') {
+    profile = await Student.findOne({ where: { user_id: id } });
+  }
+  
+  res.json({
+    success: true,
+    data: {
+      user: user.toJSON(),
+      profile: profile ? profile.toJSON() : null
+    }
+  });
+});
+
+/**
+ * @route   PUT /api/users/:id
+ * @desc    Update user
+ * @access  Admin or Self (limited fields)
+ */
+exports.updateUser = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const isAdmin = req.user.role === 'admin';
+  const isSelf = req.user.id === id;
+  
+  if (!isAdmin && !isSelf) {
+    throw new AuthorizationError('You can only update your own profile');
+  }
+  
+  const user = await User.findByPk(id);
+  
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  
+  // Fields that can be updated
+  const allowedFields = isAdmin 
+    ? ['email', 'role', 'is_active'] 
+    : ['email']; // Non-admin can only update email
+  
+  const updates = {};
+  allowedFields.forEach(field => {
+    if (req.body[field] !== undefined) {
+      updates[field] = req.body[field];
+    }
+  });
+  
+  // Check email uniqueness if changing email
+  if (updates.email && updates.email !== user.email) {
+    const existingUser = await User.findOne({ 
+      where: { 
+        email: updates.email,
+        id: { [Op.ne]: id }
+      } 
+    });
+    
+    if (existingUser) {
+      throw new ConflictError('Email already exists');
+    }
+  }
+  
+  await user.update(updates);
+  
+  res.json({
+    success: true,
+    message: 'User updated successfully',
+    data: {
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        is_active: user.is_active
+      }
+    }
+  });
+});
+
+/**
+ * @route   DELETE /api/users/:id
+ * @desc    Delete user (soft delete)
+ * @access  Admin only
+ */
+exports.deleteUser = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  
+  // Prevent deleting yourself
+  if (req.user.id === id) {
+    throw new ValidationError('You cannot delete your own account');
+  }
+  
+  const user = await User.findByPk(id);
+  
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  
+  // Soft delete by setting is_active to false
+  await user.update({ is_active: false });
+  
+  res.json({
+    success: true,
+    message: 'User deleted successfully'
+  });
+});
+
+/**
+ * @route   PATCH /api/users/:id/activate
+ * @desc    Activate user account
+ * @access  Admin only
+ */
+exports.activateUser = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  
+  const user = await User.findByPk(id);
+  
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  
+  if (user.is_active) {
+    throw new ValidationError('User is already active');
+  }
+  
+  await user.update({ is_active: true });
+  
+  res.json({
+    success: true,
+    message: 'User activated successfully',
+    data: {
+      user: {
+        id: user.id,
+        email: user.email,
+        is_active: user.is_active
+      }
+    }
+  });
+});
+
+/**
+ * @route   PATCH /api/users/:id/deactivate
+ * @desc    Deactivate user account
+ * @access  Admin only
+ */
+exports.deactivateUser = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  
+  // Prevent deactivating yourself
+  if (req.user.id === id) {
+    throw new ValidationError('You cannot deactivate your own account');
+  }
+  
+  const user = await User.findByPk(id);
+  
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  
+  if (!user.is_active) {
+    throw new ValidationError('User is already inactive');
+  }
+  
+  await user.update({ is_active: false });
+  
+  res.json({
+    success: true,
+    message: 'User deactivated successfully',
+    data: {
+      user: {
+        id: user.id,
+        email: user.email,
+        is_active: user.is_active
+      }
+    }
+  });
+});
+
+/**
+ * @route   GET /api/users/stats
+ * @desc    Get user statistics
+ * @access  Admin only
+ */
+exports.getUserStats = catchAsync(async (req, res) => {
+  const [total, active, inactive, admins, teachers, students] = await Promise.all([
+    User.count(),
+    User.count({ where: { is_active: true } }),
+    User.count({ where: { is_active: false } }),
+    User.count({ where: { role: 'admin' } }),
+    User.count({ where: { role: 'teacher' } }),
+    User.count({ where: { role: 'student' } })
+  ]);
+  
+  res.json({
+    success: true,
+    data: {
+      total,
+      active,
+      inactive,
+      byRole: {
+        admin: admins,
+        teacher: teachers,
+        student: students
+      }
+    }
+  });
+});

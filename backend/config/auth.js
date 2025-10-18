@@ -1,0 +1,153 @@
+/**
+ * Authentication Configuration
+ * =============================
+ * JWT settings and authentication constants
+ * 
+ * Week 3-4: To be implemented
+ * - JWT secret configuration
+ * - Token expiration times
+ * - Password hashing settings
+ * 
+ * Security best practices:
+ * - Use strong, random JWT_SECRET (minimum 32 characters)
+ * - Store sensitive data in .env file
+ * - Use different secrets for development and production
+ * - Implement token refresh mechanism
+ */
+
+require('dotenv').config();
+
+/**
+ * JWT Configuration
+ */
+const jwtConfig = {
+  // Secret key for signing tokens
+  // IMPORTANT: Generate secure secret with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+  secret: process.env.JWT_SECRET || 'your-secret-key-change-this-in-production',
+  
+  // Token expiration time
+  expiresIn: process.env.JWT_EXPIRATION || '24h', // Options: '15m', '1h', '24h', '7d'
+  
+  // Refresh token expiration (longer than access token)
+  refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION || '7d',
+  
+  // JWT algorithm
+  algorithm: 'HS256',
+  
+  // Issuer (optional)
+  issuer: 'ai-school-dashboard',
+  
+  // Audience (optional)
+  audience: 'school-users'
+};
+
+/**
+ * Password Hashing Configuration (bcrypt)
+ */
+const passwordConfig = {
+  // Salt rounds for bcrypt (higher = more secure but slower)
+  // Recommended: 10-12 for production
+  saltRounds: parseInt(process.env.BCRYPT_ROUNDS) || 12,
+  
+  // Minimum password requirements
+  minLength: 8,
+  requireUppercase: true,
+  requireLowercase: true,
+  requireNumber: true,
+  requireSpecialChar: false
+};
+
+/**
+ * Session Configuration (if using sessions)
+ */
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET || 'session-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    httpOnly: true, // Prevent XSS attacks
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+};
+
+/**
+ * CORS Configuration
+ */
+const corsConfig = {
+  // Allowed origins (frontend URLs)
+  origin: process.env.CORS_ORIGIN 
+    ? process.env.CORS_ORIGIN.split(',') 
+    : ['http://localhost:3000', 'http://localhost:3001'],
+  
+  // Allow credentials (cookies, authorization headers)
+  credentials: true,
+  
+  // Allowed HTTP methods
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  
+  // Allowed headers
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  
+  // How long to cache preflight requests (in seconds)
+  maxAge: 86400 // 24 hours
+};
+
+/**
+ * Rate Limiting Configuration
+ */
+const rateLimitConfig = {
+  // Time window in milliseconds
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+  
+  // Maximum requests per window
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  
+  // Error message
+  message: 'Too many requests from this IP, please try again later.',
+  
+  // Return rate limit info in headers
+  standardHeaders: true,
+  legacyHeaders: false
+};
+
+/**
+ * Role-based access control
+ */
+const roles = {
+  ADMIN: 'admin',
+  TEACHER: 'teacher',
+  PARENT: 'parent',
+  STUDENT: 'student'
+};
+
+/**
+ * Role hierarchy (for permission checks)
+ * Higher level includes all lower level permissions
+ */
+const roleHierarchy = {
+  admin: ['admin', 'teacher', 'parent', 'student'],
+  teacher: ['teacher', 'student'],
+  parent: ['parent'],
+  student: ['student']
+};
+
+/**
+ * TODO: Week 3-4 - Implement helper functions
+ * 
+ * - generateToken(payload)
+ * - verifyToken(token)
+ * - hashPassword(password)
+ * - comparePassword(password, hash)
+ * - checkRole(userRole, requiredRole)
+ */
+
+module.exports = {
+  jwtConfig,
+  passwordConfig,
+  sessionConfig,
+  corsConfig,
+  rateLimitConfig,
+  roles,
+  roleHierarchy
+};

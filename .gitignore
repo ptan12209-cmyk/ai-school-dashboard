@@ -1,0 +1,402 @@
+# =====================================================
+# AI SCHOOL DASHBOARD - .GITIGNORE
+# =====================================================
+# Prevents sensitive and unnecessary files from being committed
+
+# ============================================
+# ENVIRONMENT VARIABLES (CRITICAL!)
+# ============================================
+# ✅ FIXED: Ensure .env files are never committed
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# ============================================
+# NODE MODULES
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ============================================
+# LOGS
+# ============================================
+logs/
+*.log
+*.log.*
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================
+# RUNTIME DATA
+# ============================================
+lib-cov
+coverage
+*.lcov
+.nyc_output
+.grunt
+bower_components
+.lock-wscript
+build/Release
+
+# ============================================
+# DEPENDENCY DIRECTORIES
+# ============================================
+node_modules/
+jspm_packages/
+
+# ============================================
+# TYPESCRIPT
+# ============================================
+*.tsbuildinfo
+dist/
+build/
+
+# ============================================
+# OPTIONAL NPM CACHE
+# ============================================
+.npm
+.eslintcache
+.stylelintcache
+
+# ============================================
+# OPTIONAL REPL HISTORY
+# ============================================
+.node_repl_history
+
+# ============================================
+# OUTPUT & BUILD
+# ============================================
+*.tgz
+.yarn-integrity
+out/
+dist/
+build/
+
+# ============================================
+# PARCEL CACHE
+# ============================================
+.cache
+.parcel-cache
+
+# ============================================
+# NEXT.JS
+# ============================================
+.next
+out
+
+# ============================================
+# NUXT.JS
+# ============================================
+.nuxt
+dist
+
+# ============================================
+# GATSBY
+# ============================================
+.cache/
+public
+
+# ============================================
+# VUE
+# ============================================
+.vuepress/dist
+
+# ============================================
+# SERVERLESS
+# ============================================
+.serverless/
+
+# ============================================
+# FUSEBOX
+# ============================================
+.fusebox/
+
+# ============================================
+# DYNAMODB LOCAL
+# ============================================
+.dynamodb/
+
+# ============================================
+# TernJS
+# ============================================
+.tern-port
+
+# ============================================
+# STORES VSCode VERSION
+# ============================================
+.vscode-test
+
+# ============================================
+# YARN
+# ============================================
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ============================================
+# MACOS
+# ============================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ============================================
+# WINDOWS
+# ============================================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# ============================================
+# LINUX
+# ============================================
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# EDITORS / IDEs
+# ============================================
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Sublime Text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+sftp-config.json
+Package Control.last-run
+Package Control.ca-list
+Package Control.ca-bundle
+Package Control.system-ca-bundle
+Package Control.cache/
+Package Control.ca-certs/
+Package Control.merged-ca-bundle
+Package Control.user-ca-bundle
+oscrypto-ca-bundle.crt
+bh_unicode_properties.cache
+GitHub.sublime-settings
+
+# ============================================
+# DATABASE
+# ============================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# Database dumps
+*.sql.gz
+*.sql.zip
+backup/
+dumps/
+
+# ============================================
+# TESTING
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+cypress/videos/
+cypress/screenshots/
+
+# ============================================
+# TEMPORARY FILES
+# ============================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ============================================
+# PROJECT SPECIFIC
+# ============================================
+# Upload directory (if used)
+uploads/
+public/uploads/
+
+# Cache
+.cache/
+
+# Generated documentation
+docs/generated/
+
+# Mock data outputs (optional - keep if needed for development)
+# mock-data/
+
+# ============================================
+# DEPLOYMENT
+# ============================================
+.vercel
+.netlify
+
+# ============================================
+# PYTHON (for AI service)
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.hypothesis/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.cache
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ============================================
+# AI MODELS (Large files)
+# ============================================
+# Trained models
+*.pkl
+*.h5
+*.pth
+*.onnx
+models/*.pkl
+models/*.h5
+ai-service/models/*.pkl
+
+# Large datasets
+*.csv
+*.parquet
+data/raw/
+data/processed/
+
+# ============================================
+# END OF .GITIGNORE
+# ============================================
