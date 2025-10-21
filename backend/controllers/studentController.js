@@ -50,14 +50,23 @@ exports.getAllStudents = catchAsync(async (req, res) => {
     ];
   }
   
-  // Sorting
+  // Sorting with whitelist validation to prevent SQL injection
   const order = [];
   if (req.query.sort) {
-    const sortField = req.query.sort.startsWith('-') 
-      ? req.query.sort.substring(1) 
+    const sortField = req.query.sort.startsWith('-')
+      ? req.query.sort.substring(1)
       : req.query.sort;
     const sortOrder = req.query.sort.startsWith('-') ? 'DESC' : 'ASC';
-    order.push([sortField, sortOrder]);
+
+    // Whitelist of allowed sort fields
+    const allowedSortFields = ['student_id', 'first_name', 'last_name', 'date_of_birth', 'gender', 'grade_level', 'enrollment_date', 'created_at', 'updated_at'];
+
+    if (allowedSortFields.includes(sortField)) {
+      order.push([sortField, sortOrder]);
+    } else {
+      // If invalid sort field, use default
+      order.push(['last_name', 'ASC']);
+    }
   } else {
     order.push(['last_name', 'ASC']);
   }
@@ -154,13 +163,37 @@ exports.createStudent = catchAsync(async (req, res) => {
     parentEmail,
     classId
   } = req.body;
-  
+
+  // Validate required fields
+  if (!firstName || !lastName) {
+    return res.status(400).json({
+      success: false,
+      message: 'First name and last name are required'
+    });
+  }
+
+  if (!dateOfBirth) {
+    return res.status(400).json({
+      success: false,
+      message: 'Date of birth is required'
+    });
+  }
+
+  // Validate date of birth is in the past
+  const birthDate = new Date(dateOfBirth);
+  if (birthDate >= new Date()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Date of birth must be in the past'
+    });
+  }
+
   // Check if email already exists
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     throw new ConflictError('Email already exists');
   }
-  
+
   // Validate password
   const passwordValidation = User.validatePassword(password);
   if (!passwordValidation.valid) {

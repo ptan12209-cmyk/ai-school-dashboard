@@ -189,7 +189,8 @@ const TeacherForm = ({ teacher, onSuccess, onCancel }) => {
         onSuccess(result);
       }
     } catch (error) {
-      message.error(error || 'Operation failed');
+      const errorMessage = error?.message || error?.response?.data?.message || error?.toString() || 'Operation failed';
+      message.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

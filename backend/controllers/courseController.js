@@ -212,7 +212,24 @@ exports.createCourse = catchAsync(async (req, res) => {
   if (!teacher_id || !class_id) {
     throw new ValidationError('Teacher ID and Class ID are required');
   }
-  
+
+  // Validate schedule format if provided
+  let validatedSchedule = null;
+  if (schedule) {
+    // Schedule should be an object or array
+    if (typeof schedule === 'string') {
+      try {
+        validatedSchedule = JSON.parse(schedule);
+      } catch (error) {
+        throw new ValidationError('Invalid schedule format. Must be valid JSON.');
+      }
+    } else if (typeof schedule === 'object') {
+      validatedSchedule = schedule;
+    } else {
+      throw new ValidationError('Schedule must be an object or array');
+    }
+  }
+
   const newCourse = await Course.create({
     name,
     code,
@@ -223,7 +240,7 @@ exports.createCourse = catchAsync(async (req, res) => {
     class_id,    // ✓ Không cho null
     semester: semester || '1',
     school_year: school_year || '2024-2025',
-    schedule: schedule || null,
+    schedule: validatedSchedule,
     is_active: true
   });
   

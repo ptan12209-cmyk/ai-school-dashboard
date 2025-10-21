@@ -36,14 +36,23 @@ exports.getAllTeachers = catchAsync(async (req, res) => {
     ];
   }
   
-  // Sorting
+  // Sorting with whitelist validation to prevent SQL injection
   const order = [];
   if (req.query.sort) {
-    const sortField = req.query.sort.startsWith('-') 
-      ? req.query.sort.substring(1) 
+    const sortField = req.query.sort.startsWith('-')
+      ? req.query.sort.substring(1)
       : req.query.sort;
     const sortOrder = req.query.sort.startsWith('-') ? 'DESC' : 'ASC';
-    order.push([sortField, sortOrder]);
+
+    // Whitelist of allowed sort fields
+    const allowedSortFields = ['teacher_id', 'first_name', 'last_name', 'department', 'hire_date', 'specialization', 'created_at', 'updated_at'];
+
+    if (allowedSortFields.includes(sortField)) {
+      order.push([sortField, sortOrder]);
+    } else {
+      // If invalid sort field, use default
+      order.push(['last_name', 'ASC']);
+    }
   } else {
     order.push(['last_name', 'ASC']);
   }
@@ -126,13 +135,28 @@ exports.createTeacher = catchAsync(async (req, res) => {
     phone,
     hireDate
   } = req.body;
-  
+
+  // Validate required fields
+  if (!firstName || !lastName) {
+    return res.status(400).json({
+      success: false,
+      message: 'First name and last name are required'
+    });
+  }
+
+  if (!department) {
+    return res.status(400).json({
+      success: false,
+      message: 'Department is required'
+    });
+  }
+
   // Check if email already exists
   const existingUser = await User.findOne({ where: { email } });
   if (existingUser) {
     throw new ConflictError('Email already exists');
   }
-  
+
   // Validate password
   const passwordValidation = User.validatePassword(password);
   if (!passwordValidation.valid) {

@@ -44,14 +44,23 @@ exports.getAllUsers = catchAsync(async (req, res) => {
     };
   }
   
-  // Sorting
+  // Sorting with whitelist validation to prevent SQL injection
   const order = [];
   if (req.query.sort) {
-    const sortField = req.query.sort.startsWith('-') 
-      ? req.query.sort.substring(1) 
+    const sortField = req.query.sort.startsWith('-')
+      ? req.query.sort.substring(1)
       : req.query.sort;
     const sortOrder = req.query.sort.startsWith('-') ? 'DESC' : 'ASC';
-    order.push([sortField, sortOrder]);
+
+    // Whitelist of allowed sort fields
+    const allowedSortFields = ['email', 'role', 'is_active', 'created_at', 'updated_at'];
+
+    if (allowedSortFields.includes(sortField)) {
+      order.push([sortField, sortOrder]);
+    } else {
+      // If invalid sort field, use default
+      order.push(['created_at', 'DESC']);
+    }
   } else {
     order.push(['created_at', 'DESC']);
   }

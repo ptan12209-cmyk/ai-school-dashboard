@@ -99,7 +99,8 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
       message.success('Student deleted successfully');
       loadStudents();
     } catch (error) {
-      message.error(error || 'Failed to delete student');
+      const errorMessage = error?.message || error?.response?.data?.message || error?.toString() || 'Failed to delete student';
+      message.error(errorMessage);
     }
   };
 
@@ -116,7 +117,8 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
       setSelectedRowKeys([]);
       loadStudents();
     } catch (error) {
-      message.error(error || 'Failed to delete students');
+      const errorMessage = error?.message || error?.response?.data?.message || error?.toString() || 'Failed to delete students';
+      message.error(errorMessage);
     }
   };
 

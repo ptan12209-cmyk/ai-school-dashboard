@@ -41,14 +41,23 @@ exports.getAllClasses = catchAsync(async (req, res) => {
     where.name = { [Op.iLike]: `%${req.query.search}%` };
   }
   
-  // Sorting
+  // Sorting with whitelist validation to prevent SQL injection
   const order = [];
   if (req.query.sort) {
-    const sortField = req.query.sort.startsWith('-') 
-      ? req.query.sort.substring(1) 
+    const sortField = req.query.sort.startsWith('-')
+      ? req.query.sort.substring(1)
       : req.query.sort;
     const sortOrder = req.query.sort.startsWith('-') ? 'DESC' : 'ASC';
-    order.push([sortField, sortOrder]);
+
+    // Whitelist of allowed sort fields
+    const allowedSortFields = ['class_id', 'name', 'grade_level', 'room_number', 'academic_year', 'created_at', 'updated_at'];
+
+    if (allowedSortFields.includes(sortField)) {
+      order.push([sortField, sortOrder]);
+    } else {
+      // If invalid sort field, use default
+      order.push(['grade_level', 'ASC'], ['name', 'ASC']);
+    }
   } else {
     order.push(['grade_level', 'ASC'], ['name', 'ASC']);
   }

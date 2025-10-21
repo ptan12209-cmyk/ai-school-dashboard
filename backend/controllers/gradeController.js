@@ -44,8 +44,26 @@ exports.getAllGrades = catchAsync(async (req, res) => {
     where.is_published = req.query.is_published === 'true';
   }
   
-  // Date range filter
+  // Date range filter with validation
   if (req.query.start_date && req.query.end_date) {
+    const startDate = new Date(req.query.start_date);
+    const endDate = new Date(req.query.end_date);
+
+    // Validate date range
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid date format. Please use valid dates.'
+      });
+    }
+
+    if (startDate > endDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Start date must be before or equal to end date'
+      });
+    }
+
     where.graded_date = {
       [Op.between]: [req.query.start_date, req.query.end_date]
     };
@@ -63,14 +81,23 @@ exports.getAllGrades = catchAsync(async (req, res) => {
     }
   }
   
-  // Sorting
+  // Sorting with whitelist validation to prevent SQL injection
   const order = [];
   if (req.query.sort) {
-    const sortField = req.query.sort.startsWith('-') 
-      ? req.query.sort.substring(1) 
+    const sortField = req.query.sort.startsWith('-')
+      ? req.query.sort.substring(1)
       : req.query.sort;
     const sortOrder = req.query.sort.startsWith('-') ? 'DESC' : 'ASC';
-    order.push([sortField, sortOrder]);
+
+    // Whitelist of allowed sort fields
+    const allowedSortFields = ['grade_id', 'score', 'grade_type', 'graded_date', 'semester', 'weight', 'created_at', 'updated_at'];
+
+    if (allowedSortFields.includes(sortField)) {
+      order.push([sortField, sortOrder]);
+    } else {
+      // If invalid sort field, use default
+      order.push(['graded_date', 'DESC']);
+    }
   } else {
     order.push(['graded_date', 'DESC']);
   }

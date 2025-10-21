@@ -103,7 +103,8 @@ const TeacherList = ({ onAdd, onEdit, onView, onAssignClass }) => {
       message.success('Teacher deleted successfully');
       loadTeachers();
     } catch (error) {
-      message.error(error || 'Failed to delete teacher');
+      const errorMessage = error?.message || error?.response?.data?.message || error?.toString() || 'Failed to delete teacher';
+      message.error(errorMessage);
     }
   };
 
@@ -120,7 +121,8 @@ const TeacherList = ({ onAdd, onEdit, onView, onAssignClass }) => {
       setSelectedRowKeys([]);
       loadTeachers();
     } catch (error) {
-      message.error(error || 'Failed to delete teachers');
+      const errorMessage = error?.message || error?.response?.data?.message || error?.toString() || 'Failed to delete teachers';
+      message.error(errorMessage);
     }
   };
 

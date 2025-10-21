@@ -42,9 +42,9 @@ exports.register = async (req, res, next) => {
         message: 'Email and password are required'
       });
     }
-    // Use email directly (already normalized by express-validator)
-    const trimmedEmail = email;
-    
+    // Normalize email to lowercase and trim whitespace to prevent duplicates
+    const trimmedEmail = email.toLowerCase().trim();
+
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email: trimmedEmail } });
     if (existingUser) {
@@ -167,15 +167,18 @@ exports.login = async (req, res, next) => {
     
     // âœ… COMPREHENSIVE VALIDATION
     // Return 400 (validation error) for missing fields
-  if (!email || !password) {
-    return res.status(400).json({
+    if (!email || !password) {
+      return res.status(400).json({
         success: false,
         message: 'Email and password are required'
       });
     }
 
-// Find user with password (using withPassword scope)
-const user = await User.findByEmail(email);
+    // Normalize email to lowercase and trim whitespace
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Find user with password (using withPassword scope)
+    const user = await User.findByEmail(normalizedEmail);
     if (!user) {
       // Return 401 for invalid credentials (user not found)
       return res.status(401).json({

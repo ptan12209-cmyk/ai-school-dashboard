@@ -100,7 +100,8 @@ const AttendanceMarking = ({
       
       message.success('Attendance marked successfully!');
     } catch (error) {
-      message.error('Failed to mark attendance');
+      const errorMessage = error?.message || error?.response?.data?.message || error?.toString() || 'Failed to mark attendance';
+      message.error(errorMessage);
     }
   };
 
