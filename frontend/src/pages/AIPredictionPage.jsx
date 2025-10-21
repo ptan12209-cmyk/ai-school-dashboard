@@ -16,6 +16,14 @@ import {
   Alert,
   Button,
   useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 import {
   Psychology as PsychologyIcon,
@@ -28,6 +36,8 @@ const AIPredictionPage = () => {
   const theme = useTheme();
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedPrediction, setSelectedPrediction] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Mock data
   const mockPredictions = [
@@ -90,6 +100,16 @@ const AIPredictionPage = () => {
       'low': <CheckCircleIcon />,
     };
     return icons[priority] || <TrendingUpIcon />;
+  };
+
+  const handleViewDetails = (prediction) => {
+    setSelectedPrediction(prediction);
+    setDetailsOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setDetailsOpen(false);
+    setSelectedPrediction(null);
   };
 
   return (
@@ -222,7 +242,7 @@ const AIPredictionPage = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  onClick={() => console.log('View details for:', prediction.student)}
+                  onClick={() => handleViewDetails(prediction)}
                 >
                   View Details
                 </Button>
@@ -231,6 +251,118 @@ const AIPredictionPage = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Details Modal */}
+      <Dialog
+        open={detailsOpen}
+        onClose={handleCloseDetails}
+        maxWidth="md"
+        fullWidth
+      >
+        {selectedPrediction && (
+          <>
+            <DialogTitle>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h5">
+                  Prediction Details: {selectedPrediction.student}
+                </Typography>
+                <Chip
+                  icon={getPriorityIcon(selectedPrediction.priority)}
+                  label={selectedPrediction.priority.toUpperCase()}
+                  color={getPriorityColor(selectedPrediction.priority)}
+                />
+              </Box>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Prediction Status
+                </Typography>
+                <Chip
+                  label={selectedPrediction.prediction}
+                  color={getPredictionColor(selectedPrediction.prediction)}
+                  size="medium"
+                  sx={{ mr: 2 }}
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                  Confidence Level: {selectedPrediction.confidence}%
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={selectedPrediction.confidence}
+                  color={selectedPrediction.confidence > 80 ? 'success' : selectedPrediction.confidence > 60 ? 'warning' : 'error'}
+                  sx={{ mt: 1, height: 8, borderRadius: 4 }}
+                />
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Key Factors
+                </Typography>
+                <List>
+                  {selectedPrediction.factors.map((factor, index) => (
+                    <ListItem key={index} disablePadding>
+                      <ListItemText
+                        primary={`• ${factor}`}
+                        sx={{ color: 'text.primary' }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Recommended Actions
+                </Typography>
+                <Alert severity="info" icon={<PsychologyIcon />}>
+                  <Typography variant="body1">
+                    {selectedPrediction.recommendation}
+                  </Typography>
+                </Alert>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Additional Information
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">
+                      Student ID
+                    </Typography>
+                    <Typography variant="body1">
+                      #{selectedPrediction.id}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">
+                      Analysis Date
+                    </Typography>
+                    <Typography variant="body1">
+                      {new Date().toLocaleDateString()}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDetails} variant="outlined">
+                Close
+              </Button>
+              <Button onClick={handleCloseDetails} variant="contained" color="primary">
+                Take Action
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 };

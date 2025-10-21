@@ -6,6 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Row, Col, Typography, Button, Spin } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 
@@ -28,9 +29,10 @@ const { Title } = Typography;
  */
 const DashboardPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector(state => state.auth);
   const { stats, charts, recentActivities, loading } = useSelector(state => state.dashboard);
-  
+
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch dashboard data on mount
@@ -51,8 +53,21 @@ const DashboardPage = () => {
    * Handle quick actions
    */
   const handleQuickAction = (actionKey) => {
-    console.log(`Quick action: ${actionKey}`);
-    // TODO: Implement navigation to respective pages
+    const routeMap = {
+      'add-student': '/students',
+      'add-teacher': '/teachers',
+      'create-course': '/courses',
+      'mark-attendance': '/attendance',
+      'enter-grades': '/grades',
+      'generate-report': '/reports'
+    };
+
+    const route = routeMap[actionKey];
+    if (route) {
+      navigate(route);
+    } else {
+      console.log(`Quick action: ${actionKey}`);
+    }
   };
 
   // Loading state
