@@ -90,7 +90,7 @@ const ClassesPage = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching classes:', err);
-      setError('Failed to load classes. Please try again.');
+      setError('Không thể tải danh sách lớp. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -160,11 +160,11 @@ const ClassesPage = () => {
       if (editingClass) {
         // Update existing class
         await axios.put(`${API_URL}/classes/${editingClass.id}`, formData, config);
-        setSuccess('Class updated successfully!');
+        setSuccess('Cập nhật lớp thành công!');
       } else {
         // Create new class
         await axios.post(`${API_URL}/classes`, formData, config);
-        setSuccess('Class created successfully!');
+        setSuccess('Tạo lớp mới thành công!');
       }
 
       handleCloseDialog();
@@ -173,13 +173,13 @@ const ClassesPage = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Error saving class:', err);
-      setError(err.response?.data?.message || 'Failed to save class. Please try again.');
+      setError(err.response?.data?.message || 'Không thể lưu lớp. Vui lòng thử lại.');
       setTimeout(() => setError(null), 3000);
     }
   };
 
   const handleDelete = async (classId) => {
-    if (!window.confirm('Are you sure you want to delete this class?')) {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa lớp này?')) {
       return;
     }
 
@@ -188,13 +188,13 @@ const ClassesPage = () => {
       await axios.delete(`${API_URL}/classes/${classId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSuccess('Class deleted successfully!');
+      setSuccess('Xóa lớp thành công!');
       fetchClasses();
       fetchStats();
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Error deleting class:', err);
-      setError('Failed to delete class. Please try again.');
+      setError('Không thể xóa lớp. Vui lòng thử lại.');
       setTimeout(() => setError(null), 3000);
     }
   };
@@ -213,7 +213,7 @@ const ClassesPage = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Classes Management
+          Quản Lý Lớp Học
         </Typography>
         <Button
           variant="contained"
@@ -221,7 +221,7 @@ const ClassesPage = () => {
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
         >
-          Add New Class
+          Thêm Lớp Mới
         </Button>
       </Box>
 
@@ -237,7 +237,7 @@ const ClassesPage = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <SchoolIcon color="primary" sx={{ mr: 1 }} />
-                  <Typography variant="h6">Total Classes</Typography>
+                  <Typography variant="h6">Tổng Số Lớp</Typography>
                 </Box>
                 <Typography variant="h4" color="primary">
                   {stats.total || 0}
@@ -250,7 +250,7 @@ const ClassesPage = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <CheckCircleIcon color="success" sx={{ mr: 1 }} />
-                  <Typography variant="h6">Active Classes</Typography>
+                  <Typography variant="h6">Lớp Hoạt Động</Typography>
                 </Box>
                 <Typography variant="h4" color="success.main">
                   {stats.active || 0}
@@ -263,7 +263,7 @@ const ClassesPage = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <PeopleIcon color="info" sx={{ mr: 1 }} />
-                  <Typography variant="h6">Total Students</Typography>
+                  <Typography variant="h6">Tổng Học Sinh</Typography>
                 </Box>
                 <Typography variant="h4" color="info.main">
                   {stats.totalStudents || 0}
@@ -276,7 +276,7 @@ const ClassesPage = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <RoomIcon color="warning" sx={{ mr: 1 }} />
-                  <Typography variant="h6">Avg Students/Class</Typography>
+                  <Typography variant="h6">TB Học Sinh/Lớp</Typography>
                 </Box>
                 <Typography variant="h4" color="warning.main">
                   {stats.active ? Math.round(stats.totalStudents / stats.active) : 0}
@@ -294,7 +294,7 @@ const ClassesPage = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Search by name or room"
+                label="Tìm theo tên hoặc phòng"
                 variant="outlined"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -303,15 +303,15 @@ const ClassesPage = () => {
             </Grid>
             <Grid item xs={12} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Filter by Grade</InputLabel>
+                <InputLabel>Lọc Theo Khối</InputLabel>
                 <Select
                   value={filterGrade}
-                  label="Filter by Grade"
+                  label="Lọc Theo Khối"
                   onChange={(e) => setFilterGrade(e.target.value)}
                 >
-                  <MenuItem value="">All Grades</MenuItem>
+                  <MenuItem value="">Tất Cả Khối</MenuItem>
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(grade => (
-                    <MenuItem key={grade} value={grade}>Grade {grade}</MenuItem>
+                    <MenuItem key={grade} value={grade}>Khối {grade}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -325,7 +325,7 @@ const ClassesPage = () => {
                   setFilterGrade('');
                 }}
               >
-                Clear Filters
+                Xóa Bộ Lọc
               </Button>
             </Grid>
           </Grid>
@@ -344,13 +344,13 @@ const ClassesPage = () => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableCell><strong>Class Name</strong></TableCell>
-                    <TableCell><strong>Grade Level</strong></TableCell>
-                    <TableCell><strong>Room</strong></TableCell>
-                    <TableCell><strong>Capacity</strong></TableCell>
-                    <TableCell><strong>School Year</strong></TableCell>
-                    <TableCell><strong>Status</strong></TableCell>
-                    <TableCell align="center"><strong>Actions</strong></TableCell>
+                    <TableCell><strong>Tên Lớp</strong></TableCell>
+                    <TableCell><strong>Khối</strong></TableCell>
+                    <TableCell><strong>Phòng</strong></TableCell>
+                    <TableCell><strong>Sức Chứa</strong></TableCell>
+                    <TableCell><strong>Năm Học</strong></TableCell>
+                    <TableCell><strong>Trạng Thái</strong></TableCell>
+                    <TableCell align="center"><strong>Thao Tác</strong></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -358,7 +358,7 @@ const ClassesPage = () => {
                     <TableRow>
                       <TableCell colSpan={7} align="center">
                         <Typography variant="body1" color="text.secondary" sx={{ py: 3 }}>
-                          No classes found. Click "Add New Class" to create one.
+                          Không tìm thấy lớp học. Nhấn "Thêm Lớp Mới" để tạo lớp.
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -367,20 +367,20 @@ const ClassesPage = () => {
                       <TableRow key={cls.id} hover>
                         <TableCell>{cls.name}</TableCell>
                         <TableCell>
-                          <Chip label={`Grade ${cls.grade_level}`} color="primary" size="small" />
+                          <Chip label={`Khối ${cls.grade_level}`} color="primary" size="small" />
                         </TableCell>
                         <TableCell>{cls.room_number || '-'}</TableCell>
                         <TableCell>{cls.max_students}</TableCell>
                         <TableCell>{cls.school_year}</TableCell>
                         <TableCell>
                           {cls.is_active ? (
-                            <Chip icon={<CheckCircleIcon />} label="Active" color="success" size="small" />
+                            <Chip icon={<CheckCircleIcon />} label="Hoạt Động" color="success" size="small" />
                           ) : (
-                            <Chip icon={<CancelIcon />} label="Inactive" color="default" size="small" />
+                            <Chip icon={<CancelIcon />} label="Không Hoạt Động" color="default" size="small" />
                           )}
                         </TableCell>
                         <TableCell align="center">
-                          <Tooltip title="Edit">
+                          <Tooltip title="Sửa">
                             <IconButton
                               color="primary"
                               size="small"
@@ -389,7 +389,7 @@ const ClassesPage = () => {
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete">
+                          <Tooltip title="Xóa">
                             <IconButton
                               color="error"
                               size="small"
@@ -412,42 +412,42 @@ const ClassesPage = () => {
       {/* Add/Edit Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {editingClass ? 'Edit Class' : 'Add New Class'}
+          {editingClass ? 'Chỉnh Sửa Lớp' : 'Thêm Lớp Mới'}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
-              label="Class Name"
+              label="Tên Lớp"
               fullWidth
               required
               value={formData.name}
               onChange={(e) => handleFormChange('name', e.target.value)}
-              placeholder="e.g., Class 10A"
+              placeholder="VD: Lớp 10A"
             />
 
             <FormControl fullWidth required>
-              <InputLabel>Grade Level</InputLabel>
+              <InputLabel>Khối</InputLabel>
               <Select
                 value={formData.grade_level}
-                label="Grade Level"
+                label="Khối"
                 onChange={(e) => handleFormChange('grade_level', e.target.value)}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(grade => (
-                  <MenuItem key={grade} value={grade}>Grade {grade}</MenuItem>
+                  <MenuItem key={grade} value={grade}>Khối {grade}</MenuItem>
                 ))}
               </Select>
             </FormControl>
 
             <TextField
-              label="Room Number"
+              label="Số Phòng"
               fullWidth
               value={formData.room_number}
               onChange={(e) => handleFormChange('room_number', e.target.value)}
-              placeholder="e.g., Room 101"
+              placeholder="VD: Phòng 101"
             />
 
             <TextField
-              label="Max Students"
+              label="Sĩ Số Tối Đa"
               fullWidth
               type="number"
               required
@@ -457,32 +457,32 @@ const ClassesPage = () => {
             />
 
             <TextField
-              label="School Year"
+              label="Năm Học"
               fullWidth
               required
               value={formData.school_year}
               onChange={(e) => handleFormChange('school_year', e.target.value)}
-              placeholder="e.g., 2024-2025"
-              helperText="Format: YYYY-YYYY"
+              placeholder="VD: 2024-2025"
+              helperText="Định dạng: YYYY-YYYY"
             />
 
             <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>Trạng Thái</InputLabel>
               <Select
                 value={formData.is_active}
-                label="Status"
+                label="Trạng Thái"
                 onChange={(e) => handleFormChange('is_active', e.target.value)}
               >
-                <MenuItem value={true}>Active</MenuItem>
-                <MenuItem value={false}>Inactive</MenuItem>
+                <MenuItem value={true}>Hoạt Động</MenuItem>
+                <MenuItem value={false}>Không Hoạt Động</MenuItem>
               </Select>
             </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>Hủy</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">
-            {editingClass ? 'Update' : 'Create'}
+            {editingClass ? 'Cập Nhật' : 'Tạo Mới'}
           </Button>
         </DialogActions>
       </Dialog>

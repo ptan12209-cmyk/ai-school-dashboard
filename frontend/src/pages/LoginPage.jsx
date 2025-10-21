@@ -81,16 +81,16 @@ const LoginPage = () => {
     
     // Email validation
     if (!formData.email) {
-      errors.email = 'Email is required';
+      errors.email = 'Email là bắt buộc';
     } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
-      errors.email = 'Invalid email address';
+      errors.email = 'Địa chỉ email không hợp lệ';
     }
-    
+
     // Password validation
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = 'Mật khẩu là bắt buộc';
     } else if (formData.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters';
+      errors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
     }
     
     setValidationErrors(errors);
@@ -112,7 +112,7 @@ const LoginPage = () => {
       const result = await dispatch(login(formData));
       
       if (login.fulfilled.match(result)) {
-        toast.success('Login successful!');
+        toast.success('Đăng nhập thành công!');
         navigate('/dashboard');
       }
     } catch (error) {
@@ -144,7 +144,7 @@ const LoginPage = () => {
               AI School Dashboard
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Sign in to continue
+              Đăng nhập để tiếp tục
             </Typography>
           </Box>
 
@@ -163,7 +163,7 @@ const LoginPage = () => {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label="Địa Chỉ Email"
               name="email"
               autoComplete="email"
               autoFocus
@@ -186,7 +186,7 @@ const LoginPage = () => {
               required
               fullWidth
               name="password"
-              label="Password"
+              label="Mật Khẩu"
               type={showPassword ? 'text' : 'password'}
               id="password"
               autoComplete="current-password"
@@ -218,7 +218,7 @@ const LoginPage = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 2 }}>
               <Link to="/forgot-password" style={{ textDecoration: 'none' }}>
                 <Typography variant="body2" color="primary">
-                  Forgot password?
+                  Quên mật khẩu?
                 </Typography>
               </Link>
             </Box>
@@ -234,17 +234,17 @@ const LoginPage = () => {
               {loading ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                'Sign In'
+                'Đăng Nhập'
               )}
             </Button>
 
             {/* Register Link */}
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Don't have an account?{' '}
+                Chưa có tài khoản?{' '}
                 <Link to="/register" style={{ textDecoration: 'none' }}>
                   <Typography component="span" variant="body2" color="primary">
-                    Sign Up
+                    Đăng Ký
                   </Typography>
                 </Link>
               </Typography>
@@ -253,16 +253,16 @@ const LoginPage = () => {
             {/* Demo Credentials */}
             <Box sx={{ mt: 4, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Demo Credentials:</strong>
+                <strong>Tài Khoản Demo:</strong>
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Admin: admin@school.com / admin123
+                Quản trị: admin@school.com / admin123
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Teacher: teacher@school.com / teacher123
+                Giáo viên: teacher@school.com / teacher123
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Student: student@school.com / student123
+                Học sinh: student@school.com / student123
               </Typography>
             </Box>
           </Box>

@@ -83,23 +83,23 @@ const DashboardPage = () => {
     <div style={{ padding: '24px' }}>
       {/* Header */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={2}>Dashboard</Title>
-        <Button 
+        <Title level={2}>Tổng Quan</Title>
+        <Button
           icon={<ReloadOutlined />}
           onClick={handleRefresh}
           loading={refreshing}
         >
-          Refresh
+          Làm Mới
         </Button>
       </div>
 
       {/* Welcome Message */}
       <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
         <Title level={4} style={{ margin: 0 }}>
-          Welcome back, {user?.firstName || 'User'}!
+          Chào mừng trở lại, {user?.firstName || 'User'}!
         </Title>
         <Typography.Text type="secondary">
-          Today is {new Date().toLocaleDateString('en-US', {
+          Hôm nay là {new Date().toLocaleDateString('vi-VN', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -116,24 +116,24 @@ const DashboardPage = () => {
       {/* Charts and Analytics */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} lg={12}>
-          <LineChart 
-            title="Performance Trend" 
-            data={charts?.performanceData} 
+          <LineChart
+            title="Xu Hướng Thành Tích"
+            data={charts?.performanceData}
           />
         </Col>
         <Col xs={24} lg={12}>
-          <BarChart 
-            title="Subject Performance" 
-            data={charts?.subjectData} 
+          <BarChart
+            title="Thành Tích Theo Môn Học"
+            data={charts?.subjectData}
           />
         </Col>
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} lg={8}>
-          <PieChart 
-            title="Grade Distribution" 
-            data={charts?.gradeDistribution} 
+          <PieChart
+            title="Phân Bố Điểm Số"
+            data={charts?.gradeDistribution}
           />
         </Col>
         <Col xs={24} lg={8}>

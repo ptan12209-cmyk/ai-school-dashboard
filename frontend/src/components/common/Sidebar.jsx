@@ -30,52 +30,52 @@ import {
 
 const menuItems = [
   {
-    text: 'Dashboard',
+    text: 'Tổng Quan',
     icon: <DashboardIcon />,
     path: '/dashboard',
   },
   {
-    text: 'Students',
+    text: 'Học Sinh',
     icon: <PeopleIcon />,
     path: '/students',
   },
   {
-    text: 'Teachers',
+    text: 'Giáo Viên',
     icon: <SchoolIcon />,
     path: '/teachers',
   },
   {
-    text: 'Classes',
+    text: 'Lớp Học',
     icon: <SchoolIcon />,
     path: '/classes',
   },
   {
-    text: 'Courses',
+    text: 'Khóa Học',
     icon: <SchoolIcon />,
     path: '/courses',
   },
   {
-    text: 'Grades',
+    text: 'Điểm Số',
     icon: <AssessmentIcon />,
     path: '/grades',
   },
   {
-    text: 'Attendance',
+    text: 'Điểm Danh',
     icon: <CalendarIcon />,
     path: '/attendance',
   },
   {
-    text: 'AI Predictions',
+    text: 'Dự Đoán AI',
     icon: <PsychologyIcon />,
     path: '/ai-predictions',
   },
   {
-    text: 'Reports',
+    text: 'Báo Cáo',
     icon: <BarChartIcon />,
     path: '/reports',
   },
   {
-    text: 'Settings',
+    text: 'Cài Đặt',
     icon: <SettingsIcon />,
     path: '/settings',
   },

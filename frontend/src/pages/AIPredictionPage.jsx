@@ -117,10 +117,10 @@ const AIPredictionPage = () => {
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          AI Predictions
+          Dự Đoán AI
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          AI-powered insights and predictions for student performance
+          Phân tích và dự đoán thành tích học sinh bằng AI
         </Typography>
       </Box>
 
@@ -131,7 +131,7 @@ const AIPredictionPage = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <PsychologyIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Total Predictions</Typography>
+                <Typography variant="h6">Tổng Dự Đoán</Typography>
               </Box>
               <Typography variant="h4" color="primary">
                 {predictions.length}
@@ -144,7 +144,7 @@ const AIPredictionPage = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <WarningIcon color="error" sx={{ mr: 1 }} />
-                <Typography variant="h6">At Risk</Typography>
+                <Typography variant="h6">Nguy Cơ Cao</Typography>
               </Box>
               <Typography variant="h4" color="error">
                 {predictions.filter(p => p.prediction === 'At Risk').length}
@@ -157,7 +157,7 @@ const AIPredictionPage = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <TrendingUpIcon color="success" sx={{ mr: 1 }} />
-                <Typography variant="h6">Excellent</Typography>
+                <Typography variant="h6">Xuất Sắc</Typography>
               </Box>
               <Typography variant="h4" color="success.main">
                 {predictions.filter(p => p.prediction === 'Excellent').length}
@@ -170,7 +170,7 @@ const AIPredictionPage = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <CheckCircleIcon color="info" sx={{ mr: 1 }} />
-                <Typography variant="h6">Avg Confidence</Typography>
+                <Typography variant="h6">TB Độ Tin Cậy</Typography>
               </Box>
               <Typography variant="h4" color="info.main">
                 {Math.round(predictions.reduce((acc, p) => acc + p.confidence, 0) / predictions.length)}%
@@ -198,7 +198,7 @@ const AIPredictionPage = () => {
 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Prediction
+                    Dự Đoán
                   </Typography>
                   <Chip
                     label={prediction.prediction}
@@ -209,7 +209,7 @@ const AIPredictionPage = () => {
 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Confidence: {prediction.confidence}%
+                    Độ Tin Cậy: {prediction.confidence}%
                   </Typography>
                   <LinearProgress
                     variant="determinate"
@@ -220,7 +220,7 @@ const AIPredictionPage = () => {
 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Key Factors
+                    Yếu Tố Chính
                   </Typography>
                   {prediction.factors.map((factor, index) => (
                     <Chip
@@ -234,7 +234,7 @@ const AIPredictionPage = () => {
 
                 <Alert severity="info" sx={{ mb: 2 }}>
                   <Typography variant="body2">
-                    <strong>Recommendation:</strong> {prediction.recommendation}
+                    <strong>Khuyến Nghị:</strong> {prediction.recommendation}
                   </Typography>
                 </Alert>
 
@@ -244,7 +244,7 @@ const AIPredictionPage = () => {
                   fullWidth
                   onClick={() => handleViewDetails(prediction)}
                 >
-                  View Details
+                  Xem Chi Tiết
                 </Button>
               </CardContent>
             </Card>
@@ -264,7 +264,7 @@ const AIPredictionPage = () => {
             <DialogTitle>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h5">
-                  Prediction Details: {selectedPrediction.student}
+                  Chi Tiết Dự Đoán: {selectedPrediction.student}
                 </Typography>
                 <Chip
                   icon={getPriorityIcon(selectedPrediction.priority)}
@@ -276,7 +276,7 @@ const AIPredictionPage = () => {
             <DialogContent dividers>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Prediction Status
+                  Trạng Thái Dự Đoán
                 </Typography>
                 <Chip
                   label={selectedPrediction.prediction}
@@ -285,7 +285,7 @@ const AIPredictionPage = () => {
                   sx={{ mr: 2 }}
                 />
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                  Confidence Level: {selectedPrediction.confidence}%
+                  Độ Tin Cậy: {selectedPrediction.confidence}%
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -299,7 +299,7 @@ const AIPredictionPage = () => {
 
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Key Factors
+                  Yếu Tố Chính
                 </Typography>
                 <List>
                   {selectedPrediction.factors.map((factor, index) => (
@@ -317,7 +317,7 @@ const AIPredictionPage = () => {
 
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  Recommended Actions
+                  Hành Động Được Khuyến Nghị
                 </Typography>
                 <Alert severity="info" icon={<PsychologyIcon />}>
                   <Typography variant="body1">
@@ -330,12 +330,12 @@ const AIPredictionPage = () => {
 
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  Additional Information
+                  Thông Tin Bổ Sung
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
-                      Student ID
+                      Mã Học Sinh
                     </Typography>
                     <Typography variant="body1">
                       #{selectedPrediction.id}
@@ -343,10 +343,10 @@ const AIPredictionPage = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
-                      Analysis Date
+                      Ngày Phân Tích
                     </Typography>
                     <Typography variant="body1">
-                      {new Date().toLocaleDateString()}
+                      {new Date().toLocaleDateString('vi-VN')}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -354,10 +354,10 @@ const AIPredictionPage = () => {
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseDetails} variant="outlined">
-                Close
+                Đóng
               </Button>
               <Button onClick={handleCloseDetails} variant="contained" color="primary">
-                Take Action
+                Thực Hiện Hành Động
               </Button>
             </DialogActions>
           </>

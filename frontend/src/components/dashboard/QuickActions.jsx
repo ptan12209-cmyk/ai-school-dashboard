@@ -19,45 +19,45 @@ const QuickActions = ({ onAction }) => {
   const actions = [
     {
       key: 'add-student',
-      title: 'Add Student',
+      title: 'Thêm Học Sinh',
       icon: <UserAddOutlined />,
       color: '#1890ff',
-      description: 'Register new student'
+      description: 'Đăng ký học sinh mới'
     },
     {
       key: 'add-teacher',
-      title: 'Add Teacher',
+      title: 'Thêm Giáo Viên',
       icon: <PlusOutlined />,
       color: '#52c41a',
-      description: 'Add new teacher'
+      description: 'Thêm giáo viên mới'
     },
     {
       key: 'create-course',
-      title: 'Create Course',
+      title: 'Tạo Khóa Học',
       icon: <BookOutlined />,
       color: '#faad14',
-      description: 'Setup new course'
+      description: 'Thiết lập khóa học mới'
     },
     {
       key: 'mark-attendance',
-      title: 'Mark Attendance',
+      title: 'Điểm Danh',
       icon: <CalendarOutlined />,
       color: '#722ed1',
-      description: 'Take attendance'
+      description: 'Thực hiện điểm danh'
     },
     {
       key: 'enter-grades',
-      title: 'Enter Grades',
+      title: 'Nhập Điểm',
       icon: <EditOutlined />,
       color: '#f5222d',
-      description: 'Input student grades'
+      description: 'Nhập điểm học sinh'
     },
     {
       key: 'generate-report',
-      title: 'Generate Report',
+      title: 'Tạo Báo Cáo',
       icon: <FileTextOutlined />,
       color: '#13c2c2',
-      description: 'Create reports'
+      description: 'Tạo báo cáo'
     }
   ];
 
@@ -70,7 +70,7 @@ const QuickActions = ({ onAction }) => {
   };
 
   return (
-    <Card title="Quick Actions" style={{ height: '400px' }}>
+    <Card title="Thao Tác Nhanh" style={{ height: '400px' }}>
       <Row gutter={[16, 16]}>
         {actions.map((action) => (
           <Col xs={24} sm={12} key={action.key}>
