@@ -28,14 +28,9 @@ const BarChart = ({
 
   const config = {
     data: chartData,
-    xField,
-    yField,
-    height,
-    seriesField: 'subject',
-    legend: { position: 'top-left' },
-    barStyle: {
-      radius: [4, 4, 0, 0],
-    },
+    xField: xField,
+    yField: yField,
+    height: height,
     color: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
   };
 

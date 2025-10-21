@@ -28,18 +28,10 @@ const PieChart = ({
 
   const config = {
     data: chartData,
-    angleField,
-    colorField,
-    height,
+    angleField: angleField,
+    colorField: colorField,
+    height: height,
     radius: 0.8,
-    label: {
-      type: 'outer',
-      content: '{name} {percentage}',
-    },
-    interactions: [
-      { type: 'element-active' },
-      { type: 'pie-legend-active' },
-    ],
     color: ['#52c41a', '#1890ff', '#faad14', '#fa8c16', '#f5222d'],
   };
 

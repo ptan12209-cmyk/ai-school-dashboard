@@ -29,23 +29,11 @@ const LineChart = ({
 
   const config = {
     data: chartData,
-    xField,
-    yField,
-    height,
+    xField: xField,
+    yField: yField,
+    height: height,
     smooth: true,
-    point: {
-      size: 5,
-      shape: 'diamond',
-    },
-    label: {
-      style: {
-        fill: '#aaa',
-      },
-    },
     color: '#1890ff',
-    lineStyle: {
-      lineWidth: 3,
-    },
   };
 
   return (
