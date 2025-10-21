@@ -20,41 +20,41 @@ const TopPerformers = ({ students = [], teachers = [] }) => {
   const mockStudents = [
     {
       id: 1,
-      name: 'Alice Johnson',
+      name: 'Nguyễn Thị Mai',
       grade: 98.5,
-      subject: 'Mathematics',
+      subject: 'Toán Học',
       avatar: null,
       rank: 1
     },
     {
       id: 2,
-      name: 'Bob Smith',
+      name: 'Trần Văn Nam',
       grade: 96.2,
-      subject: 'Science',
+      subject: 'Khoa Học',
       avatar: null,
       rank: 2
     },
     {
       id: 3,
-      name: 'Carol Davis',
+      name: 'Lê Thu Hà',
       grade: 94.8,
-      subject: 'English',
+      subject: 'Văn Học',
       avatar: null,
       rank: 3
     },
     {
       id: 4,
-      name: 'David Wilson',
+      name: 'Phạm Đức Anh',
       grade: 93.1,
-      subject: 'History',
+      subject: 'Lịch Sử',
       avatar: null,
       rank: 4
     },
     {
       id: 5,
-      name: 'Eva Brown',
+      name: 'Hoàng Minh Châu',
       grade: 92.7,
-      subject: 'Art',
+      subject: 'Mỹ Thuật',
       avatar: null,
       rank: 5
     }
@@ -64,41 +64,41 @@ const TopPerformers = ({ students = [], teachers = [] }) => {
   const mockTeachers = [
     {
       id: 1,
-      name: 'Dr. Sarah Miller',
+      name: 'TS. Nguyễn Thị Lan',
       rating: 4.9,
-      subject: 'Mathematics',
+      subject: 'Toán Học',
       studentsCount: 120,
       avatar: null
     },
     {
       id: 2,
-      name: 'Prof. John Anderson',
+      name: 'GS. Trần Văn Đức',
       rating: 4.8,
-      subject: 'Physics',
+      subject: 'Vật Lý',
       studentsCount: 95,
       avatar: null
     },
     {
       id: 3,
-      name: 'Ms. Emily Taylor',
+      name: 'Cô Lê Thu Hương',
       rating: 4.7,
-      subject: 'English',
+      subject: 'Tiếng Anh',
       studentsCount: 110,
       avatar: null
     },
     {
       id: 4,
-      name: 'Mr. Michael Lee',
+      name: 'Thầy Phạm Minh Tuấn',
       rating: 4.6,
-      subject: 'Chemistry',
+      subject: 'Hóa Học',
       studentsCount: 85,
       avatar: null
     },
     {
       id: 5,
-      name: 'Dr. Lisa Wang',
+      name: 'TS. Hoàng Thị Nga',
       rating: 4.5,
-      subject: 'Biology',
+      subject: 'Sinh Học',
       studentsCount: 100,
       avatar: null
     }
@@ -205,7 +205,7 @@ const TopPerformers = ({ students = [], teachers = [] }) => {
                 <Text type="secondary">{teacher.subject}</Text>
                 <br />
                 <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {teacher.studentsCount} students
+                  {teacher.studentsCount} học sinh
                 </Text>
               </div>
             }
@@ -216,12 +216,12 @@ const TopPerformers = ({ students = [], teachers = [] }) => {
   );
 
   return (
-    <Card title="Top Performers" style={{ height: '400px' }}>
+    <Card title="Thành Tích Xuất Sắc" style={{ height: '400px' }}>
       <Tabs defaultActiveKey="students" size="small">
-        <TabPane tab="Students" key="students">
+        <TabPane tab="Học Sinh" key="students">
           <StudentList />
         </TabPane>
-        <TabPane tab="Teachers" key="teachers">
+        <TabPane tab="Giáo Viên" key="teachers">
           <TeacherList />
         </TabPane>
       </Tabs>

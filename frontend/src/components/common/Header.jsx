@@ -54,7 +54,7 @@ const Header = ({ onMenuClick }) => {
 
   const handleLogout = () => {
     dispatch(logout());
-    toast.success('You have been successfully logged out.');
+    toast.success('Đăng xuất thành công.');
     navigate('/login');
     handleProfileMenuClose();
   };
@@ -127,11 +127,11 @@ const Header = ({ onMenuClick }) => {
       >
         <MenuItem onClick={handleSettings}>
           <SettingsIcon sx={{ mr: 1 }} />
-          Settings
+          Cài Đặt
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <LogoutIcon sx={{ mr: 1 }} />
-          Logout
+          Đăng Xuất
         </MenuItem>
       </Menu>
 
@@ -152,17 +152,17 @@ const Header = ({ onMenuClick }) => {
       >
         <MenuItem>
           <Typography variant="body2">
-            New student enrolled
+            Học sinh mới đăng ký
           </Typography>
         </MenuItem>
         <MenuItem>
           <Typography variant="body2">
-            Grade submitted
+            Đã nộp điểm
           </Typography>
         </MenuItem>
         <MenuItem>
           <Typography variant="body2">
-            Attendance marked
+            Đã điểm danh
           </Typography>
         </MenuItem>
       </Menu>

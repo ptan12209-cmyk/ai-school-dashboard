@@ -16,25 +16,25 @@ import {
 const StatisticsCards = ({ stats = {} }) => {
   const statisticsData = [
     {
-      title: 'Total Students',
+      title: 'Tổng Học Sinh',
       value: stats.totalStudents || 0,
       icon: <UserOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,
       color: '#1890ff'
     },
     {
-      title: 'Total Teachers',
+      title: 'Tổng Giáo Viên',
       value: stats.totalTeachers || 0,
       icon: <TeamOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
       color: '#52c41a'
     },
     {
-      title: 'Total Courses',
+      title: 'Tổng Khóa Học',
       value: stats.totalCourses || 0,
       icon: <BookOutlined style={{ fontSize: '24px', color: '#faad14' }} />,
       color: '#faad14'
     },
     {
-      title: 'Average Grade',
+      title: 'Điểm Trung Bình',
       value: stats.averageGrade || '0.0',
       suffix: '/10',
       icon: <TrophyOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,

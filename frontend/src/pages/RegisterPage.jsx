@@ -73,20 +73,20 @@ const RegisterPage = () => {
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.firstName) errors.firstName = 'First name is required';
-    if (!formData.lastName) errors.lastName = 'Last name is required';
+    if (!formData.firstName) errors.firstName = 'Họ là bắt buộc';
+    if (!formData.lastName) errors.lastName = 'Tên là bắt buộc';
     if (!formData.email) {
-      errors.email = 'Email is required';
+      errors.email = 'Email là bắt buộc';
     } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
-      errors.email = 'Invalid email address';
+      errors.email = 'Địa chỉ email không hợp lệ';
     }
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = 'Mật khẩu là bắt buộc';
     } else if (formData.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters';
+      errors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
     }
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = 'Mật khẩu không khớp';
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -107,17 +107,17 @@ const RegisterPage = () => {
     try {
       const resultAction = await dispatch(register(userData));
       if (register.fulfilled.match(resultAction)) {
-        toast.success('Registration successful! Welcome.');
+        toast.success('Đăng ký thành công! Chào mừng bạn.');
         navigate('/dashboard');
       } else {
         if (resultAction.payload) {
-          toast.error(`Registration failed: ${resultAction.payload}`);
+          toast.error(`Đăng ký thất bại: ${resultAction.payload}`);
         } else {
-          toast.error('An unknown error occurred during registration.');
+          toast.error('Đã xảy ra lỗi không xác định trong quá trình đăng ký.');
         }
       }
     } catch (err) {
-      toast.error('An unexpected error occurred.');
+      toast.error('Đã xảy ra lỗi không mong muốn.');
     }
   };
 
@@ -127,10 +127,10 @@ const RegisterPage = () => {
         <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography component="h1" variant="h4" color="primary">
-              Create an Account
+              Tạo Tài Khoản
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Join the AI School Dashboard
+              Tham gia AI School Dashboard
             </Typography>
           </Box>
 
@@ -144,7 +144,7 @@ const RegisterPage = () => {
                   required
                   fullWidth
                   id="firstName"
-                  label="First Name"
+                  label="Họ"
                   name="firstName"
                   autoComplete="given-name"
                   value={formData.firstName}
@@ -166,7 +166,7 @@ const RegisterPage = () => {
                   required
                   fullWidth
                   id="lastName"
-                  label="Last Name"
+                  label="Tên"
                   name="lastName"
                   autoComplete="family-name"
                   value={formData.lastName}
@@ -182,7 +182,7 @@ const RegisterPage = () => {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label="Địa Chỉ Email"
               name="email"
               autoComplete="email"
               value={formData.email}
@@ -203,7 +203,7 @@ const RegisterPage = () => {
               required
               fullWidth
               name="password"
-              label="Password"
+              label="Mật Khẩu"
               type={showPassword ? 'text' : 'password'}
               id="password"
               autoComplete="new-password"
@@ -232,7 +232,7 @@ const RegisterPage = () => {
               required
               fullWidth
               name="confirmPassword"
-              label="Confirm Password"
+              label="Xác Nhận Mật Khẩu"
               type="password"
               id="confirmPassword"
               value={formData.confirmPassword}
@@ -242,32 +242,32 @@ const RegisterPage = () => {
             />
 
             <FormControl fullWidth margin="normal">
-              <InputLabel id="role-label">Role</InputLabel>
+              <InputLabel id="role-label">Vai Trò</InputLabel>
               <Select
                 labelId="role-label"
                 id="role"
                 name="role"
                 value={formData.role}
-                label="Role"
+                label="Vai Trò"
                 onChange={handleChange}
                 startAdornment={<InputAdornment position="start"><Badge color="action" /></InputAdornment>}
               >
-                <MenuItem value="student">Student</MenuItem>
-                <MenuItem value="teacher">Teacher</MenuItem>
-                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="student">Học Sinh</MenuItem>
+                <MenuItem value="teacher">Giáo Viên</MenuItem>
+                <MenuItem value="admin">Quản Trị</MenuItem>
               </Select>
             </FormControl>
 
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={loading}>
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign Up'}
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Đăng Ký'}
             </Button>
 
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Already have an account?{' '}
+                Đã có tài khoản?{' '}
                 <Link to="/login" style={{ textDecoration: 'none' }}>
                   <Typography component="span" variant="body2" color="primary">
-                    Sign In
+                    Đăng Nhập
                   </Typography>
                 </Link>
               </Typography>
