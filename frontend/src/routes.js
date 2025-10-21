@@ -18,6 +18,7 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import StudentsPage from './pages/StudentsPage.jsx';
 import TeachersPage from './pages/TeachersPage.jsx';
+import ClassesPage from './pages/ClassesPage.jsx';
 import CoursePage from './pages/CoursePage.jsx';
 import GradesPage from './pages/GradesPage.jsx';
 import AttendancePage from './pages/AttendancePage.jsx';
@@ -66,7 +67,10 @@ const AppRoutes = () => {
           
           {/* Teacher Management */}
           <Route path="/teachers" element={<TeachersPage />} />
-          
+
+          {/* Class Management */}
+          <Route path="/classes" element={<ClassesPage />} />
+
           {/* Course Management */}
           <Route path="/courses" element={<CoursePage />} />
           
