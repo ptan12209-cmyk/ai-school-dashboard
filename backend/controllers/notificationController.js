@@ -6,7 +6,7 @@
 
 const { Notification } = require('../models');
 const notificationService = require('../services/notificationService');
-const { catchAsync } = require('../middleware/errorMiddleware');
+const { catchAsync } = require('../middleware/errorHandler');
 
 /**
  * Get user notifications with pagination
