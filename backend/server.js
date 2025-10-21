@@ -17,8 +17,8 @@
 const app = require('./app');
 require('dotenv').config();
 require('./config/validate-env');
-// TODO: Week 3-4 - Import database connection
-// const { sequelize } = require('./config/database');
+// Database connection
+const { sequelize } = require('./config/database');
 
 /**
  * Server Configuration
@@ -45,8 +45,15 @@ async function startServer() {
      * WARNING: Use migrations in production!
      */
     if (NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
+      // Sync database models (non-destructive in development)
+      await sequelize.sync({ alter: false });
       console.log('✅ Database models synchronized');
+      console.log('⚠️  NOTE: For schema changes, use migrations in production');
+    } else if (NODE_ENV === 'production') {
+      // In production, verify models match database schema
+      // Do not sync - use migrations instead
+      console.log('✅ Production mode: Using existing database schema');
+      console.log('⚠️  Run migrations before deployment: npx sequelize-cli db:migrate');
     }
     
     /**
@@ -63,8 +70,8 @@ async function startServer() {
       console.log('========================================');
       console.log('');
       console.log('📚 Available endpoints:');
-      console.log(`   - Health check: http://localhost:${PORT}/health`);
-      console.log(`   - API base: http://localhost:${PORT}/api`);
+      console.log(`   - Health check: http://${HOST}:${PORT}/health`);
+      console.log(`   - API base: http://${HOST}:${PORT}/api`);
       console.log('');
       console.log('💡 Press Ctrl+C to stop the server');
       console.log('');
@@ -82,20 +89,17 @@ async function startServer() {
       console.log('⚠️  SIGTERM signal received: closing HTTP server');
       server.close(() => {
         console.log('✅ HTTP server closed');
-        
+
         // Close database connection
-        // TODO: Week 3-4 - Uncomment when database is configured
-        // sequelize.close()
-        //   .then(() => {
-        //     console.log('✅ Database connection closed');
-        //     process.exit(0);
-        //   })
-        //   .catch((err) => {
-        //     console.error('❌ Error closing database connection:', err);
-        //     process.exit(1);
-        //   });
-        
-        process.exit(0);
+        sequelize.close()
+          .then(() => {
+            console.log('✅ Database connection closed');
+            process.exit(0);
+          })
+          .catch((err) => {
+            console.error('❌ Error closing database connection:', err);
+            process.exit(1);
+          });
       });
     });
     
@@ -105,20 +109,17 @@ async function startServer() {
       console.log('⚠️  SIGINT signal received: closing HTTP server');
       server.close(() => {
         console.log('✅ HTTP server closed');
-        
+
         // Close database connection
-        // TODO: Week 3-4 - Uncomment when database is configured
-        // sequelize.close()
-        //   .then(() => {
-        //     console.log('✅ Database connection closed');
-        //     process.exit(0);
-        //   })
-        //   .catch((err) => {
-        //     console.error('❌ Error closing database connection:', err);
-        //     process.exit(1);
-        //   });
-        
-        process.exit(0);
+        sequelize.close()
+          .then(() => {
+            console.log('✅ Database connection closed');
+            process.exit(0);
+          })
+          .catch((err) => {
+            console.error('❌ Error closing database connection:', err);
+            process.exit(1);
+          });
       });
     });
     
