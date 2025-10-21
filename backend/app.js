@@ -175,24 +175,24 @@ const API_PREFIX = '/api';
  * POST /api/auth/refresh-token
  */
 app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/user`, userRoutes);
+app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/teachers`, teacherRoutes);
 app.use(`${API_PREFIX}/students`, studentRoutes);
 
 /**
  * Class routes (protected)
  */
-app.use(`${API_PREFIX}/class`, classRoutes);
+app.use(`${API_PREFIX}/classes`, classRoutes);
 
 /**
  * Course routes (protected)
  */
-app.use(`${API_PREFIX}/course`, courseRoutes);
+app.use(`${API_PREFIX}/courses`, courseRoutes);
 
 /**
  * Grade routes (protected)
  */
-app.use(`${API_PREFIX}/grade`, gradeRoutes);
+app.use(`${API_PREFIX}/grades`, gradeRoutes);
 
 /**
  * Attendance routes (protected)
