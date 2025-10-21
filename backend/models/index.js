@@ -17,6 +17,9 @@ const Course = require('./Course');
 const Grade = require('./Grade');
 const Attendance = require('./Attendance');
 const Notification = require('./Notification');
+const Assignment = require('./Assignment');
+const Question = require('./Question');
+const Submission = require('./Submission');
 
 /**
  * ============================================
@@ -192,6 +195,90 @@ Notification.belongsTo(User, {
   as: 'user'
 });
 
+// ─────────────────────────────────────────────
+// 13. Course ↔ Assignment (One-to-Many)
+// ─────────────────────────────────────────────
+Course.hasMany(Assignment, {
+  foreignKey: 'course_id',
+  as: 'assignments',
+  onDelete: 'CASCADE'
+});
+
+Assignment.belongsTo(Course, {
+  foreignKey: 'course_id',
+  as: 'course'
+});
+
+// ─────────────────────────────────────────────
+// 14. Teacher ↔ Assignment (One-to-Many)
+// ─────────────────────────────────────────────
+Teacher.hasMany(Assignment, {
+  foreignKey: 'teacher_id',
+  as: 'assignments',
+  onDelete: 'RESTRICT'
+});
+
+Assignment.belongsTo(Teacher, {
+  foreignKey: 'teacher_id',
+  as: 'teacher'
+});
+
+// ─────────────────────────────────────────────
+// 15. Assignment ↔ Question (One-to-Many)
+// ─────────────────────────────────────────────
+Assignment.hasMany(Question, {
+  foreignKey: 'assignment_id',
+  as: 'questions',
+  onDelete: 'CASCADE'
+});
+
+Question.belongsTo(Assignment, {
+  foreignKey: 'assignment_id',
+  as: 'assignment'
+});
+
+// ─────────────────────────────────────────────
+// 16. Assignment ↔ Submission (One-to-Many)
+// ─────────────────────────────────────────────
+Assignment.hasMany(Submission, {
+  foreignKey: 'assignment_id',
+  as: 'submissions',
+  onDelete: 'CASCADE'
+});
+
+Submission.belongsTo(Assignment, {
+  foreignKey: 'assignment_id',
+  as: 'assignment'
+});
+
+// ─────────────────────────────────────────────
+// 17. Student ↔ Submission (One-to-Many)
+// ─────────────────────────────────────────────
+Student.hasMany(Submission, {
+  foreignKey: 'student_id',
+  as: 'submissions',
+  onDelete: 'CASCADE'
+});
+
+Submission.belongsTo(Student, {
+  foreignKey: 'student_id',
+  as: 'student'
+});
+
+// ─────────────────────────────────────────────
+// 18. Teacher ↔ Submission (graded_by)
+// ─────────────────────────────────────────────
+Teacher.hasMany(Submission, {
+  foreignKey: 'graded_by',
+  as: 'gradedSubmissions',
+  onDelete: 'SET NULL'
+});
+
+Submission.belongsTo(Teacher, {
+  foreignKey: 'graded_by',
+  as: 'grader'
+});
+
 /**
  * ============================================
  * EXPORT ALL MODELS
@@ -211,6 +298,11 @@ module.exports = {
   Course,
   Grade,
   Attendance,
+
+  // Assignment Models
+  Assignment,
+  Question,
+  Submission,
 
   // Notification Model
   Notification
