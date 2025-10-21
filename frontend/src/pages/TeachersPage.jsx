@@ -310,8 +310,8 @@ const TeachersPage = () => {
             }
           >
             <Row gutter={[16, 16]}>
-              {getDepartmentStats().map((dept, index) => (
-                <Col xs={12} sm={8} md={6} lg={4} key={index}>
+              {getDepartmentStats().map((dept) => (
+                <Col xs={12} sm={8} md={6} lg={4} key={dept.department}>
                   <Card size="small" hoverable>
                     <Statistic
                       title={dept.department}
@@ -338,7 +338,7 @@ const TeachersPage = () => {
       {/* Add/Edit Teacher Modal */}
       <Modal
         title={formMode === 'add' ? 'Add New Teacher' : 'Edit Teacher'}
-        visible={formModalVisible}
+        open={formModalVisible}
         onCancel={() => {
           setFormModalVisible(false);
           setSelectedTeacher(null);
@@ -366,7 +366,7 @@ const TeachersPage = () => {
           setDetailDrawerVisible(false);
           setSelectedTeacher(null);
         }}
-        visible={detailDrawerVisible}
+        open={detailDrawerVisible}
       >
         {selectedTeacher && (
           <TeacherCard
@@ -383,7 +383,7 @@ const TeachersPage = () => {
       {/* Assign Class Modal */}
       <Modal
         title={`Assign Class to ${selectedTeacher?.name}`}
-        visible={assignClassModalVisible}
+        open={assignClassModalVisible}
         onCancel={() => {
           setAssignClassModalVisible(false);
           setSelectedTeacher(null);
@@ -431,8 +431,8 @@ const TeachersPage = () => {
                 rules={[{ required: true, message: 'Please select a subject' }]}
               >
                 <Select placeholder="Select subject" size="large">
-                  {selectedTeacher.subjects?.map((subject, index) => (
-                    <Option key={index} value={subject}>
+                  {selectedTeacher.subjects?.map((subject) => (
+                    <Option key={subject} value={subject}>
                       {subject}
                     </Option>
                   ))}
@@ -476,7 +476,7 @@ const TeachersPage = () => {
       {/* Import Modal */}
       <Modal
         title="Import Teachers"
-        visible={importModalVisible}
+        open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         footer={null}
       >

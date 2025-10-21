@@ -133,33 +133,50 @@ const TeacherList = ({ onAdd, onEdit, onView, onAssignClass }) => {
   };
 
   // More actions menu
-  const getMoreMenu = (record) => (
-    <Menu>
-      <Menu.Item key="email" icon={<MailOutlined />}>
-        <a href={`mailto:${record.email}`}>Send Email</a>
-      </Menu.Item>
-      <Menu.Item key="call" icon={<PhoneOutlined />}>
-        <a href={`tel:${record.phone}`}>Call</a>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="schedule" icon={<CalendarOutlined />}>
-        View Schedule
-      </Menu.Item>
-      <Menu.Item key="classes" icon={<TeamOutlined />}>
-        View Classes
-      </Menu.Item>
-      <Menu.Item key="assign" icon={<BookOutlined />} onClick={() => onAssignClass(record)}>
-        Assign Class
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="performance" icon={<TrophyOutlined />}>
-        Performance Report
-      </Menu.Item>
-      <Menu.Item key="export" icon={<ExportOutlined />}>
-        Export Data
-      </Menu.Item>
-    </Menu>
-  );
+  const getMoreMenuItems = (record) => [
+    {
+      key: 'email',
+      icon: <MailOutlined />,
+      label: <a href={`mailto:${record.email}`}>Send Email</a>
+    },
+    {
+      key: 'call',
+      icon: <PhoneOutlined />,
+      label: <a href={`tel:${record.phone}`}>Call</a>
+    },
+    {
+      type: 'divider'
+    },
+    {
+      key: 'schedule',
+      icon: <CalendarOutlined />,
+      label: 'View Schedule'
+    },
+    {
+      key: 'classes',
+      icon: <TeamOutlined />,
+      label: 'View Classes'
+    },
+    {
+      key: 'assign',
+      icon: <BookOutlined />,
+      label: 'Assign Class',
+      onClick: () => onAssignClass(record)
+    },
+    {
+      type: 'divider'
+    },
+    {
+      key: 'performance',
+      icon: <TrophyOutlined />,
+      label: 'Performance Report'
+    },
+    {
+      key: 'export',
+      icon: <ExportOutlined />,
+      label: 'Export Data'
+    }
+  ];
 
   // Get department color
   const getDepartmentColor = (department) => {
@@ -240,8 +257,8 @@ const TeacherList = ({ onAdd, onEdit, onView, onAssignClass }) => {
       render: (subjects) => (
         <Space wrap>
           {subjects && subjects.length > 0 ? (
-            subjects.slice(0, 2).map((subject, index) => (
-              <Tag key={index} color="blue">
+            subjects.slice(0, 2).map((subject) => (
+              <Tag key={subject} color="blue">
                 <BookOutlined /> {subject}
               </Tag>
             ))
@@ -384,7 +401,7 @@ const TeacherList = ({ onAdd, onEdit, onView, onAssignClass }) => {
               />
             </Tooltip>
           </Popconfirm>
-          <Dropdown overlay={getMoreMenu(record)} trigger={['click']}>
+          <Dropdown menu={{ items: getMoreMenuItems(record) }} trigger={['click']}>
             <Button type="text" icon={<MoreOutlined />} size="small" />
           </Dropdown>
         </Space>
@@ -459,19 +476,25 @@ const TeacherList = ({ onAdd, onEdit, onView, onAssignClass }) => {
               </Tooltip>
               
               <Dropdown
-                overlay={
-                  <Menu>
-                    <Menu.Item key="excel" icon={<ExportOutlined />}>
-                      Export as Excel
-                    </Menu.Item>
-                    <Menu.Item key="csv" icon={<ExportOutlined />}>
-                      Export as CSV
-                    </Menu.Item>
-                    <Menu.Item key="pdf" icon={<ExportOutlined />}>
-                      Export as PDF
-                    </Menu.Item>
-                  </Menu>
-                }
+                menu={{
+                  items: [
+                    {
+                      key: 'excel',
+                      icon: <ExportOutlined />,
+                      label: 'Export as Excel'
+                    },
+                    {
+                      key: 'csv',
+                      icon: <ExportOutlined />,
+                      label: 'Export as CSV'
+                    },
+                    {
+                      key: 'pdf',
+                      icon: <ExportOutlined />,
+                      label: 'Export as PDF'
+                    }
+                  ]
+                }}
               >
                 <Button icon={<DownloadOutlined />}>Export</Button>
               </Dropdown>

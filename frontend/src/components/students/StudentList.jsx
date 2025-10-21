@@ -129,22 +129,40 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
   };
 
   // More actions menu
-  const getMoreMenu = (record) => (
-    <Menu>
-      <Menu.Item key="email" icon={<MailOutlined />}>
-        <a href={`mailto:${record.email}`}>Send Email</a>
-      </Menu.Item>
-      <Menu.Item key="call" icon={<PhoneOutlined />}>
-        <a href={`tel:${record.phone}`}>Call</a>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="grades">View Grades</Menu.Item>
-      <Menu.Item key="attendance">View Attendance</Menu.Item>
-      <Menu.Item key="parent">Contact Parent</Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="export">Export Data</Menu.Item>
-    </Menu>
-  );
+  const getMoreMenuItems = (record) => [
+    {
+      key: 'email',
+      icon: <MailOutlined />,
+      label: <a href={`mailto:${record.email}`}>Send Email</a>
+    },
+    {
+      key: 'call',
+      icon: <PhoneOutlined />,
+      label: <a href={`tel:${record.phone}`}>Call</a>
+    },
+    {
+      type: 'divider'
+    },
+    {
+      key: 'grades',
+      label: 'View Grades'
+    },
+    {
+      key: 'attendance',
+      label: 'View Attendance'
+    },
+    {
+      key: 'parent',
+      label: 'Contact Parent'
+    },
+    {
+      type: 'divider'
+    },
+    {
+      key: 'export',
+      label: 'Export Data'
+    }
+  ];
 
   // Table columns definition
   const columns = [
@@ -298,7 +316,7 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
               />
             </Tooltip>
           </Popconfirm>
-          <Dropdown overlay={getMoreMenu(record)} trigger={['click']}>
+          <Dropdown menu={{ items: getMoreMenuItems(record) }} trigger={['click']}>
             <Button type="text" icon={<MoreOutlined />} size="small" />
           </Dropdown>
         </Space>
@@ -373,19 +391,25 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
               </Tooltip>
               
               <Dropdown
-                overlay={
-                  <Menu>
-                    <Menu.Item key="excel" icon={<ExportOutlined />}>
-                      Export as Excel
-                    </Menu.Item>
-                    <Menu.Item key="csv" icon={<ExportOutlined />}>
-                      Export as CSV
-                    </Menu.Item>
-                    <Menu.Item key="pdf" icon={<ExportOutlined />}>
-                      Export as PDF
-                    </Menu.Item>
-                  </Menu>
-                }
+                menu={{
+                  items: [
+                    {
+                      key: 'excel',
+                      icon: <ExportOutlined />,
+                      label: 'Export as Excel'
+                    },
+                    {
+                      key: 'csv',
+                      icon: <ExportOutlined />,
+                      label: 'Export as CSV'
+                    },
+                    {
+                      key: 'pdf',
+                      icon: <ExportOutlined />,
+                      label: 'Export as PDF'
+                    }
+                  ]
+                }}
               >
                 <Button icon={<DownloadOutlined />}>Export</Button>
               </Dropdown>

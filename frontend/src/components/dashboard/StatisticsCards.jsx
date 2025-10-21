@@ -44,8 +44,8 @@ const StatisticsCards = ({ stats = {} }) => {
 
   return (
     <Row gutter={[16, 16]}>
-      {statisticsData.map((stat, index) => (
-        <Col xs={24} sm={12} lg={6} key={index}>
+      {statisticsData.map((stat) => (
+        <Col xs={24} sm={12} lg={6} key={stat.title}>
           <Card 
             hoverable
             style={{ 

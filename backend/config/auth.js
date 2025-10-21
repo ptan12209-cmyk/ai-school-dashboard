@@ -20,23 +20,47 @@ require('dotenv').config();
 /**
  * JWT Configuration
  */
+
+// Validate JWT_SECRET in production
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  throw new Error('FATAL ERROR: JWT_SECRET is not defined in production environment. Please set JWT_SECRET in your .env file.');
+}
+
+// Generate secure random secret for development if not provided
+const getJWTSecret = () => {
+  if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
+  }
+
+  // Only allow fallback in development
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET must be defined in production');
+  }
+
+  // Generate a random secret for development (warning logged)
+  const crypto = require('crypto');
+  const randomSecret = crypto.randomBytes(64).toString('hex');
+  console.warn('⚠️  WARNING: Using auto-generated JWT_SECRET for development. Set JWT_SECRET in .env for production!');
+  return randomSecret;
+};
+
 const jwtConfig = {
   // Secret key for signing tokens
   // IMPORTANT: Generate secure secret with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-  secret: process.env.JWT_SECRET || 'your-secret-key-change-this-in-production',
-  
+  secret: getJWTSecret(),
+
   // Token expiration time
   expiresIn: process.env.JWT_EXPIRATION || '24h', // Options: '15m', '1h', '24h', '7d'
-  
+
   // Refresh token expiration (longer than access token)
   refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION || '7d',
-  
+
   // JWT algorithm
   algorithm: 'HS256',
-  
+
   // Issuer (optional)
   issuer: 'ai-school-dashboard',
-  
+
   // Audience (optional)
   audience: 'school-users'
 };

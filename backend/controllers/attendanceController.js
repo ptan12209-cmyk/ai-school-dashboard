@@ -384,11 +384,10 @@ exports.getStudentAttendance = catchAsync(async (req, res) => {
   });
   
   // Calculate attendance rate
-  const rate = await Attendance.calculateAttendanceRate(
-    studentId,
-    req.query.start_date,
-    req.query.end_date
-  );
+  const rate = await Attendance.calculateAttendanceRate(studentId, {
+    startDate: req.query.start_date,
+    endDate: req.query.end_date
+  });
   
   res.json({
     success: true,
@@ -597,7 +596,7 @@ exports.getAttendanceStats = catchAsync(async (req, res) => {
     }),
     
     // Students with poor attendance
-    Attendance.getPoorAttendance(50, startDate, endDate)
+    Attendance.getPoorAttendance(50, { startDate, endDate })
   ]);
   
   res.json({

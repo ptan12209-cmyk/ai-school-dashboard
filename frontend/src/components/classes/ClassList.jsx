@@ -170,7 +170,7 @@ const ClassList = ({
       render: (schedule) => (
         <div style={{ fontSize: '12px' }}>
           {schedule.split(' - ').map((part, index) => (
-            <div key={index}>{part}</div>
+            <div key={`${part}-${index}`}>{part}</div>
           ))}
         </div>
       ),

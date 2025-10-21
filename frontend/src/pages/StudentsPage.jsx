@@ -248,7 +248,7 @@ const StudentsPage = () => {
       {/* Add/Edit Student Modal */}
       <Modal
         title={formMode === 'add' ? 'Add New Student' : 'Edit Student'}
-        visible={formModalVisible}
+        open={formModalVisible}
         onCancel={() => {
           setFormModalVisible(false);
           setSelectedStudent(null);
@@ -276,7 +276,7 @@ const StudentsPage = () => {
           setDetailDrawerVisible(false);
           setSelectedStudent(null);
         }}
-        visible={detailDrawerVisible}
+        open={detailDrawerVisible}
       >
         {selectedStudent && (
           <StudentCard
@@ -293,7 +293,7 @@ const StudentsPage = () => {
       {/* Import Modal */}
       <Modal
         title="Import Students"
-        visible={importModalVisible}
+        open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         footer={null}
       >

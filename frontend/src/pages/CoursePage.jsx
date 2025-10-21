@@ -273,7 +273,7 @@ const CoursePage = () => {
       {/* Add/Edit Course Modal */}
       <Modal
         title={selectedCourse ? 'Edit Course' : 'Add New Course'}
-        visible={modalVisible}
+        open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
         width={600}

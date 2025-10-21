@@ -201,8 +201,8 @@ const TeacherCard = ({ teacher, onEdit, onPrint, compact = false }) => {
             </Space>
             <div style={{ marginTop: 8 }}>
               <Space wrap>
-                {teacher.subjects?.map((subject, index) => (
-                  <Tag key={index} color="cyan" icon={<BookOutlined />}>
+                {teacher.subjects?.map((subject) => (
+                  <Tag key={subject} color="cyan" icon={<BookOutlined />}>
                     {subject}
                   </Tag>
                 ))}
@@ -315,8 +315,8 @@ const TeacherCard = ({ teacher, onEdit, onPrint, compact = false }) => {
             </Descriptions.Item>
             <Descriptions.Item label="Subjects Teaching" span={2}>
               <Space wrap>
-                {teacher.subjects?.map((subject, index) => (
-                  <Tag key={index} color="blue" icon={<BookOutlined />}>
+                {teacher.subjects?.map((subject) => (
+                  <Tag key={subject} color="blue" icon={<BookOutlined />}>
                     {subject}
                   </Tag>
                 )) || 'N/A'}
@@ -439,8 +439,8 @@ const TeacherCard = ({ teacher, onEdit, onPrint, compact = false }) => {
             <Col span={12}>
               <Card title="Recent Activities" size="small">
                 <Timeline>
-                  {recentActivities.map((activity, index) => (
-                    <Timeline.Item key={index} color="blue">
+                  {recentActivities.map((activity) => (
+                    <Timeline.Item key={`${activity.activity}-${activity.date}`} color="blue">
                       <Text>{activity.activity}</Text>
                       <br />
                       <Text type="secondary" style={{ fontSize: 12 }}>
