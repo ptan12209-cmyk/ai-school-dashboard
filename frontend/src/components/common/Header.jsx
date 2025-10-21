@@ -11,7 +11,6 @@ import {
   Toolbar,
   IconButton,
   Typography,
-  Badge,
   Menu,
   MenuItem,
   Avatar,
@@ -19,13 +18,13 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Notifications as NotificationsIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { logout } from '../../redux/slices/authSlice';
 import { toast } from 'react-toastify';
+import NotificationBell from '../notifications/NotificationBell';
 
 const Header = ({ onMenuClick }) => {
   const theme = useTheme();
@@ -34,7 +33,6 @@ const Header = ({ onMenuClick }) => {
   const { user } = useSelector((state) => state.auth);
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const [notificationAnchor, setNotificationAnchor] = useState(null);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -42,14 +40,6 @@ const Header = ({ onMenuClick }) => {
 
   const handleProfileMenuClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleNotificationMenuOpen = (event) => {
-    setNotificationAnchor(event.currentTarget);
-  };
-
-  const handleNotificationMenuClose = () => {
-    setNotificationAnchor(null);
   };
 
   const handleLogout = () => {
@@ -83,15 +73,7 @@ const Header = ({ onMenuClick }) => {
       </Typography>
 
       {/* Notifications */}
-      <IconButton
-        color="inherit"
-        onClick={handleNotificationMenuOpen}
-        sx={{ mr: 1 }}
-      >
-        <Badge badgeContent={3} color="error">
-          <NotificationsIcon />
-        </Badge>
-      </IconButton>
+      <NotificationBell />
 
       {/* User Menu */}
       <IconButton
@@ -132,38 +114,6 @@ const Header = ({ onMenuClick }) => {
         <MenuItem onClick={handleLogout}>
           <LogoutIcon sx={{ mr: 1 }} />
           Đăng Xuất
-        </MenuItem>
-      </Menu>
-
-      {/* Notifications Menu */}
-      <Menu
-        anchorEl={notificationAnchor}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        keepMounted
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        open={Boolean(notificationAnchor)}
-        onClose={handleNotificationMenuClose}
-      >
-        <MenuItem>
-          <Typography variant="body2">
-            Học sinh mới đăng ký
-          </Typography>
-        </MenuItem>
-        <MenuItem>
-          <Typography variant="body2">
-            Đã nộp điểm
-          </Typography>
-        </MenuItem>
-        <MenuItem>
-          <Typography variant="body2">
-            Đã điểm danh
-          </Typography>
         </MenuItem>
       </Menu>
     </Toolbar>

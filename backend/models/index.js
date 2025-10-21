@@ -16,6 +16,7 @@ const Class = require('./Class');
 const Course = require('./Course');
 const Grade = require('./Grade');
 const Attendance = require('./Attendance');
+const Notification = require('./Notification');
 
 /**
  * ============================================
@@ -177,6 +178,20 @@ Attendance.belongsTo(User, {
   as: 'marker'
 });
 
+// ─────────────────────────────────────────────
+// 12. User ↔ Notification (One-to-Many)
+// ─────────────────────────────────────────────
+User.hasMany(Notification, {
+  foreignKey: 'user_id',
+  as: 'notifications',
+  onDelete: 'CASCADE'
+});
+
+Notification.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+});
+
 /**
  * ============================================
  * EXPORT ALL MODELS
@@ -185,15 +200,18 @@ Attendance.belongsTo(User, {
 module.exports = {
   sequelize,
   Sequelize,
-  
+
   // Core Models
   User,
   Teacher,
   Student,
-  
+
   // Academic Models
   Class,
   Course,
   Grade,
-  Attendance
+  Attendance,
+
+  // Notification Model
+  Notification
 };

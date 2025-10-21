@@ -12,6 +12,9 @@ import { ToastContainer } from 'react-toastify';
 // Routes Configuration
 import AppRoutes from './routes.js';
 
+// Socket.io Provider
+import SocketProvider from './components/notifications/SocketProvider.jsx';
+
 // Styles
 import 'antd/dist/reset.css'; // Ant Design 5
 import 'react-toastify/dist/ReactToastify.css';
@@ -99,8 +102,10 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppRoutes />
-      
+      <SocketProvider>
+        <AppRoutes />
+      </SocketProvider>
+
       {/* Toast Notifications */}
       <ToastContainer
         position="top-right"

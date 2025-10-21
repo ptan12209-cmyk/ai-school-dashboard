@@ -15,6 +15,7 @@ import attendanceReducer from './slices/attendanceSlice.js';
 import uiReducer from './slices/uiSlice.js';
 import dashboardReducer from './slices/dashboardSlice.js';
 import classReducer from './slices/classSlice.js';
+import notificationReducer from './slices/notificationSlice.js';
 
 
 // Create store
@@ -30,6 +31,7 @@ const store = configureStore({
     ui: uiReducer,
     dashboard: dashboardReducer,
     classes: classReducer,
+    notifications: notificationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

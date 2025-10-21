@@ -30,6 +30,7 @@ const classRoutes = require('./routes/class.routes');
 const courseRoutes = require('./routes/course.routes');
 const gradeRoutes = require('./routes/grade.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
+const notificationRoutes = require('./routes/notification.routes');
 // const dashboardRoutes = require('./routes/dashboard.routes');
 // const aiRoutes = require('./routes/ai.routes');
 
@@ -198,6 +199,11 @@ app.use(`${API_PREFIX}/grades`, gradeRoutes);
  * Attendance routes (protected)
  */
 app.use(`${API_PREFIX}/attendance`, attendanceRoutes);
+
+/**
+ * Notification routes (protected)
+ */
+app.use(`${API_PREFIX}/notifications`, notificationRoutes);
 
 /**
  * Dashboard routes (protected)

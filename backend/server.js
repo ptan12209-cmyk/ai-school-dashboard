@@ -15,10 +15,12 @@
  */
 
 const app = require('./app');
+const http = require('http');
 require('dotenv').config();
 require('./config/validate-env');
 // Database connection
 const { sequelize } = require('./config/database');
+const { initializeSocket } = require('./config/socket');
 
 /**
  * Server Configuration
@@ -55,11 +57,20 @@ async function startServer() {
       console.log('✅ Production mode: Using existing database schema');
       console.log('⚠️  Run migrations before deployment: npx sequelize-cli db:migrate');
     }
-    
+
     /**
-     * Step 3: Start Express Server
+     * Step 3: Initialize Socket.io
      */
-    const server = app.listen(PORT, HOST, () => {
+    const httpServer = http.createServer(app);
+    const io = initializeSocket(httpServer);
+
+    // Make io available to app
+    app.locals.io = io;
+
+    /**
+     * Step 4: Start HTTP Server
+     */
+    const server = httpServer.listen(PORT, HOST, () => {
       console.log('');
       console.log('========================================');
       console.log('🎓 AI SCHOOL DASHBOARD API SERVER');
@@ -72,6 +83,7 @@ async function startServer() {
       console.log('📚 Available endpoints:');
       console.log(`   - Health check: http://${HOST}:${PORT}/health`);
       console.log(`   - API base: http://${HOST}:${PORT}/api`);
+      console.log(`   - WebSocket: ws://${HOST}:${PORT}`);
       console.log('');
       console.log('💡 Press Ctrl+C to stop the server');
       console.log('');
