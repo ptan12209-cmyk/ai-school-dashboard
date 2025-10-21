@@ -35,21 +35,19 @@ async function startServer() {
   try {
     /**
      * Step 1: Test Database Connection
-     * TODO: Week 3-4 - Uncomment when database is configured
      */
     console.log('🔌 Connecting to database...');
-    // await sequelize.authenticate();
-    // console.log('✅ Database connection established successfully');
-    
+    await sequelize.authenticate();
+    console.log('✅ Database connection established successfully');
+
     /**
      * Step 2: Sync Database Models (Development only)
      * WARNING: Use migrations in production!
-     * TODO: Week 3-4 - Uncomment when models are implemented
      */
-    // if (NODE_ENV === 'development') {
-    //   await sequelize.sync({ alter: true });
-    //   console.log('✅ Database models synchronized');
-    // }
+    if (NODE_ENV === 'development') {
+      await sequelize.sync({ alter: true });
+      console.log('✅ Database models synchronized');
+    }
     
     /**
      * Step 3: Start Express Server

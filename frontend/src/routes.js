@@ -24,6 +24,7 @@ import AttendancePage from './pages/AttendancePage.jsx';
 import ReportPage from './pages/ReportPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import AIPredictionPage from './pages/AIPredictionPage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
 
 // Auth Guard
 import PrivateRoute from './components/common/PrivateRoute.jsx';
@@ -85,6 +86,9 @@ const AppRoutes = () => {
           <Route path="/ai-predictions" element={<AIPredictionPage />} />
         </Route>
       </Route>
+
+      {/* 404 Not Found - Catch all unmatched routes */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     </Suspense>
   );

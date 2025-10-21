@@ -549,18 +549,8 @@ exports.getAttendanceByDate = catchAsync(async (req, res) => {
         absent: absentCount,
         late: lateCount,
         excused: excusedCount,
-        attendance_rate: totalRecords > 0 
-          ? Math.round((presentCount / totalRecords) * 10000) / 100 
-          : 0
-      },
-      stats: {
-        total: totalRecords,
-        present: presentCount,
-        absent: absentCount,
-        late: lateCount,
-        excused: excusedCount,
-        attendance_rate: totalRecords > 0 
-          ? Math.round((presentCount / totalRecords) * 10000) / 100 
+        attendance_rate: totalRecords > 0
+          ? Math.round((presentCount / totalRecords) * 10000) / 100
           : 0
       }
     }

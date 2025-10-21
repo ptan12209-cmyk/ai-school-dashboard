@@ -27,11 +27,15 @@ const api = axios.create({
  */
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage
-    const token = localStorage.getItem('token');
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Get token from localStorage (with null check for SSR/testing environments)
+    try {
+      const token = localStorage?.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      // localStorage not available (SSR, testing, or privacy mode)
+      console.warn('localStorage not available:', error.message);
     }
 
     // Log in development
@@ -85,17 +89,25 @@ api.interceptors.response.use(
           });
 
           const { token } = response.data.data;
-          localStorage.setItem('token', token);
-          
+          try {
+            localStorage?.setItem('token', token);
+          } catch (e) {
+            console.warn('Failed to save token:', e.message);
+          }
+
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${token}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
         // Refresh failed, redirect to login
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userRole');
+        try {
+          localStorage?.removeItem('token');
+          localStorage?.removeItem('refreshToken');
+          localStorage?.removeItem('userRole');
+        } catch (e) {
+          console.warn('Failed to clear storage:', e.message);
+        }
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

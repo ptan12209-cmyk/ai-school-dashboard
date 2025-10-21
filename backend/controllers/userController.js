@@ -77,7 +77,7 @@ exports.getAllUsers = catchAsync(async (req, res) => {
   res.json({
     success: true,
     data: {
-      user: rows,
+      users: rows,
       pagination: {
         total: count,
         page,

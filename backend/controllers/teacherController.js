@@ -9,7 +9,7 @@
 const { Teacher, User, sequelize } = require('../models');
 const { catchAsync, NotFoundError, ConflictError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
-const bcrypt = require('bcryptjs');
+
 /**
  * @route   GET /api/teachers
  * @desc    Get all teachers with pagination and filtering
@@ -81,7 +81,7 @@ exports.getAllTeachers = catchAsync(async (req, res) => {
   res.json({
     success: true,
     data: {
-      teacher: rows,
+      teachers: rows,
       pagination: {
         total: count,
         page,

@@ -151,9 +151,9 @@ Class.prototype.getCapacityInfo = async function() {
 /**
  * Find classes by grade level
  */
-Class.findByGradeLevel = function(gradeLevel) {
-  return this.findAll({
-    where: { 
+Class.findByGradeLevel = async function(gradeLevel) {
+  return await this.findAll({
+    where: {
       grade_level: gradeLevel,
       is_active: true
     },

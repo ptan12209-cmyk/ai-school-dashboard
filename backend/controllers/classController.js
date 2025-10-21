@@ -25,7 +25,10 @@ exports.getAllClasses = catchAsync(async (req, res) => {
   const where = {};
   
   if (req.query.grade_level) {
-    where.grade_level = parseInt(req.query.grade_level);
+    const gradeLevel = parseInt(req.query.grade_level);
+    if (!isNaN(gradeLevel)) {
+      where.grade_level = gradeLevel;
+    }
   }
   
   if (req.query.school_year) {
