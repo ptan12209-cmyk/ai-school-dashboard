@@ -26,6 +26,22 @@ const { validate } = require('../middleware/validation');
 router.get('/departments/list', teacherController.getDepartmentsList);
 
 /**
+ * @route   GET /api/teachers/departments
+ * @desc    Get list of all departments (alias for /departments/list)
+ * @access  Public
+ * @note    Added for frontend compatibility
+ */
+router.get('/departments', teacherController.getDepartmentsList);
+
+/**
+ * @route   GET /api/teachers/subjects
+ * @desc    Get list of all subjects taught by teachers
+ * @access  Public
+ * @note    Returns unique subjects from courses
+ */
+router.get('/subjects', teacherController.getSubjectsList);
+
+/**
  * Protected routes (authentication required)
  */
 router.use(verifyToken);

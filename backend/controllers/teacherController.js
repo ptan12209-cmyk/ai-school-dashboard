@@ -299,7 +299,7 @@ exports.deleteTeacher = catchAsync(async (req, res) => {
  */
 exports.getDepartmentsList = catchAsync(async (req, res) => {
   const { sequelize } = require('../models');
-  
+
   // Get distinct departments
   const departments = await Teacher.findAll({
     attributes: [
@@ -319,6 +319,38 @@ exports.getDepartmentsList = catchAsync(async (req, res) => {
     success: true,
     data: {
       departments: departmentList
+    }
+  });
+});
+
+/**
+ * @route   GET /api/teachers/subjects
+ * @desc    Get list of all subjects taught by teachers
+ * @access  Public (no auth required)
+ */
+exports.getSubjectsList = catchAsync(async (req, res) => {
+  const { sequelize } = require('../models');
+  const Course = require('../models/Course');
+
+  // Get distinct subjects from courses
+  const subjects = await Course.findAll({
+    attributes: [
+      [sequelize.fn('DISTINCT', sequelize.col('subject')), 'subject']
+    ],
+    where: {
+      subject: { [Op.ne]: null }
+    },
+    order: [['subject', 'ASC']],
+    raw: true
+  });
+
+  // Extract subject names into array
+  const subjectList = subjects.map(s => s.subject);
+
+  res.json({
+    success: true,
+    data: {
+      subjects: subjectList
     }
   });
 });
