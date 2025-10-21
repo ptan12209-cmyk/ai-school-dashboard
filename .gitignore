@@ -103,7 +103,7 @@ dist
 # GATSBY
 # ============================================
 .cache/
-public
+# public  # Disabled - React needs public folder
 
 # ============================================
 # VUE
@@ -270,7 +270,7 @@ temp/
 # ============================================
 # Upload directory (if used)
 uploads/
-public/uploads/
+# public/uploads/  # React needs public folder - only ignore uploads/
 
 # Cache
 .cache/
