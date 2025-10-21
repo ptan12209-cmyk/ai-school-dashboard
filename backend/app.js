@@ -26,15 +26,15 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const studentRoutes = require('./routes/student.routes');
 const teacherRoutes = require('./routes/teacher.routes');
-// const classRoutes = require('./routes/classes.routes');
-// const courseRoutes = require('./routes/courses.routes');
-// const gradeRoutes = require('./routes/grades.routes');
-// const attendanceRoutes = require('./routes/attendance.routes');
+const classRoutes = require('./routes/class.routes');
+const courseRoutes = require('./routes/course.routes');
+const gradeRoutes = require('./routes/grade.routes');
+const attendanceRoutes = require('./routes/attendance.routes');
 // const dashboardRoutes = require('./routes/dashboard.routes');
 // const aiRoutes = require('./routes/ai.routes');
 
 // TODO: Week 3-4 - Import middleware
-// const errorHandler = require('./middleware/errorHandler');
+const errorHandler = require('./middleware/errorHandler');
 
 /**
  * Initialize Express Application
@@ -124,8 +124,8 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
   
-  // Skip rate limit for health check
-  skip: (req) => req.path === '/health',
+  // Skip rate limit for health check and test environment
+  skip: (req) => req.path === '/health' || process.env.NODE_ENV === 'test',
   
   // Custom handler for rate limit exceeded
   handler: (req, res) => {
@@ -175,44 +175,29 @@ const API_PREFIX = '/api';
  * POST /api/auth/refresh-token
  */
 app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/users`, userRoutes);
+app.use(`${API_PREFIX}/user`, userRoutes);
 app.use(`${API_PREFIX}/teachers`, teacherRoutes);
 app.use(`${API_PREFIX}/students`, studentRoutes);
 
 /**
- * Student routes (protected)
- * GET    /api/students
- * GET    /api/students/:id
- * POST   /api/students
- * PUT    /api/students/:id
- * DELETE /api/students/:id
- */
-// app.use(`${API_PREFIX}/students`, studentRoutes);
-
-/**
- * Teacher routes (protected)
- */
-// app.use(`${API_PREFIX}/teachers`, teacherRoutes);
-
-/**
  * Class routes (protected)
  */
-// app.use(`${API_PREFIX}/classes`, classRoutes);
+app.use(`${API_PREFIX}/class`, classRoutes);
 
 /**
  * Course routes (protected)
  */
-// app.use(`${API_PREFIX}/courses`, courseRoutes);
+app.use(`${API_PREFIX}/course`, courseRoutes);
 
 /**
  * Grade routes (protected)
  */
-// app.use(`${API_PREFIX}/grades`, gradeRoutes);
+app.use(`${API_PREFIX}/grade`, gradeRoutes);
 
 /**
  * Attendance routes (protected)
  */
-// app.use(`${API_PREFIX}/attendance`, attendanceRoutes);
+app.use(`${API_PREFIX}/attendance`, attendanceRoutes);
 
 /**
  * Dashboard routes (protected)

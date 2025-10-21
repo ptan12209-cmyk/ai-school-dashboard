@@ -138,13 +138,9 @@ const User = sequelize.define('User', {
  * @returns {Promise<boolean>} True if password matches
  */
 User.prototype.comparePassword = async function(candidatePassword) {
-  try {
-    return await bcrypt.compare(candidatePassword, this.password_hash);
-  } catch (error) {
-    throw new Error('Password comparison failed');
-  }
+  const bcrypt = require('bcryptjs');
+  return await bcrypt.compare(candidatePassword, this.password_hash);
 };
-
 /**
  * Generate JWT token for authentication
  * @returns {string} JWT token

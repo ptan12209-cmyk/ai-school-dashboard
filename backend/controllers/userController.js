@@ -1,13 +1,19 @@
 /**
- * User Controller
+ * User Controller - FIXED VERSION
  * ===============
  * CRUD operations for user management
  * 
  * Week 3-4 Day 4
+ * 
+ * FIXES:
+ * - ✅ Fixed missing newline in imports
+ * - ✅ Improved UUID comparison for better compatibility
+ * - ✅ Added proper string conversion for ID checks
  */
 
 const { User, Teacher, Student } = require('../models');
-const { catchAsync, NotFoundError, ConflictError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');const { Op } = require('sequelize');
+const { catchAsync, NotFoundError, ConflictError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
+const { Op } = require('sequelize'); // ← Fixed: Added newline
 
 /**
  * @route   GET /api/users
@@ -62,7 +68,7 @@ exports.getAllUsers = catchAsync(async (req, res) => {
   res.json({
     success: true,
     data: {
-      users: rows,
+      user: rows,
       pagination: {
         total: count,
         page,
@@ -81,9 +87,15 @@ exports.getAllUsers = catchAsync(async (req, res) => {
 exports.getUserById = catchAsync(async (req, res) => {
   const { id } = req.params;
   
-  // Check permissions
+  // Validate UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
+    throw new ValidationError('Invalid user ID format');
+  }
+  
+  // ✅ IMPROVED: Convert IDs to string for comparison (handles UUID better)
   const isAdmin = req.user.role === 'admin';
-  const isSelf = req.user.id === id;
+  const isSelf = String(req.user.id) === String(id);
   
   if (!isAdmin && !isSelf) {
     throw new AuthorizationError('You can only view your own profile');
@@ -123,7 +135,9 @@ exports.getUserById = catchAsync(async (req, res) => {
 exports.updateUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   const isAdmin = req.user.role === 'admin';
-  const isSelf = req.user.id === id;
+  
+  // ✅ IMPROVED: Convert IDs to string for comparison
+  const isSelf = String(req.user.id) === String(id);
   
   if (!isAdmin && !isSelf) {
     throw new AuthorizationError('You can only update your own profile');
@@ -185,8 +199,9 @@ exports.updateUser = catchAsync(async (req, res) => {
 exports.deleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   
+  // ✅ IMPROVED: Convert IDs to string for comparison
   // Prevent deleting yourself
-  if (req.user.id === id) {
+  if (String(req.user.id) === String(id)) {
     throw new ValidationError('You cannot delete your own account');
   }
   
@@ -201,7 +216,8 @@ exports.deleteUser = catchAsync(async (req, res) => {
   
   res.json({
     success: true,
-    message: 'User deleted successfully'
+    message: 'User deleted successfully',
+    data: { deletedUserId: id }
   });
 });
 
@@ -246,8 +262,9 @@ exports.activateUser = catchAsync(async (req, res) => {
 exports.deactivateUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   
+  // ✅ IMPROVED: Convert IDs to string for comparison
   // Prevent deactivating yourself
-  if (req.user.id === id) {
+  if (String(req.user.id) === String(id)) {
     throw new ValidationError('You cannot deactivate your own account');
   }
   
@@ -305,3 +322,5 @@ exports.getUserStats = catchAsync(async (req, res) => {
     }
   });
 });
+
+module.exports = exports;

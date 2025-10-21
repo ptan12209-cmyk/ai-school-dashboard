@@ -94,7 +94,7 @@ router.post('/login',
       .notEmpty()
       .withMessage('Mật khẩu là bắt buộc')
   ],
-  // validate, // Sẽ uncomment sau
+  validate, // Enable validation for login
   authController.login
 );
 

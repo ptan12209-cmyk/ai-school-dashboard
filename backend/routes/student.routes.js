@@ -220,12 +220,12 @@ router.delete('/:id',
 );
 
 /**
- * @route   GET /api/students/:id/grades
+ * @route   GET /api/students/:id/grade
  * @desc    Get student's grades
  * @access  Student (self), Teacher, Admin
  * @note    Will be implemented in Day 5
  */
-router.get('/:id/grades',
+router.get('/:id/grade',
   studentController.getStudentGrades
 );
 

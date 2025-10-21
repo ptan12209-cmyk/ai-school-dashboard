@@ -163,11 +163,11 @@ router.delete('/:id',
 );
 
 /**
- * @route   GET /api/teachers/:id/courses
+ * @route   GET /api/teachers/:id/course
  * @desc    Get teacher's courses
  * @access  Authenticated users
  * @note    Will be implemented in Day 5
  */
-router.get('/:id/courses', teacherController.getTeacherCourses);
+router.get('/:id/course', teacherController.getTeacherCourses);
 
 module.exports = router;

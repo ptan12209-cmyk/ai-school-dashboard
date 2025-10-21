@@ -40,6 +40,26 @@ router.get('/',
 );
 
 /**
+ * @route   PATCH /api/users/:id/activate
+ * @desc    Activate user account
+ * @access  Admin only
+ */
+router.patch('/:id/activate',
+  checkRole('admin'),
+  userController.activateUser
+);
+
+/**
+ * @route   PATCH /api/users/:id/deactivate
+ * @desc    Deactivate user account
+ * @access  Admin only
+ */
+router.patch('/:id/deactivate',
+  checkRole('admin'),
+  userController.deactivateUser
+);
+
+/**
  * @route   GET /api/users/:id
  * @desc    Get user by ID
  * @access  Admin or Self
@@ -83,26 +103,6 @@ router.put('/:id',
 router.delete('/:id',
   checkRole('admin'),
   userController.deleteUser
-);
-
-/**
- * @route   PATCH /api/users/:id/activate
- * @desc    Activate user account
- * @access  Admin only
- */
-router.patch('/:id/activate',
-  checkRole('admin'),
-  userController.activateUser
-);
-
-/**
- * @route   PATCH /api/users/:id/deactivate
- * @desc    Deactivate user account
- * @access  Admin only
- */
-router.patch('/:id/deactivate',
-  checkRole('admin'),
-  userController.deactivateUser
 );
 
 module.exports = router;

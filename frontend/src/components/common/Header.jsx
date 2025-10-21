@@ -1,0 +1,173 @@
+/**
+ * Header Component
+ * ===============
+ * Top header bar with user menu and notifications
+ */
+
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import {
+  Toolbar,
+  IconButton,
+  Typography,
+  Badge,
+  Menu,
+  MenuItem,
+  Avatar,
+  useTheme,
+} from '@mui/material';
+import {
+  Menu as MenuIcon,
+  Notifications as NotificationsIcon,
+  AccountCircle as AccountIcon,
+  Logout as LogoutIcon,
+  Settings as SettingsIcon,
+} from '@mui/icons-material';
+import { logout } from '../../redux/slices/authSlice';
+import { toast } from 'react-toastify';
+
+const Header = ({ onMenuClick }) => {
+  const theme = useTheme();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationAnchor, setNotificationAnchor] = useState(null);
+
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleNotificationMenuOpen = (event) => {
+    setNotificationAnchor(event.currentTarget);
+  };
+
+  const handleNotificationMenuClose = () => {
+    setNotificationAnchor(null);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success('You have been successfully logged out.');
+    navigate('/login');
+    handleProfileMenuClose();
+  };
+
+  const handleSettings = () => {
+    navigate('/settings');
+    handleProfileMenuClose();
+  };
+
+  return (
+    <Toolbar>
+      {/* Mobile menu button */}
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        onClick={onMenuClick}
+        sx={{ mr: 2, display: { md: 'none' } }}
+      >
+        <MenuIcon />
+      </IconButton>
+
+      {/* Title */}
+      <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+        AI School Dashboard
+      </Typography>
+
+      {/* Notifications */}
+      <IconButton
+        color="inherit"
+        onClick={handleNotificationMenuOpen}
+        sx={{ mr: 1 }}
+      >
+        <Badge badgeContent={3} color="error">
+          <NotificationsIcon />
+        </Badge>
+      </IconButton>
+
+      {/* User Menu */}
+      <IconButton
+        size="large"
+        edge="end"
+        aria-label="account of current user"
+        aria-controls="primary-search-account-menu"
+        aria-haspopup="true"
+        onClick={handleProfileMenuOpen}
+        color="inherit"
+      >
+        <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.secondary.main }}>
+          {user && user.firstName && user.lastName 
+            ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` 
+            : <AccountIcon />}
+        </Avatar>
+      </IconButton>
+
+      {/* Profile Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        keepMounted
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        open={Boolean(anchorEl)}
+        onClose={handleProfileMenuClose}
+      >
+        <MenuItem onClick={handleSettings}>
+          <SettingsIcon sx={{ mr: 1 }} />
+          Settings
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <LogoutIcon sx={{ mr: 1 }} />
+          Logout
+        </MenuItem>
+      </Menu>
+
+      {/* Notifications Menu */}
+      <Menu
+        anchorEl={notificationAnchor}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        keepMounted
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        open={Boolean(notificationAnchor)}
+        onClose={handleNotificationMenuClose}
+      >
+        <MenuItem>
+          <Typography variant="body2">
+            New student enrolled
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <Typography variant="body2">
+            Grade submitted
+          </Typography>
+        </MenuItem>
+        <MenuItem>
+          <Typography variant="body2">
+            Attendance marked
+          </Typography>
+        </MenuItem>
+      </Menu>
+    </Toolbar>
+  );
+};
+
+export default Header;

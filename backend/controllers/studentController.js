@@ -196,6 +196,7 @@ exports.createStudent = catchAsync(async (req, res) => {
     data: {
       student: {
         id: student.id,
+        user_id: user.id,
         first_name: student.first_name,
         last_name: student.last_name,
         date_of_birth: student.date_of_birth,
@@ -232,18 +233,33 @@ exports.updateStudent = catchAsync(async (req, res) => {
     throw new AuthorizationError('You can only update your own profile');
   }
   
-  // Fields that can be updated
-  const allowedFields = isAdmin 
-    ? ['first_name', 'last_name', 'date_of_birth', 'gender', 'phone', 'address', 
-       'parent_name', 'parent_phone', 'parent_email', 'class_id']
-    : ['phone', 'address']; // Students can only update contact info
-  
+  // Fields that can be updated - handle both camelCase and snake_case
   const updates = {};
-  allowedFields.forEach(field => {
-    if (req.body[field] !== undefined) {
-      updates[field] = req.body[field];
-    }
-  });
+  
+  if (isAdmin) {
+    // Admin can update all fields
+    if (req.body.firstName !== undefined) updates.first_name = req.body.firstName;
+    if (req.body.first_name !== undefined) updates.first_name = req.body.first_name;
+    if (req.body.lastName !== undefined) updates.last_name = req.body.lastName;
+    if (req.body.last_name !== undefined) updates.last_name = req.body.last_name;
+    if (req.body.dateOfBirth !== undefined) updates.date_of_birth = req.body.dateOfBirth;
+    if (req.body.date_of_birth !== undefined) updates.date_of_birth = req.body.date_of_birth;
+    if (req.body.gender !== undefined) updates.gender = req.body.gender;
+    if (req.body.phone !== undefined) updates.phone = req.body.phone;
+    if (req.body.address !== undefined) updates.address = req.body.address;
+    if (req.body.parentName !== undefined) updates.parent_name = req.body.parentName;
+    if (req.body.parent_name !== undefined) updates.parent_name = req.body.parent_name;
+    if (req.body.parentPhone !== undefined) updates.parent_phone = req.body.parentPhone;
+    if (req.body.parent_phone !== undefined) updates.parent_phone = req.body.parent_phone;
+    if (req.body.parentEmail !== undefined) updates.parent_email = req.body.parentEmail;
+    if (req.body.parent_email !== undefined) updates.parent_email = req.body.parent_email;
+    if (req.body.classId !== undefined) updates.class_id = req.body.classId;
+    if (req.body.class_id !== undefined) updates.class_id = req.body.class_id;
+  } else {
+    // Students can only update contact info
+    if (req.body.phone !== undefined) updates.phone = req.body.phone;
+    if (req.body.address !== undefined) updates.address = req.body.address;
+  }
   
   await student.update(updates);
   
@@ -280,7 +296,8 @@ exports.deleteStudent = catchAsync(async (req, res) => {
   
   res.json({
     success: true,
-    message: 'Student deleted successfully'
+    message: 'Student deleted successfully',
+    data: { deletedStudentId: id }
   });
 });
 
@@ -334,7 +351,7 @@ exports.getUnassignedStudents = catchAsync(async (req, res) => {
   res.json({
     success: true,
     data: {
-      students,
+      student: students,
       count: students.length
     }
   });

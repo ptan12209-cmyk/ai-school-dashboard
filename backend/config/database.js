@@ -12,7 +12,9 @@
  * const { sequelize } = require('./config/database');
  */
 
-require('dotenv').config();
+require('dotenv').config({ 
+  path: `.env.${process.env.NODE_ENV || 'development'}` 
+});
 
 const { Sequelize } = require('sequelize');
 
@@ -38,14 +40,14 @@ const config = {
   },
   
   test: {
-    username: process.env.TEST_DB_USER || 'postgres',
-    password: process.env.TEST_DB_PASSWORD || 'postgres',
-    database: process.env.TEST_DB_NAME || 'school_dashboard_test',
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'hotanphat',
+    database: process.env.DB_NAME || 'school_dashboard_test',
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
-    logging: false // Disable logging in test environment
-  },
+    logging: false
+},
   
   production: {
     username: process.env.DB_USER,

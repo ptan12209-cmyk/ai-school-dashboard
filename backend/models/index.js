@@ -3,7 +3,7 @@
  * ======================================
  * Loads all models and defines associations
  * 
- * ACTIVATED - Week 3-4 Day 2
+ * Week 3-4 Day 5 - COMPLETE WITH ALL MODELS
  */
 
 const { sequelize, Sequelize } = require('../config/database');
@@ -12,9 +12,10 @@ const { sequelize, Sequelize } = require('../config/database');
 const User = require('./User');
 const Teacher = require('./Teacher');
 const Student = require('./Student');
-
-// Note: Class, Course, Grade, Attendance will be added later (Day 5)
-// For now, we'll just set up User-Teacher-Student associations
+const Class = require('./Class');
+const Course = require('./Course');
+const Grade = require('./Grade');
+const Attendance = require('./Attendance');
 
 /**
  * ============================================
@@ -50,89 +51,131 @@ Student.belongsTo(User, {
   as: 'user'
 });
 
-/**
- * TODO: Day 5 - Add remaining associations when Class, Course, Grade, Attendance models are created
- * 
- * // Class ↔ Students (One-to-Many)
- * Class.hasMany(Student, {
- *   foreignKey: 'class_id',
- *   as: 'students'
- * });
- * Student.belongsTo(Class, {
- *   foreignKey: 'class_id',
- *   as: 'class'
- * });
- * 
- * // Teacher ↔ Classes (One-to-Many)
- * Teacher.hasMany(Class, {
- *   foreignKey: 'teacher_id',
- *   as: 'classes'
- * });
- * Class.belongsTo(Teacher, {
- *   foreignKey: 'teacher_id',
- *   as: 'homeroomTeacher'
- * });
- * 
- * // Class ↔ Courses (One-to-Many)
- * Class.hasMany(Course, {
- *   foreignKey: 'class_id',
- *   as: 'courses'
- * });
- * Course.belongsTo(Class, {
- *   foreignKey: 'class_id',
- *   as: 'class'
- * });
- * 
- * // Teacher ↔ Courses (One-to-Many)
- * Teacher.hasMany(Course, {
- *   foreignKey: 'teacher_id',
- *   as: 'courses'
- * });
- * Course.belongsTo(Teacher, {
- *   foreignKey: 'teacher_id',
- *   as: 'teacher'
- * });
- * 
- * // Student ↔ Grades (One-to-Many)
- * Student.hasMany(Grade, {
- *   foreignKey: 'student_id',
- *   as: 'grades'
- * });
- * Grade.belongsTo(Student, {
- *   foreignKey: 'student_id',
- *   as: 'student'
- * });
- * 
- * // Course ↔ Grades (One-to-Many)
- * Course.hasMany(Grade, {
- *   foreignKey: 'course_id',
- *   as: 'grades'
- * });
- * Grade.belongsTo(Course, {
- *   foreignKey: 'course_id',
- *   as: 'course'
- * });
- * 
- * // Student ↔ Attendance (One-to-Many)
- * Student.hasMany(Attendance, {
- *   foreignKey: 'student_id',
- *   as: 'attendance'
- * });
- * Attendance.belongsTo(Student, {
- *   foreignKey: 'student_id',
- *   as: 'student'
- * });
- * 
- * // Course ↔ Attendance (One-to-Many, optional)
- * Course.hasMany(Attendance, {
- *   foreignKey: 'course_id',
- *   as: 'attendance'
- * });
- * Attendance.belongsTo(Course, {
- *   foreignKey: 'course_id',
- *   as: 'course'
- * });
- */
+// ─────────────────────────────────────────────
+// 3. Teacher ↔ Class (One-to-Many)
+// ─────────────────────────────────────────────
+Teacher.hasMany(Class, {
+  foreignKey: 'teacher_id',
+  as: 'homeroomClasses',
+  onDelete: 'SET NULL'
+});
+
+Class.belongsTo(Teacher, {
+  foreignKey: 'teacher_id',
+  as: 'homeroomTeacher'
+});
+
+// ─────────────────────────────────────────────
+// 4. Class ↔ Student (One-to-Many)
+// ─────────────────────────────────────────────
+Class.hasMany(Student, {
+  foreignKey: 'class_id',
+  as: 'students',
+  onDelete: 'SET NULL'
+});
+
+Student.belongsTo(Class, {
+  foreignKey: 'class_id',
+  as: 'class'
+});
+
+// ─────────────────────────────────────────────
+// 5. Class ↔ Course (One-to-Many)
+// ─────────────────────────────────────────────
+Class.hasMany(Course, {
+  foreignKey: 'class_id',
+  as: 'courses',
+  onDelete: 'CASCADE'
+});
+
+Course.belongsTo(Class, {
+  foreignKey: 'class_id',
+  as: 'class'
+});
+
+// ─────────────────────────────────────────────
+// 6. Teacher ↔ Course (One-to-Many)
+// ─────────────────────────────────────────────
+Teacher.hasMany(Course, {
+  foreignKey: 'teacher_id',
+  as: 'courses',
+  onDelete: 'RESTRICT'
+});
+
+Course.belongsTo(Teacher, {
+  foreignKey: 'teacher_id',
+  as: 'teacher'
+});
+
+// ─────────────────────────────────────────────
+// 7. Student ↔ Grade (One-to-Many)
+// ─────────────────────────────────────────────
+Student.hasMany(Grade, {
+  foreignKey: 'student_id',
+  as: 'grades',
+  onDelete: 'CASCADE'
+});
+
+Grade.belongsTo(Student, {
+  foreignKey: 'student_id',
+  as: 'student'
+});
+
+// ─────────────────────────────────────────────
+// 8. Course ↔ Grade (One-to-Many)
+// ─────────────────────────────────────────────
+Course.hasMany(Grade, {
+  foreignKey: 'course_id',
+  as: 'grades',
+  onDelete: 'CASCADE'
+});
+
+Grade.belongsTo(Course, {
+  foreignKey: 'course_id',
+  as: 'course'
+});
+
+// ─────────────────────────────────────────────
+// 9. Student ↔ Attendance (One-to-Many)
+// ─────────────────────────────────────────────
+Student.hasMany(Attendance, {
+  foreignKey: 'student_id',
+  as: 'attendance',
+  onDelete: 'CASCADE'
+});
+
+Attendance.belongsTo(Student, {
+  foreignKey: 'student_id',
+  as: 'student'
+});
+
+// ─────────────────────────────────────────────
+// 10. Course ↔ Attendance (One-to-Many, optional)
+// ─────────────────────────────────────────────
+Course.hasMany(Attendance, {
+  foreignKey: 'course_id',
+  as: 'attendance',
+  onDelete: 'SET NULL'
+});
+
+Attendance.belongsTo(Course, {
+  foreignKey: 'course_id',
+  as: 'course'
+});
+
+// ─────────────────────────────────────────────
+// 11. User ↔ Attendance (marked_by)
+// ─────────────────────────────────────────────
+User.hasMany(Attendance, {
+  foreignKey: 'marked_by',
+  as: 'markedAttendance',
+  onDelete: 'SET NULL'
+});
+
+Attendance.belongsTo(User, {
+  foreignKey: 'marked_by',
+  as: 'marker'
+});
 
 /**
  * ============================================
@@ -143,14 +186,14 @@ module.exports = {
   sequelize,
   Sequelize,
   
-  // Models (currently available)
+  // Core Models
   User,
   Teacher,
-  Student
+  Student,
   
-  // TODO: Day 5 - Export remaining models
-  // Class,
-  // Course,
-  // Grade,
-  // Attendance
+  // Academic Models
+  Class,
+  Course,
+  Grade,
+  Attendance
 };

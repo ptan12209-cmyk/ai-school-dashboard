@@ -72,7 +72,7 @@ exports.getAllTeachers = catchAsync(async (req, res) => {
   res.json({
     success: true,
     data: {
-      teachers: rows,
+      teacher: rows,
       pagination: {
         total: count,
         page,
@@ -166,6 +166,7 @@ exports.createTeacher = catchAsync(async (req, res) => {
     data: {
       teacher: {
         id: teacher.id,
+        user_id: teacher.user_id,
         first_name: teacher.first_name,
         last_name: teacher.last_name,
         department: teacher.department,
@@ -203,18 +204,22 @@ exports.updateTeacher = catchAsync(async (req, res) => {
   }
   
   // Fields that can be updated
-  const allowedFields = ['first_name', 'last_name', 'department', 'phone'];
   const updates = {};
   
-  allowedFields.forEach(field => {
-    if (req.body[field] !== undefined) {
-      updates[field] = req.body[field];
-    }
-  });
+  // Handle both camelCase and snake_case
+  if (req.body.firstName !== undefined) updates.first_name = req.body.firstName;
+  if (req.body.first_name !== undefined) updates.first_name = req.body.first_name;
+  if (req.body.lastName !== undefined) updates.last_name = req.body.lastName;
+  if (req.body.last_name !== undefined) updates.last_name = req.body.last_name;
+  if (req.body.department !== undefined) updates.department = req.body.department;
+  if (req.body.phone !== undefined) updates.phone = req.body.phone;
   
   // Admin can update hire_date
   if (isAdmin && req.body.hireDate !== undefined) {
     updates.hire_date = req.body.hireDate;
+  }
+  if (isAdmin && req.body.hire_date !== undefined) {
+    updates.hire_date = req.body.hire_date;
   }
   
   await teacher.update(updates);
@@ -252,7 +257,14 @@ exports.deleteTeacher = catchAsync(async (req, res) => {
   
   res.json({
     success: true,
-    message: 'Teacher deleted successfully'
+    message: 'Teacher deleted successfully',
+    data: {
+      teacher: {
+        id: teacher.id,
+        first_name: teacher.first_name,
+        last_name: teacher.last_name
+      }
+    }
   });
 });
 
