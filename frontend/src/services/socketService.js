@@ -9,7 +9,7 @@ import {
   addNotification,
   setUnreadCount,
   markAllNotificationsAsRead
-} from '../redux/slices/notificationSlice';
+} from '../redux/slices/notificationSlice.js';
 
 class SocketService {
   constructor() {
