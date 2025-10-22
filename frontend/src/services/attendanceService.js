@@ -4,7 +4,7 @@
  * Service for attendance management CRUD operations
  */
 
-import api from './api';
+import api from './api.js';
 
 /**
  * Get all attendance records with optional filters

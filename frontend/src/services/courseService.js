@@ -4,7 +4,7 @@
  * Service for course management CRUD operations
  */
 
-import api from './api';
+import api from './api.js';
 
 /**
  * Get all courses with optional filters

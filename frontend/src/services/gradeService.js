@@ -4,7 +4,7 @@
  * Service for grade management CRUD operations
  */
 
-import api from './api';
+import api from './api.js';
 
 /**
  * Get all grades with optional filters
