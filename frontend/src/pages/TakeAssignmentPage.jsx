@@ -4,7 +4,7 @@
  * Student interface for completing assignments
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -51,6 +51,32 @@ const TakeAssignmentPage = () => {
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Submit handlers (defined before useEffect that uses them)
+  const confirmSubmit = useCallback(async () => {
+    if (!currentSubmission) return;
+
+    setIsSubmitting(true);
+    try {
+      await dispatch(submitAssignment({
+        submissionId: currentSubmission.id,
+        answers
+      })).unwrap();
+
+      toast.success('Đã nộp bài thành công!');
+      navigate('/assignments');
+    } catch (error) {
+      toast.error(error.message || 'Không thể nộp bài');
+    } finally {
+      setIsSubmitting(false);
+      setShowSubmitDialog(false);
+    }
+  }, [currentSubmission, answers, dispatch, navigate]);
+
+  const handleAutoSubmit = useCallback(async () => {
+    toast.warning('Hết thời gian! Tự động nộp bài...');
+    await confirmSubmit();
+  }, [confirmSubmit]);
+
   // Fetch assignment and start submission
   useEffect(() => {
     const init = async () => {
@@ -63,6 +89,7 @@ const TakeAssignmentPage = () => {
     };
 
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignmentId, dispatch]);
 
   // Timer effect
@@ -89,7 +116,7 @@ const TakeAssignmentPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [currentAssignment, currentSubmission]);
+  }, [currentAssignment, currentSubmission, handleAutoSubmit]);
 
   // Format time
   const formatTime = (seconds) => {
@@ -126,29 +153,6 @@ const TakeAssignmentPage = () => {
   // Handle submit
   const handleSubmit = async () => {
     setShowSubmitDialog(true);
-  };
-
-  const confirmSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await dispatch(submitAssignment({
-        submissionId: currentSubmission.id,
-        answers
-      })).unwrap();
-
-      toast.success('Đã nộp bài thành công!');
-      navigate('/assignments');
-    } catch (error) {
-      toast.error(error.message || 'Không thể nộp bài');
-    } finally {
-      setIsSubmitting(false);
-      setShowSubmitDialog(false);
-    }
-  };
-
-  const handleAutoSubmit = async () => {
-    toast.warning('Hết thời gian! Tự động nộp bài...');
-    await confirmSubmit();
   };
 
   // Loading state
