@@ -23,6 +23,7 @@ import {
   School as SchoolIcon,
   Assessment as AssessmentIcon,
   CalendarToday as CalendarIcon,
+  Assignment as AssignmentIcon,
   Psychology as PsychologyIcon,
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
@@ -63,6 +64,11 @@ const menuItems = [
     text: 'Điểm Danh',
     icon: <CalendarIcon />,
     path: '/attendance',
+  },
+  {
+    text: 'Bài Tập',
+    icon: <AssignmentIcon />,
+    path: '/assignments',
   },
   {
     text: 'Dự Đoán AI',

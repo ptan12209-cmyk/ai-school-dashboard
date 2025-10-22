@@ -25,6 +25,9 @@ import AttendancePage from './pages/AttendancePage.jsx';
 import ReportPage from './pages/ReportPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import AIPredictionPage from './pages/AIPredictionPage.jsx';
+import StudentAssignmentsPage from './pages/StudentAssignmentsPage.jsx';
+import TakeAssignmentPage from './pages/TakeAssignmentPage.jsx';
+import TeacherAssignmentsPage from './pages/TeacherAssignmentsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 
 // Auth Guard
@@ -79,13 +82,18 @@ const AppRoutes = () => {
           
           {/* Attendance Management */}
           <Route path="/attendance" element={<AttendancePage />} />
-          
+
+          {/* Assignment Management */}
+          <Route path="/assignments" element={<StudentAssignmentsPage />} />
+          <Route path="/assignments/teacher" element={<TeacherAssignmentsPage />} />
+          <Route path="/assignments/:assignmentId/take" element={<TakeAssignmentPage />} />
+
           {/* Reports */}
           <Route path="/reports" element={<ReportPage />} />
-          
+
           {/* Settings */}
           <Route path="/settings" element={<SettingsPage />} />
-          
+
           {/* AI Features */}
           <Route path="/ai-predictions" element={<AIPredictionPage />} />
         </Route>
