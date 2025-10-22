@@ -13,7 +13,9 @@
     "lint:fix": "eslint src/**/*.js --fix",
     "db:migrate": "node src/database/migrate.js",
     "db:seed": "node src/database/seed.js",
-    "db:reset": "node src/database/reset.js"
+    "db:reset": "node src/database/reset.js",
+    "seed": "node seeders/seed.js",
+    "seed:demo": "node seeders/seed.js"
   },
   "keywords": [
     "education",
