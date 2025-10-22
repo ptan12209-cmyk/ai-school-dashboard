@@ -125,10 +125,8 @@ async function seed() {
     const adminPassword = await hashPassword('Admin@123');
     const admin = await User.create({
       email: 'admin@school.edu.vn',
-      password: adminPassword,
+      password_hash: adminPassword,
       role: 'admin',
-      first_name: 'Quản trị',
-      last_name: 'Hệ thống',
       is_active: true
     });
     console.log('✅ Admin created: admin@school.edu.vn / Admin@123\n');
@@ -146,22 +144,18 @@ async function seed() {
 
       const user = await User.create({
         email,
-        password: teacherPassword,
+        password_hash: teacherPassword,
         role: 'teacher',
-        first_name: firstName,
-        last_name: lastName,
-        phone: `09${randomInt(10, 99)}${randomInt(100000, 999999)}`,
         is_active: true
       });
 
       const teacher = await Teacher.create({
         user_id: user.id,
-        employee_id: `GV${String(i).padStart(4, '0')}`,
+        first_name: firstName,
+        last_name: lastName,
         department: randomElement(['Khoa học tự nhiên', 'Khoa học xã hội', 'Ngoại ngữ', 'Công nghệ']),
-        specialization: randomElement(SUBJECTS).name,
-        hire_date: randomDate(new Date(2015, 0, 1), new Date(2022, 0, 1)),
-        education_level: randomElement(['Cử nhân', 'Thạc sĩ', 'Tiến sĩ']),
-        years_of_experience: randomInt(1, 15)
+        phone: `09${randomInt(10, 99)}${randomInt(100000, 999999)}`,
+        hire_date: randomDate(new Date(2015, 0, 1), new Date(2022, 0, 1))
       });
 
       teachers.push({ user, teacher });
@@ -179,10 +173,10 @@ async function seed() {
       const homeRoomTeacher = teachers[i % teachers.length];
 
       const classObj = await Class.create({
-        class_name: className,
+        name: className,
         grade_level: parseInt(className.substring(0, 2)),
         school_year: '2024-2025',
-        homeroom_teacher_id: homeRoomTeacher.teacher.id,
+        teacher_id: homeRoomTeacher.teacher.id,
         max_students: 40,
         room_number: `${randomInt(1, 5)}${String(randomInt(1, 20)).padStart(2, '0')}`
       });
@@ -205,23 +199,19 @@ async function seed() {
 
       const user = await User.create({
         email,
-        password: studentPassword,
+        password_hash: studentPassword,
         role: 'student',
-        first_name: firstName,
-        last_name: lastName,
-        date_of_birth: randomDate(new Date(2006, 0, 1), new Date(2009, 11, 31)),
-        gender: randomElement(['M', 'F']),
-        phone: `09${randomInt(10, 99)}${randomInt(100000, 999999)}`,
         is_active: true
       });
 
       const student = await Student.create({
         user_id: user.id,
-        student_id: `HS${String(i).padStart(5, '0')}`,
+        first_name: firstName,
+        last_name: lastName,
+        date_of_birth: randomDate(new Date(2006, 0, 1), new Date(2009, 11, 31)),
+        gender: randomElement(['M', 'F']),
         class_id: classObj.id,
-        enrollment_date: new Date(classObj.school_year.split('-')[0], 8, 1),
-        student_status: 'active',
-        gpa: (Math.random() * 2 + 6).toFixed(2), // GPA từ 6.0 - 8.0
+        phone: `09${randomInt(10, 99)}${randomInt(100000, 999999)}`,
         parent_name: `${randomElement(VIETNAMESE_NAMES.lastNames)} ${randomElement(VIETNAMESE_NAMES.firstNames)}`,
         parent_phone: `09${randomInt(10, 99)}${randomInt(100000, 999999)}`,
         address: `${randomInt(1, 500)} đường ${randomElement(['Lê Lợi', 'Nguyễn Huệ', 'Trần Hưng Đạo', 'Hai Bà Trưng'])}, TP.HCM`
@@ -248,17 +238,16 @@ async function seed() {
         const teacher = randomElement(teachers);
 
         const course = await Course.create({
-          course_name: subject.name,
-          course_code: `${subject.code}_${classObj.class_name}_2024`,
+          name: subject.name,
+          code: `${subject.code}-${classObj.name}-2024`,
           class_id: classObj.id,
           teacher_id: teacher.teacher.id,
-          semester: randomElement([1, 2]),
+          subject: subject.name,
+          semester: randomElement(['1', '2']),
           school_year: '2024-2025',
           credits: subject.credits,
-          description: `Môn ${subject.name} cho lớp ${classObj.class_name}`,
-          start_date: new Date(2024, 8, 5), // 5/9/2024
-          end_date: new Date(2025, 4, 30),   // 30/5/2025
-          schedule: `Thứ ${randomInt(2, 6)}, Tiết ${randomInt(1, 5)}`
+          description: `Môn ${subject.name} cho lớp ${classObj.name}`,
+          schedule: [{ day: `Thứ ${randomInt(2, 6)}`, time: `${randomInt(7, 15)}:00-${randomInt(7, 15) + 1}:00` }]
         });
 
         courses.push(course);
@@ -281,19 +270,18 @@ async function seed() {
         const numGrades = randomInt(3, 5);
 
         for (let i = 0; i < numGrades; i++) {
-          const gradeTypes = ['Miệng', 'Kiểm tra 15 phút', 'Kiểm tra 1 tiết', 'Thi giữa kỳ', 'Thi cuối kỳ'];
-          const weights = [1, 1, 2, 2, 3];
+          const gradeTypes = ['Participation', 'Quiz', 'Test', 'Midterm', 'Final'];
+          const weights = [10, 10, 20, 20, 40];
 
           await Grade.create({
             student_id: student.id,
             course_id: course.id,
             grade_type: gradeTypes[i % gradeTypes.length],
-            score: (Math.random() * 3 + 6.5).toFixed(1), // Điểm từ 6.5 - 9.5
-            max_score: 10,
+            score: (Math.random() * 30 + 65).toFixed(1), // Score from 65-95
             weight: weights[i % weights.length],
-            graded_by: course.teacher_id,
-            graded_at: randomDate(new Date(2024, 8, 15), new Date()),
-            comments: randomElement([
+            semester: course.semester,
+            graded_date: randomDate(new Date(2024, 8, 15), new Date()),
+            notes: randomElement([
               'Làm tốt!',
               'Cần cố gắng thêm',
               'Khá',
@@ -331,17 +319,17 @@ async function seed() {
           // 90% có mặt, 5% vắng có phép, 5% vắng không phép
           const rand = Math.random();
           let status;
-          if (rand < 0.90) status = 'present';
-          else if (rand < 0.95) status = 'absent_excused';
-          else status = 'absent_unexcused';
+          if (rand < 0.90) status = 'Present';
+          else if (rand < 0.95) status = 'Excused';
+          else status = 'Absent';
 
           await Attendance.create({
             student_id: student.id,
             course_id: course.id,
             date: date,
             status: status,
-            notes: status !== 'present' ? randomElement(['Ốm', 'Việc gia đình', null]) : null,
-            marked_by: course.teacher_id
+            notes: status !== 'Present' ? randomElement(['Ốm', 'Việc gia đình', null]) : null,
+            marked_by: teachers[Math.floor(Math.random() * teachers.length)].user_id
           });
 
           attendanceCount++;
@@ -361,7 +349,7 @@ async function seed() {
       const numAssignments = randomInt(3, 5);
 
       for (let i = 1; i <= numAssignments; i++) {
-        const assignmentTypes = ['homework', 'quiz', 'exam', 'project'];
+        const assignmentTypes = ['homework', 'quiz', 'exam', 'practice'];
         const type = randomElement(assignmentTypes);
 
         const createdDate = randomDate(new Date(2024, 8, 5), new Date());
@@ -370,12 +358,13 @@ async function seed() {
 
         const assignment = await Assignment.create({
           course_id: course.id,
-          title: `${type === 'homework' ? 'Bài tập' : type === 'quiz' ? 'Kiểm tra' : type === 'exam' ? 'Thi' : 'Đồ án'} ${i}`,
-          description: `${course.course_name} - ${type === 'homework' ? 'Ôn tập chương' : type === 'quiz' ? 'Kiểm tra nhanh' : type === 'exam' ? 'Kiểm tra định kỳ' : 'Dự án nhóm'} số ${i}`,
-          assignment_type: type,
-          total_points: type === 'exam' ? 100 : type === 'quiz' ? 50 : type === 'project' ? 200 : 10,
+          teacher_id: teachers[Math.floor(Math.random() * teachers.length)].teacher.id,
+          title: `${type === 'homework' ? 'Bài tập' : type === 'quiz' ? 'Kiểm tra' : type === 'exam' ? 'Thi' : 'Thực hành'} ${i}`,
+          description: `${course.name} - ${type === 'homework' ? 'Ôn tập chương' : type === 'quiz' ? 'Kiểm tra nhanh' : type === 'exam' ? 'Kiểm tra định kỳ' : 'Bài thực hành'} số ${i}`,
+          type: type,
+          total_points: type === 'exam' ? 100 : type === 'quiz' ? 50 : type === 'practice' ? 20 : 10,
           due_date: dueDate,
-          created_by: course.teacher_id,
+          created_by: teachers[Math.floor(Math.random() * teachers.length)].teacher.user_id,
           is_published: true,
           allow_late_submission: randomElement([true, false]),
           late_penalty_percent: randomInt(10, 30),
@@ -447,8 +436,9 @@ async function seed() {
       for (const { student } of classStudents) {
         // 80% sinh viên nộp bài
         if (Math.random() > 0.2) {
-          const submittedAt = randomDate(new Date(assignment.created_at), assignment.due_date);
-          const isLate = submittedAt > assignment.due_date;
+          const startDate = assignment.available_from ? new Date(assignment.available_from) : new Date();
+          const submittedAt = randomDate(startDate, new Date(assignment.due_date));
+          const isLate = submittedAt > new Date(assignment.due_date);
           const scorePercent = Math.random() * 0.4 + 0.5; // 50-90%
           const score = (assignment.total_points * scorePercent).toFixed(2);
 
@@ -463,7 +453,7 @@ async function seed() {
             is_late: isLate,
             late_penalty: isLate ? assignment.late_penalty_percent : 0,
             attempt_number: 1,
-            graded_by: course.teacher_id,
+            graded_by: assignment.teacher_id,
             graded_at: new Date(submittedAt.getTime() + 86400000), // +1 day
             feedback: randomElement([
               'Làm tốt!',
@@ -505,7 +495,7 @@ async function seed() {
         user_id: student.user_id,
         title: 'Bài tập mới',
         message: `Bài tập "${assignment.title}" đã được giao. Hạn nộp: ${assignment.due_date.toLocaleDateString('vi-VN')}`,
-        type: 'assignment',
+        type: 'assignment_due',
         is_read: Math.random() > 0.5
       });
     }
