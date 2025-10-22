@@ -65,12 +65,19 @@ const CoursePage = () => {
       setLoading(true);
       const response = await courseService.getAllCourses();
 
-      if (response && response.data) {
-        setCourses(response.data);
+      // Handle different response structures
+      if (response) {
+        const coursesData = Array.isArray(response) ? response :
+                           Array.isArray(response.data) ? response.data :
+                           [];
+        setCourses(coursesData);
+      } else {
+        setCourses([]);
       }
     } catch (error) {
       console.error('Error fetching courses:', error);
       message.error('Failed to load courses');
+      setCourses([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

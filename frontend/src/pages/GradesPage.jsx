@@ -81,12 +81,19 @@ const GradesPage = () => {
       setError('');
       const response = await gradeService.getAllGrades();
 
-      if (response && response.data) {
-        setGrades(response.data);
+      // Handle different response structures
+      if (response) {
+        const gradesData = Array.isArray(response) ? response :
+                          Array.isArray(response.data) ? response.data :
+                          [];
+        setGrades(gradesData);
+      } else {
+        setGrades([]);
       }
     } catch (error) {
       console.error('Error fetching grades:', error);
       setError('Failed to load grades. Please try again.');
+      setGrades([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

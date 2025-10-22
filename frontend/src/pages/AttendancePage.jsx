@@ -84,12 +84,19 @@ const AttendancePage = () => {
       setError('');
       const response = await attendanceService.getAllAttendance();
 
-      if (response && response.data) {
-        setAttendance(response.data);
+      // Handle different response structures
+      if (response) {
+        const attendanceData = Array.isArray(response) ? response :
+                              Array.isArray(response.data) ? response.data :
+                              [];
+        setAttendance(attendanceData);
+      } else {
+        setAttendance([]);
       }
     } catch (error) {
       console.error('Error fetching attendance:', error);
       setError('Failed to load attendance records. Please try again.');
+      setAttendance([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
