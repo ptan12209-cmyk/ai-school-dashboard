@@ -1,7 +1,7 @@
 /**
- * GradesPage Component
- * ====================
- * Grades management page
+ * GradesPage Component - Full CRUD Implementation
+ * ================================================
+ * Grades management page with Add/Edit/Delete functionality
  */
 
 import React, { useState, useEffect } from 'react';
@@ -25,6 +25,13 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -33,78 +40,221 @@ import {
   Delete as DeleteIcon,
   Assessment as AssessmentIcon,
 } from '@mui/icons-material';
+import * as gradeService from '../services/gradeService';
 
 const GradesPage = () => {
   const [grades, setGrades] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClass, setFilterClass] = useState('');
+  const [filterSemester, setFilterSemester] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [gradeToDelete, setGradeToDelete] = useState(null);
+  const [error, setError] = useState('');
 
-  // Mock data
-  const mockGrades = [
-    {
-      id: 1,
-      student: 'John Doe',
-      subject: 'Mathematics',
-      class: '10A',
-      grade: 'A',
-      score: 85,
-      date: '2024-01-15',
-    },
-    {
-      id: 2,
-      student: 'Jane Smith',
-      subject: 'Physics',
-      class: '10B',
-      grade: 'A+',
-      score: 92,
-      date: '2024-01-16',
-    },
-    {
-      id: 3,
-      student: 'Mike Johnson',
-      subject: 'English',
-      class: '9A',
-      grade: 'B+',
-      score: 78,
-      date: '2024-01-17',
-    },
-  ];
+  // Form state
+  const [formData, setFormData] = useState({
+    student_id: '',
+    course_id: '',
+    score: '',
+    grade_type: 'Assignment',
+    semester: '1',
+    graded_date: new Date().toISOString().split('T')[0],
+    notes: '',
+    weight: 10,
+    is_published: false
+  });
 
+  // Fetch grades on component mount
   useEffect(() => {
-    setGrades(mockGrades);
+    fetchGrades();
   }, []);
 
-  const filteredGrades = grades.filter(grade =>
-    grade.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    grade.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    grade.class.toLowerCase().includes(searchTerm.toLowerCase())
-  ).filter(grade =>
-    filterClass === '' || grade.class === filterClass
-  );
+  /**
+   * Fetch all grades from API
+   */
+  const fetchGrades = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await gradeService.getAllGrades();
 
-  const getGradeColor = (grade) => {
-    const colors = {
-      'A+': 'success',
-      'A': 'success',
-      'B+': 'primary',
-      'B': 'primary',
-      'C+': 'warning',
-      'C': 'warning',
-      'D': 'error',
-    };
-    return colors[grade] || 'default';
+      if (response && response.data) {
+        setGrades(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching grades:', error);
+      setError('Failed to load grades. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  /**
+   * Handle Add Grade
+   */
   const handleAddGrade = () => {
-    console.log('Add grade clicked');
+    setSelectedGrade(null);
+    setFormData({
+      student_id: '',
+      course_id: '',
+      score: '',
+      grade_type: 'Assignment',
+      semester: '1',
+      graded_date: new Date().toISOString().split('T')[0],
+      notes: '',
+      weight: 10,
+      is_published: false
+    });
+    setDialogOpen(true);
   };
 
-  const handleEditGrade = (gradeId) => {
-    console.log('Edit grade clicked:', gradeId);
+  /**
+   * Handle Edit Grade
+   */
+  const handleEditGrade = async (gradeId) => {
+    try {
+      setLoading(true);
+      const response = await gradeService.getGradeById(gradeId);
+
+      if (response && response.data) {
+        setSelectedGrade(response.data);
+        setFormData({
+          student_id: response.data.student_id || '',
+          course_id: response.data.course_id || '',
+          score: response.data.score || '',
+          grade_type: response.data.grade_type || 'Assignment',
+          semester: response.data.semester || '1',
+          graded_date: response.data.graded_date ? response.data.graded_date.split('T')[0] : new Date().toISOString().split('T')[0],
+          notes: response.data.notes || '',
+          weight: response.data.weight || 10,
+          is_published: response.data.is_published || false
+        });
+        setDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching grade for edit:', error);
+      setError('Failed to load grade data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteGrade = (gradeId) => {
-    console.log('Delete grade clicked:', gradeId);
+  /**
+   * Handle Delete Grade
+   */
+  const handleDeleteClick = (grade) => {
+    setGradeToDelete(grade);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!gradeToDelete) return;
+
+    try {
+      setLoading(true);
+      await gradeService.deleteGrade(gradeToDelete.id);
+      setError('');
+      fetchGrades(); // Refresh list
+      setDeleteDialogOpen(false);
+      setGradeToDelete(null);
+    } catch (error) {
+      console.error('Error deleting grade:', error);
+      setError('Failed to delete grade');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle Form Submit (Create or Update)
+   */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.student_id || !formData.course_id || !formData.score) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    if (parseFloat(formData.score) < 0 || parseFloat(formData.score) > 100) {
+      setError('Score must be between 0 and 100');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      if (selectedGrade) {
+        // Update existing grade
+        await gradeService.updateGrade(selectedGrade.id, formData);
+      } else {
+        // Create new grade
+        await gradeService.createGrade(formData);
+      }
+
+      setDialogOpen(false);
+      fetchGrades(); // Refresh list
+    } catch (error) {
+      console.error('Error saving grade:', error);
+      setError(selectedGrade ? 'Failed to update grade' : 'Failed to create grade');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle form input changes
+   */
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  /**
+   * Filter grades
+   */
+  const filteredGrades = grades.filter(grade => {
+    const matchesSearch =
+      grade.Student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      grade.Student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      grade.Course?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesClass = !filterClass || grade.Course?.Class?.name === filterClass;
+    const matchesSemester = !filterSemester || grade.semester === filterSemester;
+
+    return matchesSearch && matchesClass && matchesSemester;
+  });
+
+  /**
+   * Get grade letter based on score
+   */
+  const getGradeLetter = (score) => {
+    if (score >= 90) return 'A+';
+    if (score >= 85) return 'A';
+    if (score >= 80) return 'B+';
+    if (score >= 75) return 'B';
+    if (score >= 70) return 'C+';
+    if (score >= 65) return 'C';
+    if (score >= 60) return 'D';
+    return 'F';
+  };
+
+  /**
+   * Get grade color based on score
+   */
+  const getGradeColor = (score) => {
+    if (score >= 85) return 'success';
+    if (score >= 75) return 'primary';
+    if (score >= 65) return 'warning';
+    return 'error';
   };
 
   return (
@@ -118,6 +268,13 @@ const GradesPage = () => {
           Manage student grades and academic performance
         </Typography>
       </Box>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
 
       {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
@@ -144,10 +301,22 @@ const GradesPage = () => {
                 label="Class"
               >
                 <MenuItem value="">All Classes</MenuItem>
-                <MenuItem value="9A">9A</MenuItem>
-                <MenuItem value="9B">9B</MenuItem>
-                <MenuItem value="10A">10A</MenuItem>
-                <MenuItem value="10B">10B</MenuItem>
+                {Array.from(new Set(grades.map(g => g.Course?.Class?.name).filter(Boolean))).map(className => (
+                  <MenuItem key={className} value={className}>{className}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel>Semester</InputLabel>
+              <Select
+                value={filterSemester}
+                onChange={(e) => setFilterSemester(e.target.value)}
+                label="Semester"
+              >
+                <MenuItem value="">All Semesters</MenuItem>
+                <MenuItem value="1">Semester 1</MenuItem>
+                <MenuItem value="2">Semester 2</MenuItem>
+                <MenuItem value="Final">Final</MenuItem>
               </Select>
             </FormControl>
             <Button
@@ -163,54 +332,241 @@ const GradesPage = () => {
 
       {/* Grades Table */}
       <Card>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Student</TableCell>
-                <TableCell>Subject</TableCell>
-                <TableCell>Class</TableCell>
-                <TableCell>Grade</TableCell>
-                <TableCell>Score</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredGrades.map((grade) => (
-                <TableRow key={grade.id}>
-                  <TableCell>{grade.student}</TableCell>
-                  <TableCell>{grade.subject}</TableCell>
-                  <TableCell>{grade.class}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={grade.grade}
-                      color={getGradeColor(grade.grade)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>{grade.score}</TableCell>
-                  <TableCell>{grade.date}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      onClick={() => handleEditGrade(grade.id)}
-                      color="primary"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => handleDeleteGrade(grade.id)}
-                      color="error"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
+        {loading && !dialogOpen ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Student</TableCell>
+                  <TableCell>Course</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Grade</TableCell>
+                  <TableCell>Score</TableCell>
+                  <TableCell>Semester</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell align="right">Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {filteredGrades.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                        No grades found
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredGrades.map((grade) => (
+                    <TableRow key={grade.id}>
+                      <TableCell>
+                        {grade.Student ? `${grade.Student.first_name} ${grade.Student.last_name}` : 'N/A'}
+                      </TableCell>
+                      <TableCell>{grade.Course?.name || 'N/A'}</TableCell>
+                      <TableCell>{grade.grade_type}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getGradeLetter(grade.score)}
+                          color={getGradeColor(grade.score)}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>{grade.score}</TableCell>
+                      <TableCell>{grade.semester}</TableCell>
+                      <TableCell>
+                        {grade.graded_date ? new Date(grade.graded_date).toLocaleDateString() : 'N/A'}
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          onClick={() => handleEditGrade(grade.id)}
+                          color="primary"
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDeleteClick(grade)}
+                          color="error"
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Card>
+
+      {/* Add/Edit Grade Dialog */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+        <form onSubmit={handleSubmit}>
+          <DialogTitle>
+            {selectedGrade ? 'Edit Grade' : 'Add New Grade'}
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Student ID"
+                  name="student_id"
+                  value={formData.student_id}
+                  onChange={handleInputChange}
+                  required
+                  helperText="Enter student UUID"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Course ID"
+                  name="course_id"
+                  value={formData.course_id}
+                  onChange={handleInputChange}
+                  required
+                  helperText="Enter course UUID"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Score"
+                  name="score"
+                  type="number"
+                  value={formData.score}
+                  onChange={handleInputChange}
+                  required
+                  inputProps={{ min: 0, max: 100, step: 0.1 }}
+                  helperText="Score between 0 and 100"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Grade Type</InputLabel>
+                  <Select
+                    name="grade_type"
+                    value={formData.grade_type}
+                    onChange={handleInputChange}
+                    label="Grade Type"
+                  >
+                    <MenuItem value="Quiz">Quiz</MenuItem>
+                    <MenuItem value="Test">Test</MenuItem>
+                    <MenuItem value="Assignment">Assignment</MenuItem>
+                    <MenuItem value="Project">Project</MenuItem>
+                    <MenuItem value="Midterm">Midterm</MenuItem>
+                    <MenuItem value="Final">Final</MenuItem>
+                    <MenuItem value="Participation">Participation</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Semester</InputLabel>
+                  <Select
+                    name="semester"
+                    value={formData.semester}
+                    onChange={handleInputChange}
+                    label="Semester"
+                  >
+                    <MenuItem value="1">Semester 1</MenuItem>
+                    <MenuItem value="2">Semester 2</MenuItem>
+                    <MenuItem value="Final">Final</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Graded Date"
+                  name="graded_date"
+                  type="date"
+                  value={formData.graded_date}
+                  onChange={handleInputChange}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Weight (%)"
+                  name="weight"
+                  type="number"
+                  value={formData.weight}
+                  onChange={handleInputChange}
+                  inputProps={{ min: 0, max: 100, step: 0.1 }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  multiline
+                  rows={3}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl component="fieldset">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="is_published"
+                      checked={formData.is_published}
+                      onChange={handleInputChange}
+                    />
+                    {' '}Publish grade (visible to student)
+                  </label>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={loading}>
+              {loading ? <CircularProgress size={24} /> : (selectedGrade ? 'Update' : 'Create')}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Delete Grade</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this grade? This action cannot be undone.
+          </Typography>
+          {gradeToDelete && (
+            <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+              <Typography variant="body2">
+                <strong>Student:</strong> {gradeToDelete.Student ? `${gradeToDelete.Student.first_name} ${gradeToDelete.Student.last_name}` : 'N/A'}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Course:</strong> {gradeToDelete.Course?.name || 'N/A'}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Score:</strong> {gradeToDelete.score}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={confirmDelete} color="error" variant="contained" disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
