@@ -121,14 +121,17 @@ if (process.env.NODE_ENV !== 'production') {
  */
 const limiter = rateLimit({
   windowMs: rateLimitConfig.windowMs || 15 * 60 * 1000, // 15 minutes
-  max: rateLimitConfig.max || 100, // Max 100 requests per window
+  // More lenient in development, stricter in production
+  max: process.env.NODE_ENV === 'production'
+    ? (rateLimitConfig.max || 100)
+    : 1000, // 1000 requests per window in development
   message: rateLimitConfig.message || 'Too many requests from this IP, please try again later.',
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
-  
+
   // Skip rate limit for health check and test environment
   skip: (req) => req.path === '/health' || process.env.NODE_ENV === 'test',
-  
+
   // Custom handler for rate limit exceeded
   handler: (req, res) => {
     res.status(429).json({
