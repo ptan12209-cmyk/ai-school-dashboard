@@ -14,6 +14,7 @@
     "db:migrate": "node src/database/migrate.js",
     "db:seed": "node src/database/seed.js",
     "db:reset": "node src/database/reset.js",
+    "db:test": "node scripts/test-db-connection.js",
     "seed": "node seeders/seed.js",
     "seed:demo": "node seeders/seed.js"
   },
