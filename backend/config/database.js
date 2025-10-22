@@ -12,9 +12,23 @@
  * const { sequelize } = require('./config/database');
  */
 
-require('dotenv').config({ 
-  path: `.env.${process.env.NODE_ENV || 'development'}` 
-});
+// Load .env file based on NODE_ENV
+// Priority: .env.{NODE_ENV} -> .env
+const fs = require('fs');
+const path = require('path');
+
+const envFile = `.env.${process.env.NODE_ENV || 'development'}`;
+const envPath = path.join(__dirname, '..', envFile);
+const defaultEnvPath = path.join(__dirname, '..', '.env');
+
+// Try to load environment-specific file first, fallback to .env
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+} else if (fs.existsSync(defaultEnvPath)) {
+  require('dotenv').config({ path: defaultEnvPath });
+} else {
+  require('dotenv').config(); // Fallback to default .env in root
+}
 
 const { Sequelize } = require('sequelize');
 
