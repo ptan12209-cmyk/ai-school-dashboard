@@ -36,6 +36,7 @@ import {
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import * as courseService from '../services/courseService';
+import api from '../services/api.js';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -92,8 +93,8 @@ const CoursePage = () => {
    */
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('/api/teachers?limit=1000');
-      const data = await response.json();
+      const response = await api.get('/teachers', { params: { limit: 1000 } });
+      const data = response.data;
 
       if (data && data.data) {
         const teachersData = Array.isArray(data.data.teachers) ? data.data.teachers :
@@ -113,8 +114,8 @@ const CoursePage = () => {
    */
   const fetchClasses = async () => {
     try {
-      const response = await fetch('/api/classes?limit=1000');
-      const data = await response.json();
+      const response = await api.get('/classes', { params: { limit: 1000 } });
+      const data = response.data;
 
       if (data && data.data) {
         const classesData = Array.isArray(data.data.classes) ? data.data.classes :
