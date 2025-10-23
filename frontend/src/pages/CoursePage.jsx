@@ -44,6 +44,8 @@ const { confirm } = Modal;
 
 const CoursePage = () => {
   const [courses, setCourses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false);
@@ -52,9 +54,11 @@ const CoursePage = () => {
   const [filterCategory, setFilterCategory] = useState('');
   const [form] = Form.useForm();
 
-  // Fetch courses on component mount
+  // Fetch courses, teachers, and classes on component mount
   useEffect(() => {
     fetchCourses();
+    fetchTeachers();
+    fetchClasses();
   }, []);
 
   /**
@@ -76,10 +80,52 @@ const CoursePage = () => {
       }
     } catch (error) {
       console.error('Error fetching courses:', error);
-      message.error('Failed to load courses');
+      message.error('Không thể tải danh sách khóa học');
       setCourses([]); // Set empty array on error
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Fetch all teachers from API
+   */
+  const fetchTeachers = async () => {
+    try {
+      const response = await fetch('/api/teachers?limit=1000');
+      const data = await response.json();
+
+      if (data && data.data) {
+        const teachersData = Array.isArray(data.data.teachers) ? data.data.teachers :
+                            Array.isArray(data.data) ? data.data :
+                            [];
+        setTeachers(teachersData);
+      }
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+      message.error('Không thể tải danh sách giáo viên');
+      setTeachers([]);
+    }
+  };
+
+  /**
+   * Fetch all classes from API
+   */
+  const fetchClasses = async () => {
+    try {
+      const response = await fetch('/api/classes?limit=1000');
+      const data = await response.json();
+
+      if (data && data.data) {
+        const classesData = Array.isArray(data.data.classes) ? data.data.classes :
+                           Array.isArray(data.data) ? data.data :
+                           [];
+        setClasses(classesData);
+      }
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+      message.error('Không thể tải danh sách lớp học');
+      setClasses([]);
     }
   };
 
@@ -122,14 +168,16 @@ const CoursePage = () => {
           subject: response.data.subject,
           credits: response.data.credits,
           semester: response.data.semester,
-          school_year: response.data.school_year
+          school_year: response.data.school_year,
+          teacher_id: response.data.teacher_id,
+          class_id: response.data.class_id
         });
 
         setModalVisible(true);
       }
     } catch (error) {
       console.error('Error fetching course for edit:', error);
-      message.error('Failed to load course data');
+      message.error('Không thể tải thông tin khóa học');
     } finally {
       setLoading(false);
     }
@@ -140,20 +188,20 @@ const CoursePage = () => {
    */
   const handleDeleteCourse = (courseId, courseName) => {
     confirm({
-      title: 'Delete Course',
+      title: 'Xóa Khóa Học',
       icon: <ExclamationCircleOutlined />,
-      content: `Are you sure you want to delete "${courseName}"? This action cannot be undone.`,
-      okText: 'Yes, Delete',
+      content: `Bạn có chắc chắn muốn xóa khóa học "${courseName}"? Hành động này không thể hoàn tác.`,
+      okText: 'Xóa',
       okType: 'danger',
-      cancelText: 'Cancel',
+      cancelText: 'Hủy',
       onOk: async () => {
         try {
           await courseService.deleteCourse(courseId);
-          message.success('Course deleted successfully!');
+          message.success('Xóa khóa học thành công!');
           fetchCourses(); // Refresh list
         } catch (error) {
           console.error('Error deleting course:', error);
-          message.error('Failed to delete course');
+          message.error('Không thể xóa khóa học');
         }
       }
     });
@@ -178,11 +226,11 @@ const CoursePage = () => {
       if (selectedCourse) {
         // Update existing course
         await courseService.updateCourse(selectedCourse.id, values);
-        message.success('Course updated successfully!');
+        message.success('Cập nhật khóa học thành công!');
       } else {
         // Create new course
         await courseService.createCourse(values);
-        message.success('Course created successfully!');
+        message.success('Tạo khóa học thành công!');
       }
 
       setModalVisible(false);
@@ -191,7 +239,8 @@ const CoursePage = () => {
       fetchCourses(); // Refresh list
     } catch (error) {
       console.error('Error saving course:', error);
-      message.error(selectedCourse ? 'Failed to update course' : 'Failed to create course');
+      const errorMsg = error?.response?.data?.message || error?.message || '';
+      message.error(errorMsg || (selectedCourse ? 'Không thể cập nhật khóa học' : 'Không thể tạo khóa học'));
     } finally {
       setLoading(false);
     }
@@ -399,7 +448,7 @@ const CoursePage = () => {
 
       {/* Add/Edit Course Modal */}
       <Modal
-        title={selectedCourse ? 'Edit Course' : 'Add New Course'}
+        title={selectedCourse ? 'Chỉnh Sửa Khóa Học' : 'Thêm Khóa Học Mới'}
         open={modalVisible}
         onCancel={() => {
           setModalVisible(false);
@@ -407,49 +456,96 @@ const CoursePage = () => {
           setSelectedCourse(null);
         }}
         footer={null}
-        width={600}
+        width={700}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
             name="name"
-            label="Course Name"
-            rules={[{ required: true, message: 'Please enter course name' }]}
+            label="Tên Khóa Học"
+            rules={[{ required: true, message: 'Vui lòng nhập tên khóa học' }]}
           >
-            <Input placeholder="Enter course name" />
+            <Input placeholder="Nhập tên khóa học" />
           </Form.Item>
 
           <Form.Item
             name="code"
-            label="Course Code"
+            label="Mã Khóa Học"
             rules={[
-              { required: true, message: 'Please enter course code' },
-              { pattern: /^[A-Z0-9-]+$/, message: 'Code must contain only uppercase letters, numbers, and hyphens' }
+              { required: true, message: 'Vui lòng nhập mã khóa học' },
+              { pattern: /^[A-Z0-9-]+$/, message: 'Mã chỉ chứa chữ in hoa, số và dấu gạch ngang' }
             ]}
           >
-            <Input placeholder="e.g., MATH301" />
+            <Input placeholder="VD: MATH301" />
           </Form.Item>
 
-          <Form.Item name="description" label="Description">
-            <Input.TextArea rows={3} placeholder="Course description" />
+          <Form.Item name="description" label="Mô Tả">
+            <Input.TextArea rows={3} placeholder="Mô tả khóa học" />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="subject"
-                label="Subject"
-                rules={[{ required: true, message: 'Please enter subject' }]}
+                name="teacher_id"
+                label="Giáo Viên"
+                rules={[{ required: true, message: 'Vui lòng chọn giáo viên' }]}
               >
-                <Input placeholder="e.g., Mathematics" />
+                <Select
+                  placeholder="Chọn giáo viên"
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {teachers.map(teacher => (
+                    <Option key={teacher.id} value={teacher.id}>
+                      {teacher.first_name} {teacher.last_name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="class_id"
+                label="Lớp Học"
+                rules={[{ required: true, message: 'Vui lòng chọn lớp học' }]}
+              >
+                <Select
+                  placeholder="Chọn lớp học"
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {classes.map(cls => (
+                    <Option key={cls.id} value={cls.id}>
+                      {cls.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="subject"
+                label="Môn Học"
+                rules={[{ required: true, message: 'Vui lòng nhập môn học' }]}
+              >
+                <Input placeholder="VD: Toán học" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="credits"
-                label="Credits"
-                rules={[{ required: true, message: 'Please enter credits' }]}
+                label="Số Tín Chỉ"
+                rules={[{ required: true, message: 'Vui lòng nhập số tín chỉ' }]}
               >
-                <Input type="number" placeholder="e.g., 3" min="0.5" step="0.5" />
+                <Input type="number" placeholder="VD: 3" min="0.5" step="0.5" />
               </Form.Item>
             </Col>
           </Row>
@@ -458,23 +554,23 @@ const CoursePage = () => {
             <Col span={12}>
               <Form.Item
                 name="semester"
-                label="Semester"
-                rules={[{ required: true, message: 'Please select semester' }]}
+                label="Học Kỳ"
+                rules={[{ required: true, message: 'Vui lòng chọn học kỳ' }]}
               >
-                <Select placeholder="Select semester">
-                  <Option value="1">Semester 1</Option>
-                  <Option value="2">Semester 2</Option>
-                  <Option value="Full Year">Full Year</Option>
+                <Select placeholder="Chọn học kỳ">
+                  <Option value="1">Học Kỳ 1</Option>
+                  <Option value="2">Học Kỳ 2</Option>
+                  <Option value="Full Year">Cả Năm</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="school_year"
-                label="School Year"
+                label="Năm Học"
                 initialValue="2024-2025"
               >
-                <Input placeholder="e.g., 2024-2025" />
+                <Input placeholder="VD: 2024-2025" />
               </Form.Item>
             </Col>
           </Row>
@@ -482,14 +578,14 @@ const CoursePage = () => {
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit" loading={loading}>
-                {selectedCourse ? 'Update Course' : 'Create Course'}
+                {selectedCourse ? 'Cập Nhật' : 'Tạo Mới'}
               </Button>
               <Button onClick={() => {
                 setModalVisible(false);
                 form.resetFields();
                 setSelectedCourse(null);
               }}>
-                Cancel
+                Hủy
               </Button>
             </Space>
           </Form.Item>
