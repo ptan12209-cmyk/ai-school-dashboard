@@ -84,9 +84,9 @@ const AttendancePage = () => {
       setError('');
       const response = await attendanceService.getAllAttendance();
 
-      // Handle different response structures
-      if (response) {
-        const attendanceData = Array.isArray(response) ? response :
+      // Handle backend response structure: { success: true, data: { attendance: [...], pagination: {...} } }
+      if (response && response.data) {
+        const attendanceData = Array.isArray(response.data.attendance) ? response.data.attendance :
                               Array.isArray(response.data) ? response.data :
                               [];
         setAttendance(attendanceData);

@@ -81,9 +81,9 @@ const GradesPage = () => {
       setError('');
       const response = await gradeService.getAllGrades();
 
-      // Handle different response structures
-      if (response) {
-        const gradesData = Array.isArray(response) ? response :
+      // Handle backend response structure: { success: true, data: { grades: [...], pagination: {...} } }
+      if (response && response.data) {
+        const gradesData = Array.isArray(response.data.grades) ? response.data.grades :
                           Array.isArray(response.data) ? response.data :
                           [];
         setGrades(gradesData);

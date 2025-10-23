@@ -65,9 +65,9 @@ const CoursePage = () => {
       setLoading(true);
       const response = await courseService.getAllCourses();
 
-      // Handle different response structures
-      if (response) {
-        const coursesData = Array.isArray(response) ? response :
+      // Handle backend response structure: { success: true, data: { courses: [...], pagination: {...} } }
+      if (response && response.data) {
+        const coursesData = Array.isArray(response.data.courses) ? response.data.courses :
                            Array.isArray(response.data) ? response.data :
                            [];
         setCourses(coursesData);
