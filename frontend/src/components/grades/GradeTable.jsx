@@ -237,7 +237,7 @@ const GradeTable = ({
             ))}
           </Select>
           <Select
-            placeholder="Filter by type"
+            placeholder="Lọc theo loại"
             value={selectedGradeType}
             onChange={setSelectedGradeType}
             style={{ width: 150 }}
