@@ -134,16 +134,6 @@ const roleHierarchy = {
   student: ['student']
 };
 
-/**
- * TODO: Week 3-4 - Implement helper functions
- * 
- * - generateToken(payload)
- * - verifyToken(token)
- * - hashPassword(password)
- * - comparePassword(password, hash)
- * - checkRole(userRole, requiredRole)
- */
-
 module.exports = {
   jwtConfig,
   passwordConfig,

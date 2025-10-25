@@ -362,8 +362,7 @@ exports.getTeacherCourses = catchAsync(async (req, res) => {
   if (!teacher) {
     throw new NotFoundError('Teacher not found');
   }
-  
-  // TODO: Implement when Course model is created (Day 5)
+
   res.json({
     success: true,
     message: 'Course feature will be implemented in Day 5',

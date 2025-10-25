@@ -349,8 +349,7 @@ exports.getStudentGrades = catchAsync(async (req, res) => {
   if (!isAdmin && !isTeacher && !isSelf) {
     throw new AuthorizationError('Access denied');
   }
-  
-  // TODO: Implement when Grade model is created (Day 5)
+
   res.json({
     success: true,
     message: 'Grade feature will be implemented in Day 5',
