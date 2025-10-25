@@ -14,6 +14,7 @@ import {
   Avatar,
   Empty,
   Input,
+  InputNumber,
   Select,
   Modal,
   Form,
@@ -234,11 +235,13 @@ const CoursePage = () => {
     try {
       setLoading(true);
 
-      // Ensure credits is a number
+      // Ensure proper data types (InputNumber already returns number)
       const courseData = {
         ...values,
-        credits: parseFloat(values.credits)
+        semester: values.semester ? values.semester.toString() : '1'
       };
+
+      console.log('Submitting course data:', courseData);
 
       if (selectedCourse) {
         // Update existing course
@@ -256,6 +259,7 @@ const CoursePage = () => {
       fetchCourses(); // Refresh list
     } catch (error) {
       console.error('Error saving course:', error);
+      console.error('Error response:', error?.response?.data);
       const errorMsg = error?.response?.data?.message || error?.message || '';
       message.error(errorMsg || (selectedCourse ? 'Không thể cập nhật khóa học' : 'Không thể tạo khóa học'));
     } finally {
@@ -568,7 +572,13 @@ const CoursePage = () => {
                 label="Số Tín Chỉ"
                 rules={[{ required: true, message: 'Vui lòng nhập số tín chỉ' }]}
               >
-                <Input type="number" placeholder="VD: 3" min="0.5" step="0.5" />
+                <InputNumber
+                  placeholder="VD: 3"
+                  min={0.5}
+                  max={10}
+                  step={0.5}
+                  style={{ width: '100%' }}
+                />
               </Form.Item>
             </Col>
           </Row>

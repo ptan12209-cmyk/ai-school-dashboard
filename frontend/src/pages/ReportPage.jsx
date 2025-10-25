@@ -44,6 +44,7 @@ const { TabPane } = Tabs;
 
 const ReportPage = () => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [reportType, setReportType] = useState('academic');
   const [dateRange, setDateRange] = useState(null);
   const [academicData, setAcademicData] = useState([]);
@@ -64,6 +65,7 @@ const ReportPage = () => {
   const fetchReportData = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       // Fetch courses and calculate academic data
       const coursesResponse = await api.get('/courses', { params: { limit: 1000 } });
@@ -157,7 +159,9 @@ const ReportPage = () => {
 
     } catch (error) {
       console.error('Error fetching report data:', error);
-      message.error('Không thể tải dữ liệu báo cáo');
+      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể tải dữ liệu báo cáo';
+      setError(errorMsg);
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -244,6 +248,51 @@ const ReportPage = () => {
     console.log(`Exporting report as ${format}`);
     // Implementation would go here
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <Spin size="large" tip="Đang tải dữ liệu báo cáo..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="report-page">
+        <Breadcrumb style={{ marginBottom: 16 }}>
+          <Breadcrumb.Item>
+            <Link to="/dashboard">
+              <HomeOutlined /> Home
+            </Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <BarChartOutlined /> Reports
+          </Breadcrumb.Item>
+        </Breadcrumb>
+
+        <Title level={2}>
+          <BarChartOutlined /> Reports & Analytics
+        </Title>
+
+        <Card style={{ marginTop: 24 }}>
+          <Empty
+            description={
+              <div>
+                <Text type="danger" strong style={{ fontSize: 16 }}>{error}</Text>
+                <br />
+                <Text type="secondary">Vui lòng thử lại sau hoặc liên hệ quản trị viên</Text>
+              </div>
+            }
+          >
+            <Button type="primary" onClick={fetchReportData}>
+              Thử Lại
+            </Button>
+          </Empty>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="report-page">
