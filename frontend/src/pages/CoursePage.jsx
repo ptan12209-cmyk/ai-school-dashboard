@@ -48,6 +48,8 @@ const CoursePage = () => {
   const [teachers, setTeachers] = useState([]);
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
+  const [loadingClasses, setLoadingClasses] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -93,6 +95,7 @@ const CoursePage = () => {
    */
   const fetchTeachers = async () => {
     try {
+      setLoadingTeachers(true);
       const response = await api.get('/teachers', { params: { limit: 1000 } });
       const data = response.data;
 
@@ -106,6 +109,8 @@ const CoursePage = () => {
       console.error('Error fetching teachers:', error);
       message.error('Không thể tải danh sách giáo viên');
       setTeachers([]);
+    } finally {
+      setLoadingTeachers(false);
     }
   };
 
@@ -114,6 +119,7 @@ const CoursePage = () => {
    */
   const fetchClasses = async () => {
     try {
+      setLoadingClasses(true);
       const response = await api.get('/classes', { params: { limit: 1000 } });
       const data = response.data;
 
@@ -127,6 +133,8 @@ const CoursePage = () => {
       console.error('Error fetching classes:', error);
       message.error('Không thể tải danh sách lớp học');
       setClasses([]);
+    } finally {
+      setLoadingClasses(false);
     }
   };
 
@@ -224,13 +232,19 @@ const CoursePage = () => {
     try {
       setLoading(true);
 
+      // Ensure credits is a number
+      const courseData = {
+        ...values,
+        credits: parseFloat(values.credits)
+      };
+
       if (selectedCourse) {
         // Update existing course
-        await courseService.updateCourse(selectedCourse.id, values);
+        await courseService.updateCourse(selectedCourse.id, courseData);
         message.success('Cập nhật khóa học thành công!');
       } else {
         // Create new course
-        await courseService.createCourse(values);
+        await courseService.createCourse(courseData);
         message.success('Tạo khóa học thành công!');
       }
 
@@ -493,10 +507,13 @@ const CoursePage = () => {
                 <Select
                   placeholder="Chọn giáo viên"
                   showSearch
+                  loading={loadingTeachers}
+                  disabled={loadingTeachers || teachers.length === 0}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
+                  notFoundContent={loadingTeachers ? <Spin size="small" /> : "Không có giáo viên"}
                 >
                   {teachers.map(teacher => (
                     <Option key={teacher.id} value={teacher.id}>
@@ -515,10 +532,13 @@ const CoursePage = () => {
                 <Select
                   placeholder="Chọn lớp học"
                   showSearch
+                  loading={loadingClasses}
+                  disabled={loadingClasses || classes.length === 0}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
+                  notFoundContent={loadingClasses ? <Spin size="small" /> : "Không có lớp học"}
                 >
                   {classes.map(cls => (
                     <Option key={cls.id} value={cls.id}>

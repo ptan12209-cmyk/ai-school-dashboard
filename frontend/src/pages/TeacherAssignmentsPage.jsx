@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import { fetchAssignmentsByCourse, deleteAssignment, publishAssignment } from '../redux/slices/assignmentSlice.js';
 import { toast } from 'react-toastify';
+import api from '../services/api.js';
 
 const TeacherAssignmentsPage = () => {
   const navigate = useNavigate();
@@ -53,8 +54,8 @@ const TeacherAssignmentsPage = () => {
     const fetchCourses = async () => {
       try {
         setLoadingCourses(true);
-        const response = await fetch('/api/courses?limit=1000');
-        const data = await response.json();
+        const response = await api.get('/courses', { params: { limit: 1000 } });
+        const data = response.data;
 
         if (data && data.data) {
           const coursesData = Array.isArray(data.data.courses) ? data.data.courses :
@@ -202,7 +203,7 @@ const TeacherAssignmentsPage = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => navigate('/assignments/create')}
+            onClick={() => navigate('/assignments/create', { state: { courseId: selectedCourseId } })}
             disabled={!selectedCourseId}
           >
             Tạo bài tập mới

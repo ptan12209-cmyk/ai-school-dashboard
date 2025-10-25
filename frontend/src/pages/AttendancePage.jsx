@@ -240,11 +240,11 @@ const AttendancePage = () => {
    */
   const filteredAttendance = attendance.filter(record => {
     const matchesSearch =
-      record.Student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.Student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.Course?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      record.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.course?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesClass = !filterClass || record.Student?.Class?.name === filterClass;
+    const matchesClass = !filterClass || record.student?.class?.name === filterClass;
     const matchesDate = !filterDate || (record.date && record.date.split('T')[0] === filterDate);
     const matchesStatus = !filterStatus || record.status === filterStatus;
 
@@ -320,7 +320,7 @@ const AttendancePage = () => {
                 label="Class"
               >
                 <MenuItem value="">All Classes</MenuItem>
-                {Array.from(new Set(attendance.map(a => a.Student?.Class?.name).filter(Boolean))).map(className => (
+                {Array.from(new Set(attendance.map(a => a.student?.class?.name).filter(Boolean))).map(className => (
                   <MenuItem key={className} value={className}>{className}</MenuItem>
                 ))}
               </Select>
@@ -392,9 +392,9 @@ const AttendancePage = () => {
                   filteredAttendance.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell>
-                        {record.Student ? `${record.Student.first_name} ${record.Student.last_name}` : 'N/A'}
+                        {record.student ? `${record.student.first_name} ${record.student.last_name}` : 'N/A'}
                       </TableCell>
-                      <TableCell>{record.Course?.name || 'N/A'}</TableCell>
+                      <TableCell>{record.course?.name || 'N/A'}</TableCell>
                       <TableCell>
                         {record.date ? new Date(record.date).toLocaleDateString() : 'N/A'}
                       </TableCell>
@@ -560,10 +560,10 @@ const AttendancePage = () => {
           {attendanceToDelete && (
             <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
               <Typography variant="body2">
-                <strong>Student:</strong> {attendanceToDelete.Student ? `${attendanceToDelete.Student.first_name} ${attendanceToDelete.Student.last_name}` : 'N/A'}
+                <strong>Student:</strong> {attendanceToDelete.student ? `${attendanceToDelete.student.first_name} ${attendanceToDelete.student.last_name}` : 'N/A'}
               </Typography>
               <Typography variant="body2">
-                <strong>Course:</strong> {attendanceToDelete.Course?.name || 'N/A'}
+                <strong>Course:</strong> {attendanceToDelete.course?.name || 'N/A'}
               </Typography>
               <Typography variant="body2">
                 <strong>Date:</strong> {attendanceToDelete.date ? new Date(attendanceToDelete.date).toLocaleDateString() : 'N/A'}

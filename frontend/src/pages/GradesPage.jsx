@@ -230,11 +230,11 @@ const GradesPage = () => {
    */
   const filteredGrades = grades.filter(grade => {
     const matchesSearch =
-      grade.Student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      grade.Student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      grade.Course?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      grade.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      grade.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      grade.course?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesClass = !filterClass || grade.Course?.Class?.name === filterClass;
+    const matchesClass = !filterClass || grade.course?.class?.name === filterClass;
     const matchesSemester = !filterSemester || grade.semester === filterSemester;
 
     return matchesSearch && matchesClass && matchesSemester;
@@ -308,7 +308,7 @@ const GradesPage = () => {
                 label="Class"
               >
                 <MenuItem value="">All Classes</MenuItem>
-                {Array.from(new Set(grades.map(g => g.Course?.Class?.name).filter(Boolean))).map(className => (
+                {Array.from(new Set(grades.map(g => g.course?.class?.name).filter(Boolean))).map(className => (
                   <MenuItem key={className} value={className}>{className}</MenuItem>
                 ))}
               </Select>
@@ -371,9 +371,9 @@ const GradesPage = () => {
                   filteredGrades.map((grade) => (
                     <TableRow key={grade.id}>
                       <TableCell>
-                        {grade.Student ? `${grade.Student.first_name} ${grade.Student.last_name}` : 'N/A'}
+                        {grade.student ? `${grade.student.first_name} ${grade.student.last_name}` : 'N/A'}
                       </TableCell>
-                      <TableCell>{grade.Course?.name || 'N/A'}</TableCell>
+                      <TableCell>{grade.course?.name || 'N/A'}</TableCell>
                       <TableCell>{grade.grade_type}</TableCell>
                       <TableCell>
                         <Chip
