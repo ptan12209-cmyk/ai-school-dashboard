@@ -1,11 +1,3 @@
-/**
- * Teacher Routes
- * ==============
- * Routes for teacher management (CRUD operations)
- * 
- * Week 3-4 Day 4
- */
-
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');

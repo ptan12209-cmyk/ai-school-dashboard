@@ -1,9 +1,3 @@
-/**
- * AIPredictionPage Component
- * ==========================
- * AI predictions and analytics page
- */
-
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -24,6 +18,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  CircularProgress,
 } from '@mui/material';
 import {
   Psychology as PsychologyIcon,
@@ -31,48 +26,105 @@ import {
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
+import api from '../services/api.js';
 
 const AIPredictionPage = () => {
   const theme = useTheme();
   const [predictions, setPredictions] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedPrediction, setSelectedPrediction] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Mock data
-  const mockPredictions = [
-    {
-      id: 1,
-      student: 'John Doe',
-      prediction: 'At Risk',
-      confidence: 85,
-      factors: ['Low attendance', 'Declining grades', 'Missing assignments'],
-      recommendation: 'Schedule parent meeting and provide additional support',
-      priority: 'high',
-    },
-    {
-      id: 2,
-      student: 'Jane Smith',
-      prediction: 'Excellent',
-      confidence: 92,
-      factors: ['High attendance', 'Consistent grades', 'Active participation'],
-      recommendation: 'Consider advanced placement opportunities',
-      priority: 'low',
-    },
-    {
-      id: 3,
-      student: 'Mike Johnson',
-      prediction: 'Needs Attention',
-      confidence: 78,
-      factors: ['Inconsistent attendance', 'Average grades'],
-      recommendation: 'Monitor closely and provide targeted support',
-      priority: 'medium',
-    },
-  ];
-
   useEffect(() => {
-    setPredictions(mockPredictions);
+    fetchPredictions();
   }, []);
+
+  const fetchPredictions = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch students
+      const studentsResponse = await api.get('/students', { params: { limit: 100 } });
+      const students = studentsResponse.data?.data?.students || [];
+
+      // Fetch grades
+      const gradesResponse = await api.get('/grades', { params: { limit: 100 } });
+      const grades = gradesResponse.data?.data?.grades || [];
+
+      // Fetch attendance
+      const attendanceResponse = await api.get('/attendance', { params: { limit: 100 } });
+      const attendance = attendanceResponse.data?.data?.attendance || [];
+
+      // Generate predictions for each student
+      const studentPredictions = students.map(student => {
+        // Get student's grades
+        const studentGrades = grades.filter(g => g.student_id === student.id);
+        const avgGrade = studentGrades.length > 0
+          ? studentGrades.reduce((sum, g) => sum + parseFloat(g.score || 0), 0) / studentGrades.length / 10
+          : 0;
+
+        // Get student's attendance
+        const studentAttendance = attendance.filter(a => a.student_id === student.id);
+        const presentCount = studentAttendance.filter(a => a.status === 'Present').length;
+        const attendanceRate = studentAttendance.length > 0
+          ? (presentCount / studentAttendance.length) * 100
+          : 0;
+
+        // Simple AI prediction algorithm (avgGrade is now 0-10 scale)
+        let prediction, priority, confidence, factors = [], recommendation;
+
+        if (avgGrade >= 8.5 && attendanceRate >= 90) {
+          prediction = 'Excellent';
+          priority = 'low';
+          confidence = 90 + Math.floor(Math.random() * 10);
+          factors = ['Điểm số cao', 'Điểm danh tốt', 'Thành tích ổn định'];
+          recommendation = 'Xem xét các cơ hội học tập nâng cao hoặc chương trình gifted';
+        } else if (avgGrade >= 7.0 && attendanceRate >= 80) {
+          prediction = 'Good';
+          priority = 'low';
+          confidence = 80 + Math.floor(Math.random() * 10);
+          factors = ['Điểm số khá', 'Điểm danh ổn định'];
+          recommendation = 'Tiếp tục duy trì và khuyến khích học sinh';
+        } else if (avgGrade >= 6.0 || attendanceRate >= 70) {
+          prediction = 'Needs Attention';
+          priority = 'medium';
+          confidence = 70 + Math.floor(Math.random() * 10);
+          if (avgGrade < 7.0) factors.push('Điểm số trung bình');
+          if (attendanceRate < 80) factors.push('Điểm danh không đều');
+          factors.push('Cần theo dõi');
+          recommendation = 'Theo dõi sát và cung cấp hỗ trợ có mục tiêu';
+        } else {
+          prediction = 'At Risk';
+          priority = 'high';
+          confidence = 75 + Math.floor(Math.random() * 15);
+          if (avgGrade < 6.0) factors.push('Điểm số thấp');
+          if (attendanceRate < 70) factors.push('Điểm danh kém');
+          if (studentGrades.length < 3) factors.push('Thiếu bài tập');
+          recommendation = 'Họp phụ huynh khẩn cấp và cung cấp hỗ trợ bổ sung';
+        }
+
+        return {
+          id: student.id,
+          student: `${student.first_name} ${student.last_name}`,
+          prediction,
+          confidence,
+          factors,
+          recommendation,
+          priority,
+          avgGrade: avgGrade.toFixed(1),
+          attendanceRate: attendanceRate.toFixed(1)
+        };
+      });
+
+      setPredictions(studentPredictions);
+    } catch (error) {
+      console.error('Error fetching predictions:', error);
+      // Fallback to empty if error
+      setPredictions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getPredictionColor = (prediction) => {
     const colors = {
@@ -111,6 +163,17 @@ const AIPredictionPage = () => {
     setDetailsOpen(false);
     setSelectedPrediction(null);
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Đang phân tích dữ liệu học sinh...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>

@@ -1,11 +1,3 @@
-/**
- * Attendance Controller
- * =======================
- * CRUD operations for attendance tracking
- * 
- * Week 3-4 Day 5 - Part 4
- */
-
 const { Attendance, Student, Course, Teacher, User, Class } = require('../models');
 const { catchAsync, NotFoundError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');

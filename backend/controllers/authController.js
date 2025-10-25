@@ -1,16 +1,3 @@
-/**
- * Authentication Controller - FINAL VERSION
- * ==========================================
- * Handles user registration, login, and authentication
- * 
- * CHANGELOG:
- * - âœ… Logout returns data property
- * - âœ… Register handles minimal fields properly with rollback
- * - âœ… Login validation handles ALL edge cases
- * - âœ… Comprehensive error handling
- * - âœ… Proper status codes for all scenarios
- */
-
 const { User, Teacher, Student } = require('../models');
 
 /**

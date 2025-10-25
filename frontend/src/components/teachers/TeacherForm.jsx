@@ -138,8 +138,11 @@ const TeacherForm = ({ teacher, onSuccess, onCancel }) => {
     if (teacher) {
       form.setFieldsValue({
         ...teacher,
-        dateOfBirth: teacher.dateOfBirth ? moment(teacher.dateOfBirth) : null,
-        joiningDate: teacher.joiningDate ? moment(teacher.joiningDate) : null,
+        firstName: teacher.first_name || teacher.firstName,
+        lastName: teacher.last_name || teacher.lastName,
+        dateOfBirth: teacher.date_of_birth || teacher.dateOfBirth ? moment(teacher.date_of_birth || teacher.dateOfBirth) : null,
+        joiningDate: teacher.hire_date || teacher.joiningDate ? moment(teacher.hire_date || teacher.joiningDate) : null,
+        hireDate: teacher.hire_date || teacher.hireDate ? moment(teacher.hire_date || teacher.hireDate) : null,
         status: teacher.status || 'Active',
         subjects: teacher.subjects || [],
         qualifications: teacher.qualifications || []
@@ -149,8 +152,9 @@ const TeacherForm = ({ teacher, onSuccess, onCancel }) => {
       // Set default values for new teacher
       form.setFieldsValue({
         status: 'Active',
-        gender: 'Male',
+        gender: 'M',
         joiningDate: moment(),
+        hireDate: moment(),
         experience: 0,
         employmentType: 'Full-time'
       });
@@ -297,19 +301,36 @@ const TeacherForm = ({ teacher, onSuccess, onCancel }) => {
               </Form.Item>
             </Col>
 
-            {/* Full Name */}
+            {/* First Name */}
             <Col xs={24} md={12}>
               <Form.Item
-                name="name"
-                label="Full Name"
+                name="firstName"
+                label="First Name"
                 rules={[
-                  { required: true, message: 'Please enter teacher name' },
-                  { min: 2, message: 'Name must be at least 2 characters' }
+                  { required: true, message: 'Please enter first name' },
+                  { min: 1, message: 'First name must be at least 1 character' }
                 ]}
               >
                 <Input
                   prefix={<UserOutlined />}
-                  placeholder="Enter full name"
+                  placeholder="Enter first name"
+                />
+              </Form.Item>
+            </Col>
+
+            {/* Last Name */}
+            <Col xs={24} md={12}>
+              <Form.Item
+                name="lastName"
+                label="Last Name"
+                rules={[
+                  { required: true, message: 'Please enter last name' },
+                  { min: 1, message: 'Last name must be at least 1 character' }
+                ]}
+              >
+                <Input
+                  prefix={<UserOutlined />}
+                  placeholder="Enter last name"
                 />
               </Form.Item>
             </Col>
@@ -331,6 +352,27 @@ const TeacherForm = ({ teacher, onSuccess, onCancel }) => {
                 />
               </Form.Item>
             </Col>
+
+            {/* Password - only for new teachers */}
+            {!teacher && (
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="password"
+                  label="Password"
+                  rules={[
+                    { required: true, message: 'Please enter password' },
+                    { min: 8, message: 'Password must be at least 8 characters' },
+                    { pattern: /[A-Z]/, message: 'Password must contain at least one uppercase letter' },
+                    { pattern: /[a-z]/, message: 'Password must contain at least one lowercase letter' },
+                    { pattern: /[0-9]/, message: 'Password must contain at least one number' }
+                  ]}
+                >
+                  <Input.Password
+                    placeholder="Enter password"
+                  />
+                </Form.Item>
+              </Col>
+            )}
 
             {/* Phone */}
             <Col xs={24} md={12}>
@@ -374,8 +416,8 @@ const TeacherForm = ({ teacher, onSuccess, onCancel }) => {
                 rules={[{ required: true, message: 'Please select gender' }]}
               >
                 <Select placeholder="Select gender">
-                  <Option value="Male">Male</Option>
-                  <Option value="Female">Female</Option>
+                  <Option value="M">Male</Option>
+                  <Option value="F">Female</Option>
                   <Option value="Other">Other</Option>
                 </Select>
               </Form.Item>

@@ -1,16 +1,3 @@
-/**
- * Error Handler Middleware
- * ========================
- * Global error handling for Express app
- * 
- * Week 3-4 Day 4
- */
-
-/**
- * Custom Error Classes
- * ====================
- */
-
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);

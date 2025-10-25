@@ -1,18 +1,4 @@
-/**
- * Validation Middleware
- * =====================
- * Express-validator middleware for request validation
- * 
- * Week 3-4 Day 3
- */
-
 const { validationResult } = require('express-validator');
-
-/**
- * Validate Middleware
- * ===================
- * Checks validation results and returns errors if any
- */
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   

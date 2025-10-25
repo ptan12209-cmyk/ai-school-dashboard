@@ -181,9 +181,11 @@ const studentSlice = createSlice({
       })
       .addCase(fetchStudents.fulfilled, (state, action) => {
         state.loading = false;
-        state.students = action.payload.students || action.payload.data || [];
-        state.totalStudents = action.payload.total || 0;
-        state.totalPages = action.payload.totalPages || Math.ceil(action.payload.total / state.pageSize);
+        // Handle backend response: { success: true, data: { students: [...], pagination: {...} } }
+        const responseData = action.payload.data || action.payload;
+        state.students = responseData.students || [];
+        state.totalStudents = responseData.pagination?.total || responseData.total || 0;
+        state.totalPages = responseData.pagination?.pages || responseData.totalPages || Math.ceil((responseData.pagination?.total || 0) / state.pageSize);
       })
       .addCase(fetchStudents.rejected, (state, action) => {
         state.loading = false;

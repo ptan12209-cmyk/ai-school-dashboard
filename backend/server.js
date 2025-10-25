@@ -1,19 +1,3 @@
-/**
- * Server Entry Point
- * ==================
- * Starts the Express server and connects to database
- * 
- * Week 3-4: To be implemented
- * - Database connection
- * - Server startup
- * - Graceful shutdown
- * - Error handling
- * 
- * Usage:
- * - Development: npm run dev (with nodemon)
- * - Production: npm start
- */
-
 const app = require('./app');
 const http = require('http');
 require('dotenv').config();

@@ -18,10 +18,8 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-// Import configurations
 const { corsConfig, rateLimitConfig } = require('./config/auth');
 
-// TODO: Week 3-4 - Import routes
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const studentRoutes = require('./routes/student.routes');
@@ -32,10 +30,9 @@ const gradeRoutes = require('./routes/grade.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const assignmentRoutes = require('./routes/assignment.routes');
-// const dashboardRoutes = require('./routes/dashboard.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 // const aiRoutes = require('./routes/ai.routes');
 
-// TODO: Week 3-4 - Import middleware
 const errorHandler = require('./middleware/errorHandler');
 
 /**
@@ -175,16 +172,6 @@ app.get('/', (req, res) => {
   });
 });
 
-/**
- * ============================================
- * API ROUTES
- * ============================================
- * Mount all route handlers under /api prefix
- * 
- * TODO: Week 3-4 - Uncomment when routes are implemented
- */
-
-// API version prefix
 const API_PREFIX = '/api';
 
 /**
@@ -232,7 +219,7 @@ app.use(`${API_PREFIX}/assignments`, assignmentRoutes);
 /**
  * Dashboard routes (protected)
  */
-// app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 
 /**
  * AI routes (protected)
@@ -257,10 +244,6 @@ app.use((req, res, next) => {
   });
 });
 
-/**
- * Global Error Handler
- * TODO: Week 3-4 - Use custom error handler middleware
- */
 app.use((err, req, res, next) => {
   // Log error for debugging
   console.error('Error occurred:', {
