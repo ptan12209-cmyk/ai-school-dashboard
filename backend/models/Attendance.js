@@ -1,11 +1,3 @@
-/**
- * Attendance Model
- * ================
- * Tracks student attendance for courses
- * 
- * Week 3-4 Day 5
- */
-
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 

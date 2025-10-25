@@ -1,11 +1,3 @@
-/**
- * Student Controller
- * ==================
- * CRUD operations for student management
- * 
- * Week 3-4 Day 4
- */
-
 const { User, Student } = require('../models');
 const { catchAsync, NotFoundError, ValidationError, ConflictError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');

@@ -1,9 +1,3 @@
-/**
- * AIPredictionPage Component
- * ==========================
- * AI predictions and analytics page
- */
-
 import React, { useState, useEffect } from 'react';
 import {
   Box,

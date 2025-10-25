@@ -1,9 +1,3 @@
-/**
- * AssignmentFormPage Component
- * ==============================
- * Create and edit assignments for teachers
- */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {

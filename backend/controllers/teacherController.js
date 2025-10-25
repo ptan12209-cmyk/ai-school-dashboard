@@ -1,11 +1,3 @@
-/**
- * Teacher Controller
- * ==================
- * CRUD operations for teacher management
- * 
- * Week 3-4 Day 4
- */
-
 const { Teacher, User, sequelize } = require('../models');
 const { catchAsync, NotFoundError, ConflictError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');

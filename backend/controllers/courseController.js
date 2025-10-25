@@ -1,11 +1,3 @@
-/**
- * Course Controller
- * ==================
- * CRUD operations for course/subject management
- * 
- * Week 3-4 Day 5 - Part 4
- */
-
 const { Course, Teacher, Class, Student, Grade, User } = require('../models');
 const { catchAsync, NotFoundError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');

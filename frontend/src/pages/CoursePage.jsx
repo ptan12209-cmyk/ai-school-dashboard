@@ -241,8 +241,6 @@ const CoursePage = () => {
         semester: values.semester ? values.semester.toString() : '1'
       };
 
-      console.log('Submitting course data:', courseData);
-
       if (selectedCourse) {
         // Update existing course
         await courseService.updateCourse(selectedCourse.id, courseData);

@@ -1,11 +1,3 @@
-/**
- * Models Index - Sequelize Model Loader
- * ======================================
- * Loads all models and defines associations
- * 
- * Week 3-4 Day 5 - COMPLETE WITH ALL MODELS
- */
-
 const { sequelize, Sequelize } = require('../config/database');
 
 // Import all models
@@ -21,14 +13,8 @@ const Assignment = require('./Assignment');
 const Question = require('./Question');
 const Submission = require('./Submission');
 
-/**
- * ============================================
- * DEFINE MODEL ASSOCIATIONS
- * ============================================
- */
-
-// ─────────────────────────────────────────────
-// 1. User ↔ Teacher (One-to-One)
+// Model Associations
+// User ↔ Teacher (One-to-One)
 // ─────────────────────────────────────────────
 User.hasOne(Teacher, {
   foreignKey: 'user_id',
@@ -279,11 +265,6 @@ Submission.belongsTo(Teacher, {
   as: 'grader'
 });
 
-/**
- * ============================================
- * EXPORT ALL MODELS
- * ============================================
- */
 module.exports = {
   sequelize,
   Sequelize,

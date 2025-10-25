@@ -67,26 +67,16 @@ const ReportPage = () => {
       setLoading(true);
       setError(null);
 
-      console.log('Fetching report data...');
-
-      // Fetch courses and calculate academic data (limit 100 per backend validation)
       const coursesResponse = await api.get('/courses', { params: { limit: 100 } });
-      console.log('Courses response:', coursesResponse.data);
       const courses = coursesResponse.data?.data?.courses || [];
 
-      // Fetch grades to calculate statistics (limit 100 per backend validation)
       const gradesResponse = await api.get('/grades', { params: { limit: 100 } });
-      console.log('Grades response:', gradesResponse.data);
       const grades = gradesResponse.data?.data?.grades || [];
 
-      // Fetch students (limit 100 per backend validation)
       const studentsResponse = await api.get('/students', { params: { limit: 100 } });
-      console.log('Students response:', studentsResponse.data);
       const students = studentsResponse.data?.data?.students || [];
 
-      // Fetch attendance (limit 100 per backend validation)
       const attendanceResponse = await api.get('/attendance', { params: { limit: 100 } });
-      console.log('Attendance response:', attendanceResponse.data);
       const attendance = attendanceResponse.data?.data?.attendance || [];
 
       // Calculate academic data by subject
@@ -254,8 +244,7 @@ const ReportPage = () => {
   ];
 
   const handleExport = (format) => {
-    console.log(`Exporting report as ${format}`);
-    // Implementation would go here
+    // Export functionality will be implemented here
   };
 
   if (loading) {

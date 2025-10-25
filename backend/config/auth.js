@@ -1,27 +1,5 @@
-/**
- * Authentication Configuration
- * =============================
- * JWT settings and authentication constants
- * 
- * Week 3-4: To be implemented
- * - JWT secret configuration
- * - Token expiration times
- * - Password hashing settings
- * 
- * Security best practices:
- * - Use strong, random JWT_SECRET (minimum 32 characters)
- * - Store sensitive data in .env file
- * - Use different secrets for development and production
- * - Implement token refresh mechanism
- */
-
 require('dotenv').config();
 
-/**
- * JWT Configuration
- */
-
-// Validate JWT_SECRET in production
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   throw new Error('FATAL ERROR: JWT_SECRET is not defined in production environment. Please set JWT_SECRET in your .env file.');
 }

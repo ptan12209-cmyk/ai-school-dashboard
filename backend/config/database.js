@@ -1,25 +1,7 @@
-/**
- * Database Configuration - Sequelize ORM
- * =======================================
- * Configure PostgreSQL connection for AI School Dashboard
- * 
- * Week 3-4: ACTIVATED ✅
- * - Sequelize instance creation
- * - Connection pooling
- * - Environment-based configuration
- * 
- * Usage:
- * const { sequelize } = require('./config/database');
- */
-
 require('dotenv').config();
 
 const { Sequelize } = require('sequelize');
 
-/**
- * Database connection configuration
- * Load from environment variables (.env file)
- */
 const config = {
   development: {
     username: process.env.DB_USER || 'postgres',
