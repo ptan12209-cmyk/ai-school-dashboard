@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import dashboardService from '../../services/dashboardService';
+import dashboardService from '../../services/dashboardService.js';
 
 const initialState = {
   stats: {},
