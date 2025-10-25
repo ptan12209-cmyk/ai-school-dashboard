@@ -28,6 +28,7 @@ import AIPredictionPage from './pages/AIPredictionPage.jsx';
 import StudentAssignmentsPage from './pages/StudentAssignmentsPage.jsx';
 import TakeAssignmentPage from './pages/TakeAssignmentPage.jsx';
 import TeacherAssignmentsPage from './pages/TeacherAssignmentsPage.jsx';
+import AssignmentFormPage from './pages/AssignmentFormPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 
 // Auth Guard
@@ -86,6 +87,8 @@ const AppRoutes = () => {
           {/* Assignment Management */}
           <Route path="/assignments" element={<StudentAssignmentsPage />} />
           <Route path="/assignments/teacher" element={<TeacherAssignmentsPage />} />
+          <Route path="/assignments/create" element={<AssignmentFormPage />} />
+          <Route path="/assignments/:assignmentId/edit" element={<AssignmentFormPage />} />
           <Route path="/assignments/:assignmentId/take" element={<TakeAssignmentPage />} />
 
           {/* Reports */}

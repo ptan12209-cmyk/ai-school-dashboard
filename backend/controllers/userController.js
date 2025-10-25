@@ -1,19 +1,6 @@
-/**
- * User Controller - FIXED VERSION
- * ===============
- * CRUD operations for user management
- * 
- * Week 3-4 Day 4
- * 
- * FIXES:
- * - ✅ Fixed missing newline in imports
- * - ✅ Improved UUID comparison for better compatibility
- * - ✅ Added proper string conversion for ID checks
- */
-
 const { User, Teacher, Student } = require('../models');
 const { catchAsync, NotFoundError, ConflictError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
-const { Op } = require('sequelize'); // ← Fixed: Added newline
+const { Op } = require('sequelize');
 
 /**
  * @route   GET /api/users

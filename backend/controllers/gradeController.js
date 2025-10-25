@@ -1,11 +1,3 @@
-/**
- * Grade Controller
- * ==================
- * CRUD operations for grade/score management
- * 
- * Week 3-4 Day 5 - Part 4
- */
-
 const { Grade, Student, Course, Teacher, User, Class } = require('../models');
 const { catchAsync, NotFoundError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');

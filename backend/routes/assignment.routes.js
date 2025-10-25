@@ -1,9 +1,3 @@
-/**
- * Assignment Routes
- * =================
- * API routes for assignment and submission management
- */
-
 const express = require('express');
 const router = express.Router();
 const assignmentController = require('../controllers/assignmentController');
