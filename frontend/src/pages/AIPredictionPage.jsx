@@ -60,7 +60,7 @@ const AIPredictionPage = () => {
         // Get student's grades
         const studentGrades = grades.filter(g => g.student_id === student.id);
         const avgGrade = studentGrades.length > 0
-          ? studentGrades.reduce((sum, g) => sum + parseFloat(g.score || 0), 0) / studentGrades.length
+          ? studentGrades.reduce((sum, g) => sum + parseFloat(g.score || 0), 0) / studentGrades.length / 10
           : 0;
 
         // Get student's attendance
@@ -70,26 +70,26 @@ const AIPredictionPage = () => {
           ? (presentCount / studentAttendance.length) * 100
           : 0;
 
-        // Simple AI prediction algorithm
+        // Simple AI prediction algorithm (avgGrade is now 0-10 scale)
         let prediction, priority, confidence, factors = [], recommendation;
 
-        if (avgGrade >= 85 && attendanceRate >= 90) {
+        if (avgGrade >= 8.5 && attendanceRate >= 90) {
           prediction = 'Excellent';
           priority = 'low';
           confidence = 90 + Math.floor(Math.random() * 10);
           factors = ['Điểm số cao', 'Điểm danh tốt', 'Thành tích ổn định'];
           recommendation = 'Xem xét các cơ hội học tập nâng cao hoặc chương trình gifted';
-        } else if (avgGrade >= 70 && attendanceRate >= 80) {
+        } else if (avgGrade >= 7.0 && attendanceRate >= 80) {
           prediction = 'Good';
           priority = 'low';
           confidence = 80 + Math.floor(Math.random() * 10);
           factors = ['Điểm số khá', 'Điểm danh ổn định'];
           recommendation = 'Tiếp tục duy trì và khuyến khích học sinh';
-        } else if (avgGrade >= 60 || attendanceRate >= 70) {
+        } else if (avgGrade >= 6.0 || attendanceRate >= 70) {
           prediction = 'Needs Attention';
           priority = 'medium';
           confidence = 70 + Math.floor(Math.random() * 10);
-          if (avgGrade < 70) factors.push('Điểm số trung bình');
+          if (avgGrade < 7.0) factors.push('Điểm số trung bình');
           if (attendanceRate < 80) factors.push('Điểm danh không đều');
           factors.push('Cần theo dõi');
           recommendation = 'Theo dõi sát và cung cấp hỗ trợ có mục tiêu';
@@ -97,7 +97,7 @@ const AIPredictionPage = () => {
           prediction = 'At Risk';
           priority = 'high';
           confidence = 75 + Math.floor(Math.random() * 15);
-          if (avgGrade < 60) factors.push('Điểm số thấp');
+          if (avgGrade < 6.0) factors.push('Điểm số thấp');
           if (attendanceRate < 70) factors.push('Điểm danh kém');
           if (studentGrades.length < 3) factors.push('Thiếu bài tập');
           recommendation = 'Họp phụ huynh khẩn cấp và cung cấp hỗ trợ bổ sung';
