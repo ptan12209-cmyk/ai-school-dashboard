@@ -1,18 +1,3 @@
-/**
- * AI Service Configuration
- * =========================
- * Configuration for AI/ML integrations
- * 
- * Week 7-8: To be implemented
- * - OpenAI API configuration
- * - Python ML service connection
- * - AI feature flags
- * 
- * Services:
- * - OpenAI GPT-4: Q&A, report generation
- * - Python ML: Grade prediction, student risk analysis
- */
-
 require('dotenv').config();
 
 /**
@@ -175,16 +160,6 @@ const monitoringConfig = {
     errorRateThreshold: 0.05 // 5% error rate triggers alert
   }
 };
-
-/**
- * TODO: Week 7-8 - Implement AI helper functions
- * 
- * - callOpenAI(prompt, options)
- * - callMLService(endpoint, data)
- * - predictGrade(studentId, courseId)
- * - detectRisk(studentId)
- * - generateReport(data, template)
- */
 
 module.exports = {
   openaiConfig,
