@@ -1,3 +1,8 @@
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Global Styles */
 * {
   margin: 0;
@@ -25,75 +30,105 @@ code {
   min-height: 100vh;
 }
 
-/* Common utility classes */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+/* Custom Animation Utilities */
+@layer utilities {
+  /* Hover grow effect */
+  .hover-grow {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+  .hover-grow:hover {
+    @apply scale-105;
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-1 shadow-lg;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  .card-hover:hover {
+    @apply shadow-xl -translate-y-0.5;
+  }
+
+  /* Button press effect */
+  .btn-press:active {
+    @apply scale-95;
+  }
+
+  /* Gradient animation background */
+  .gradient-animate {
+    background-size: 200% 200%;
+    @apply animate-gradient;
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      #f0f0f0 0px,
+      #f8f8f8 40px,
+      #f0f0f0 80px
+    );
+    background-size: 1000px;
+    @apply animate-shimmer;
+  }
+
+  /* Stagger animation delays */
+  .stagger-1 { animation-delay: 100ms; }
+  .stagger-2 { animation-delay: 200ms; }
+  .stagger-3 { animation-delay: 300ms; }
+  .stagger-4 { animation-delay: 400ms; }
+  .stagger-5 { animation-delay: 500ms; }
 }
 
-.text-center {
-  text-align: center;
-}
+/* Custom component styles */
+@layer components {
+  /* Animated card */
+  .animated-card {
+    @apply bg-white rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
 
-.text-left {
-  text-align: left;
-}
+  /* Animated button */
+  .animated-button {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-all duration-200 transform hover:scale-105 active:scale-95;
+  }
 
-.text-right {
-  text-align: right;
-}
+  /* Loading spinner */
+  .loading-spinner {
+    @apply inline-block w-8 h-8 border-4 border-gray-200 border-t-primary-500 rounded-full animate-spin;
+  }
 
-.mb-1 { margin-bottom: 0.5rem; }
-.mb-2 { margin-bottom: 1rem; }
-.mb-3 { margin-bottom: 1.5rem; }
-.mb-4 { margin-bottom: 2rem; }
+  /* Notification badge */
+  .notification-badge {
+    @apply absolute -top-1 -right-1 bg-error-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-bounce-gentle;
+  }
 
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-3 { margin-top: 1.5rem; }
-.mt-4 { margin-top: 2rem; }
+  /* Progress bar */
+  .progress-bar {
+    @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+  }
+  .progress-bar-fill {
+    @apply h-full bg-primary-500 rounded-full transition-all duration-500 ease-out;
+  }
 
-.p-1 { padding: 0.5rem; }
-.p-2 { padding: 1rem; }
-.p-3 { padding: 1.5rem; }
-.p-4 { padding: 2rem; }
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-gray-200 rounded animate-pulse;
+  }
 
-.d-flex {
-  display: flex;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.align-center {
-  align-items: center;
-}
-
-.gap-1 { gap: 0.5rem; }
-.gap-2 { gap: 1rem; }
-.gap-3 { gap: 1.5rem; }
-
-/* Button reset */
-button {
-  font-family: inherit;
-  cursor: pointer;
-}
-
-/* Input reset */
-input, select, textarea {
-  font-family: inherit;
-}
-
-/* Link reset */
-a {
-  color: inherit;
-  text-decoration: none;
+  /* Tooltip */
+  .tooltip {
+    @apply absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-md opacity-0 pointer-events-none transition-opacity duration-200;
+  }
+  .tooltip.show {
+    @apply opacity-100;
+  }
 }
 
 /* Scrollbar styling */
@@ -112,4 +147,15 @@ a {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Animation performance optimization */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
