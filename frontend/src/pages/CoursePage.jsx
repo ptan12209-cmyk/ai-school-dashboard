@@ -97,7 +97,7 @@ const CoursePage = () => {
   const fetchTeachers = async () => {
     try {
       setLoadingTeachers(true);
-      const response = await api.get('/teachers', { params: { limit: 1000 } });
+      const response = await api.get('/teachers', { params: { limit: 100 } });
       const data = response.data;
 
       if (data && data.data) {
@@ -121,7 +121,7 @@ const CoursePage = () => {
   const fetchClasses = async () => {
     try {
       setLoadingClasses(true);
-      const response = await api.get('/classes', { params: { limit: 1000 } });
+      const response = await api.get('/classes', { params: { limit: 100 } });
       const data = response.data;
 
       if (data && data.data) {

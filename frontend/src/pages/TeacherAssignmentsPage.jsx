@@ -54,7 +54,7 @@ const TeacherAssignmentsPage = () => {
     const fetchCourses = async () => {
       try {
         setLoadingCourses(true);
-        const response = await api.get('/courses', { params: { limit: 1000 } });
+        const response = await api.get('/courses', { params: { limit: 100 } });
         const data = response.data;
 
         if (data && data.data) {
