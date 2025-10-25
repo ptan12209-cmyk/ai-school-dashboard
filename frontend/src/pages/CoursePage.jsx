@@ -131,7 +131,9 @@ const CoursePage = () => {
       }
     } catch (error) {
       console.error('Error fetching classes:', error);
-      message.error('Không thể tải danh sách lớp học');
+      console.error('Error details:', error.response?.data);
+      const errorMsg = error?.response?.data?.message || 'Không thể tải danh sách lớp học';
+      message.error(errorMsg);
       setClasses([]);
     } finally {
       setLoadingClasses(false);
