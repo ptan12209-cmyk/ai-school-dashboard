@@ -1,6 +1,5 @@
-// dashboardSlice.js - Redux slice for dashboard data
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import dashboardService from '../../services/dashboardService'; // Assuming a service exists
+import dashboardService from '../../services/dashboardService';
 
 const initialState = {
   stats: {},
@@ -10,14 +9,12 @@ const initialState = {
   error: null,
 };
 
-// Example async thunk for fetching dashboard data
 export const fetchDashboardData = createAsyncThunk(
   'dashboard/fetchData',
   async (_, { rejectWithValue }) => {
     try {
-      // const response = await dashboardService.getDashboardData();
-      // return response.data;
-      return { stats: {}, charts: {}, recentActivities: [] }; // Mock data
+      const response = await dashboardService.getDashboardStats();
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch dashboard data');
     }

@@ -160,7 +160,7 @@ const GradeTable = ({
       render: (date) => new Date(date).toLocaleDateString(),
     },
     {
-      title: 'Comments',
+      title: 'Nhận xét',
       dataIndex: 'comments',
       key: 'comments',
       ellipsis: true,
@@ -173,24 +173,24 @@ const GradeTable = ({
       ),
     },
     {
-      title: 'Actions',
+      title: 'Thao tác',
       key: 'actions',
       width: 120,
       render: (_, record) => (
         <Space size="small">
-          <Tooltip title="Edit">
+          <Tooltip title="Sửa">
             <Button
               type="text"
               icon={<EditOutlined />}
               onClick={() => onEdit && onEdit(record)}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <Popconfirm
-              title="Are you sure you want to delete this grade?"
+              title="Bạn có chắc chắn muốn xóa điểm này?"
               onConfirm={() => onDelete && onDelete(record.id)}
-              okText="Yes"
-              cancelText="No"
+              okText="Có"
+              cancelText="Không"
             >
               <Button
                 type="text"
@@ -204,30 +204,29 @@ const GradeTable = ({
     },
   ];
 
-  // Get unique subjects and grade types for filters
   const subjects = [...new Set(gradeData.map(grade => grade.subject))];
   const gradeTypes = [...new Set(gradeData.map(grade => grade.gradeType))];
 
   return (
-    <Card 
-      title="Grade Records"
+    <Card
+      title="Bảng Điểm"
       extra={
         <Button onClick={onRefresh} loading={loading}>
-          Refresh
+          Làm mới
         </Button>
       }
     >
       <div style={{ marginBottom: 16 }}>
         <Space wrap>
           <Input
-            placeholder="Search by student name or ID"
+            placeholder="Tìm kiếm theo tên hoặc ID"
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 250 }}
           />
           <Select
-            placeholder="Filter by subject"
+            placeholder="Lọc theo môn học"
             value={selectedSubject}
             onChange={setSelectedSubject}
             style={{ width: 150 }}

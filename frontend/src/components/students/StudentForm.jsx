@@ -146,15 +146,14 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
     if (!value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject(new Error('Please enter a valid email address'));
+    return Promise.reject(new Error('Vui lòng nhập địa chỉ email hợp lệ'));
   };
 
-  // Validate phone number
   const validatePhone = (_, value) => {
     if (!value || /^[0-9]{10,15}$/.test(value.replace(/\D/g, ''))) {
       return Promise.resolve();
     }
-    return Promise.reject(new Error('Please enter a valid phone number'));
+    return Promise.reject(new Error('Vui lòng nhập số điện thoại hợp lệ'));
   };
 
   return (
@@ -167,19 +166,18 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
           autoComplete="off"
         >
           <Title level={4}>
-            {student ? 'Edit Student' : 'Add New Student'}
+            {student ? 'Sửa Học Sinh' : 'Thêm Học Sinh Mới'}
           </Title>
-          
-          <Divider>Personal Information</Divider>
 
-          {/* Avatar Upload */}
+          <Divider>Thông Tin Cá Nhân</Divider>
+
           <Row gutter={24}>
             <Col span={24}>
-              <Form.Item label="Profile Photo">
+              <Form.Item label="Ảnh Đại Diện">
                 <Space align="start">
-                  <Avatar 
-                    size={100} 
-                    src={avatarUrl} 
+                  <Avatar
+                    size={100}
+                    src={avatarUrl}
                     icon={<UserOutlined />}
                     style={{ backgroundColor: '#1890ff' }}
                   />
@@ -191,7 +189,7 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
                     onChange={handleAvatarUpload}
                   >
                     <Button icon={<CameraOutlined />}>
-                      Change Photo
+                      Đổi Ảnh
                     </Button>
                   </Upload>
                 </Space>
