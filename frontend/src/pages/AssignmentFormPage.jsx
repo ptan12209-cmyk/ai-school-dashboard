@@ -16,12 +16,15 @@ import {
   CircularProgress,
   FormHelperText,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  Chip
 } from '@mui/material';
 import {
   Save as SaveIcon,
   Cancel as CancelIcon,
-  Assignment as AssignmentIcon
+  Assignment as AssignmentIcon,
+  Publish as PublishIcon,
+  CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import api from '../services/api.js';
@@ -36,6 +39,7 @@ const AssignmentFormPage = () => {
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [error, setError] = useState('');
   const [courses, setCourses] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -124,8 +128,33 @@ const AssignmentFormPage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    setUploadedFiles(prev => [...prev, ...files]);
+
+    const fileNames = files.map(f => f.name).join(', ');
+    setFormData(prev => ({
+      ...prev,
+      attachments: prev.attachments
+        ? `${prev.attachments}, ${fileNames}`
+        : fileNames
+    }));
+    toast.success(`Đã thêm ${files.length} file`);
+  };
+
+  const handleRemoveFile = (index) => {
+    const newFiles = uploadedFiles.filter((_, i) => i !== index);
+    setUploadedFiles(newFiles);
+
+    const fileNames = newFiles.map(f => f.name).join(', ');
+    setFormData(prev => ({
+      ...prev,
+      attachments: fileNames
+    }));
+  };
+
+  const handleSubmit = async (e, shouldPublish = false) => {
+    if (e) e.preventDefault();
     setError('');
 
     // Validation
@@ -140,15 +169,16 @@ const AssignmentFormPage = () => {
       const submitData = {
         ...formData,
         total_points: parseFloat(formData.total_points),
-        max_attempts: parseInt(formData.max_attempts)
+        max_attempts: parseInt(formData.max_attempts),
+        status: shouldPublish ? 'published' : formData.status
       };
 
       if (isEdit) {
         await api.put(`/assignments/${assignmentId}`, submitData);
-        toast.success('Đã cập nhật bài tập');
+        toast.success(shouldPublish ? 'Đã cập nhật và phát hành bài tập' : 'Đã cập nhật bài tập');
       } else {
         await api.post('/assignments', submitData);
-        toast.success('Đã tạo bài tập mới');
+        toast.success(shouldPublish ? 'Đã tạo và phát hành bài tập mới' : 'Đã tạo bài tập mới');
       }
 
       navigate('/assignments/teacher');
@@ -160,6 +190,11 @@ const AssignmentFormPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveAndPublish = (e) => {
+    e.preventDefault();
+    handleSubmit(null, true);
   };
 
   if (loading && isEdit) {
@@ -333,17 +368,57 @@ const AssignmentFormPage = () => {
                 />
               </Grid>
 
-              {/* Attachments */}
+              {/* File Upload */}
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Tài Liệu Đính Kèm (URL)"
-                  name="attachments"
-                  value={formData.attachments}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/file.pdf"
-                  helperText="Nhập URL của tài liệu đính kèm"
-                />
+                <Box>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Tài Liệu Đính Kèm
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<CloudUploadIcon />}
+                    fullWidth
+                    sx={{ mb: 2 }}
+                  >
+                    Tải Lên File
+                    <input
+                      type="file"
+                      hidden
+                      multiple
+                      onChange={handleFileUpload}
+                      accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.zip"
+                    />
+                  </Button>
+
+                  {uploadedFiles.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        File đã chọn:
+                      </Typography>
+                      {uploadedFiles.map((file, index) => (
+                        <Chip
+                          key={index}
+                          label={file.name}
+                          onDelete={() => handleRemoveFile(index)}
+                          sx={{ m: 0.5 }}
+                          size="small"
+                        />
+                      ))}
+                    </Box>
+                  )}
+
+                  <TextField
+                    fullWidth
+                    label="Hoặc Nhập URL"
+                    name="attachments"
+                    value={formData.attachments}
+                    onChange={handleInputChange}
+                    placeholder="https://example.com/file.pdf"
+                    helperText="Upload file hoặc nhập URL của tài liệu"
+                    sx={{ mt: 2 }}
+                  />
+                </Box>
               </Grid>
 
               {/* Options */}
@@ -380,8 +455,18 @@ const AssignmentFormPage = () => {
                     variant="outlined"
                     startIcon={<CancelIcon />}
                     onClick={() => navigate('/assignments/teacher')}
+                    disabled={loading}
                   >
                     Hủy
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="success"
+                    startIcon={<PublishIcon />}
+                    onClick={handleSaveAndPublish}
+                    disabled={loading}
+                  >
+                    Lưu và Phát Hành
                   </Button>
                   <Button
                     type="submit"
@@ -389,7 +474,7 @@ const AssignmentFormPage = () => {
                     startIcon={<SaveIcon />}
                     disabled={loading}
                   >
-                    {loading ? 'Đang lưu...' : (isEdit ? 'Cập Nhật' : 'Tạo Mới')}
+                    {loading ? 'Đang lưu...' : (isEdit ? 'Cập Nhật' : 'Lưu Nháp')}
                   </Button>
                 </Box>
               </Grid>
