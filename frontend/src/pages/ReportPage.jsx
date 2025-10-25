@@ -116,7 +116,7 @@ const ReportPage = () => {
       const academicResults = Object.values(subjectStats).map(stat => ({
         subject: stat.subject,
         students: stat.gradeCount > 0 ? stat.gradeCount : stat.students,
-        avgGrade: stat.gradeCount > 0 ? (stat.totalGrade / stat.gradeCount / 10).toFixed(1) : 0,
+        avgGrade: stat.gradeCount > 0 ? parseFloat((stat.totalGrade / stat.gradeCount / 10).toFixed(1)) : 0,
         passRate: stat.gradeCount > 0 ? Math.round((stat.passCount / stat.gradeCount) * 100) : 0
       }));
 
@@ -140,7 +140,7 @@ const ReportPage = () => {
       const topStudents = Object.entries(studentGrades)
         .map(([id, data]) => ({
           name: data.student ? `${data.student.first_name} ${data.student.last_name}` : 'Unknown',
-          grade: (data.totalScore / data.count / 10).toFixed(1),
+          grade: parseFloat((data.totalScore / data.count / 10).toFixed(1)),
           class: 'N/A',
           subject: 'All Subjects'
         }))
@@ -151,7 +151,7 @@ const ReportPage = () => {
 
       // Calculate statistics
       const totalGrade = grades.reduce((sum, g) => sum + (parseFloat(g.score) || 0), 0);
-      const avgGrade = grades.length > 0 ? (totalGrade / grades.length / 10).toFixed(1) : 0;
+      const avgGrade = grades.length > 0 ? parseFloat((totalGrade / grades.length / 10).toFixed(1)) : 0;
 
       const presentCount = attendance.filter(a => a.status === 'Present').length;
       const avgAttendance = attendance.length > 0 ? Math.round((presentCount / attendance.length) * 100) : 0;
@@ -200,11 +200,14 @@ const ReportPage = () => {
       title: 'Average Grade',
       dataIndex: 'avgGrade',
       key: 'avgGrade',
-      render: (grade) => (
-        <Tag color={grade >= 8 ? 'green' : grade >= 7 ? 'orange' : 'red'}>
-          {grade.toFixed(1)}
-        </Tag>
-      )
+      render: (grade) => {
+        const gradeValue = typeof grade === 'number' ? grade : parseFloat(grade) || 0;
+        return (
+          <Tag color={gradeValue >= 8 ? 'green' : gradeValue >= 7 ? 'orange' : 'red'}>
+            {gradeValue.toFixed(1)}
+          </Tag>
+        );
+      }
     },
     {
       title: 'Pass Rate',
