@@ -1,11 +1,12 @@
 /**
  * Sidebar Component
  * ================
- * Navigation sidebar component
+ * Navigation sidebar component with role-based routing
  */
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box,
   List,
@@ -91,9 +92,21 @@ const Sidebar = ({ onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const { user } = useSelector((state) => state.auth || {});
 
   const handleNavigation = (path) => {
-    navigate(path);
+    // Role-based routing for assignments
+    if (path === '/assignments') {
+      // Teachers and admins go to teacher assignments page
+      if (user?.role === 'teacher' || user?.role === 'admin') {
+        navigate('/assignments/teacher');
+      } else {
+        navigate(path);
+      }
+    } else {
+      navigate(path);
+    }
+
     if (onClose) {
       onClose();
     }
