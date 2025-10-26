@@ -25,6 +25,7 @@ import AttendancePage from './pages/AttendancePage.jsx';
 import ReportPage from './pages/ReportPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import AIPredictionPage from './pages/AIPredictionPage.jsx';
+import AIChatbotPage from './pages/AIChatbotPage.jsx';
 import StudentAssignmentsPage from './pages/StudentAssignmentsPage.jsx';
 import TakeAssignmentPage from './pages/TakeAssignmentPage.jsx';
 import TeacherAssignmentsPage from './pages/TeacherAssignmentsPage.jsx';
@@ -99,6 +100,7 @@ const AppRoutes = () => {
 
           {/* AI Features */}
           <Route path="/ai-predictions" element={<AIPredictionPage />} />
+          <Route path="/ai-chatbot" element={<AIChatbotPage />} />
         </Route>
       </Route>
 

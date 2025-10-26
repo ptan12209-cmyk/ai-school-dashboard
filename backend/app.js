@@ -31,7 +31,7 @@ const attendanceRoutes = require('./routes/attendance.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const assignmentRoutes = require('./routes/assignment.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
-// const aiRoutes = require('./routes/ai.routes');
+const aiRoutes = require('./routes/ai.routes');
 
 const errorHandler = require('./middleware/errorHandler');
 
@@ -229,7 +229,7 @@ app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 /**
  * AI routes (protected)
  */
-// app.use(`${API_PREFIX}/ai`, aiRoutes);
+app.use(`${API_PREFIX}/ai`, aiRoutes);
 
 /**
  * ============================================

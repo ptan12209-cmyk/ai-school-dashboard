@@ -26,6 +26,7 @@ import {
   CalendarToday as CalendarIcon,
   Assignment as AssignmentIcon,
   Psychology as PsychologyIcon,
+  Chat as ChatIcon,
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
@@ -75,6 +76,11 @@ const menuItems = [
     text: 'Dự Đoán AI',
     icon: <PsychologyIcon />,
     path: '/ai-predictions',
+  },
+  {
+    text: 'AI Chatbot',
+    icon: <ChatIcon />,
+    path: '/ai-chatbot',
   },
   {
     text: 'Báo Cáo',
