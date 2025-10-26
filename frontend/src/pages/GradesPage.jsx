@@ -39,8 +39,10 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Assessment as AssessmentIcon,
+  FileDownload as DownloadIcon,
 } from '@mui/icons-material';
 import * as gradeService from '../services/gradeService';
+import { exportToExcel, exportToCSV, formatGradesForExport } from '../utils/exportUtils';
 
 const GradesPage = () => {
   const [grades, setGrades] = useState([]);
@@ -264,6 +266,24 @@ const GradesPage = () => {
     return 'error';
   };
 
+  /**
+   * Handle Export to Excel
+   */
+  const handleExportExcel = () => {
+    const dataToExport = filteredGrades.length > 0 ? filteredGrades : grades;
+    const formattedData = formatGradesForExport(dataToExport);
+    exportToExcel(formattedData, 'grades', 'Grades');
+  };
+
+  /**
+   * Handle Export to CSV
+   */
+  const handleExportCSV = () => {
+    const dataToExport = filteredGrades.length > 0 ? filteredGrades : grades;
+    const formattedData = formatGradesForExport(dataToExport);
+    exportToCSV(formattedData, 'grades');
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -332,6 +352,22 @@ const GradesPage = () => {
               onClick={handleAddGrade}
             >
               Add Grade
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleExportExcel}
+              disabled={grades.length === 0}
+            >
+              Export Excel
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleExportCSV}
+              disabled={grades.length === 0}
+            >
+              Export CSV
             </Button>
           </Box>
         </CardContent>

@@ -43,8 +43,10 @@ import {
   CalendarToday as CalendarIcon,
   CheckCircle as PresentIcon,
   Cancel as AbsentIcon,
+  FileDownload as DownloadIcon,
 } from '@mui/icons-material';
 import * as attendanceService from '../services/attendanceService';
+import { exportToExcel, exportToCSV, formatAttendanceForExport } from '../utils/exportUtils';
 
 const AttendancePage = () => {
   const [attendance, setAttendance] = useState([]);
@@ -276,6 +278,24 @@ const AttendancePage = () => {
     return status === 'Present' || status === 'Late' ? <PresentIcon /> : <AbsentIcon />;
   };
 
+  /**
+   * Handle Export to Excel
+   */
+  const handleExportExcel = () => {
+    const dataToExport = filteredAttendance.length > 0 ? filteredAttendance : attendance;
+    const formattedData = formatAttendanceForExport(dataToExport);
+    exportToExcel(formattedData, 'attendance', 'Attendance');
+  };
+
+  /**
+   * Handle Export to CSV
+   */
+  const handleExportCSV = () => {
+    const dataToExport = filteredAttendance.length > 0 ? filteredAttendance : attendance;
+    const formattedData = formatAttendanceForExport(dataToExport);
+    exportToCSV(formattedData, 'attendance');
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -353,6 +373,22 @@ const AttendancePage = () => {
               onClick={handleAddAttendance}
             >
               Mark Attendance
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleExportExcel}
+              disabled={attendance.length === 0}
+            >
+              Export Excel
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleExportCSV}
+              disabled={attendance.length === 0}
+            >
+              Export CSV
             </Button>
           </Box>
         </CardContent>
