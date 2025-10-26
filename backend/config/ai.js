@@ -1,35 +1,35 @@
 require('dotenv').config();
 
 /**
- * OpenAI Configuration (GPT-4)
+ * Google Gemini Configuration
  * Used for: Q&A chatbot, report summarization, content generation
+ * FREE tier: 60 requests per minute, 1500 requests per day
  */
-const openaiConfig = {
-  // API key from OpenAI platform
-  apiKey: process.env.OPENAI_API_KEY || '',
-  
+const geminiConfig = {
+  // API key from Google AI Studio (https://makersuite.google.com/app/apikey)
+  apiKey: process.env.GEMINI_API_KEY || '',
+
   // Model selection
-  model: process.env.OPENAI_MODEL || 'gpt-4',
-  
+  model: process.env.GEMINI_MODEL || 'gemini-pro',
+
   // Alternative models
   models: {
-    gpt4: 'gpt-4',
-    gpt4Turbo: 'gpt-4-turbo-preview',
-    gpt35: 'gpt-3.5-turbo'
+    geminiPro: 'gemini-pro',
+    geminiProVision: 'gemini-pro-vision'
   },
-  
+
   // API endpoint
-  apiUrl: 'https://api.openai.com/v1',
-  
-  // Token limits
-  maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 1000,
-  
-  // Temperature (0-2, higher = more creative)
+  apiUrl: 'https://generativelanguage.googleapis.com/v1beta',
+
+  // Generation config
+  maxTokens: parseInt(process.env.GEMINI_MAX_TOKENS) || 2048,
+
+  // Temperature (0-1, higher = more creative)
   temperature: 0.7,
-  
+
   // Timeout for requests (ms)
   timeout: 30000, // 30 seconds
-  
+
   // Retry configuration
   retries: 3,
   retryDelay: 1000 // ms
@@ -67,9 +67,9 @@ const mlServiceConfig = {
  * Enable/disable specific AI features
  */
 const aiFeatures = {
-  // Q&A Chatbot (OpenAI)
+  // Q&A Chatbot (Gemini)
   chatbot: {
-    enabled: process.env.AI_CHATBOT_ENABLED === 'true',
+    enabled: process.env.AI_CHATBOT_ENABLED !== 'false', // Default enabled
     maxHistoryLength: 10, // Number of previous messages to include
     systemPrompt: 'You are a helpful AI assistant for a school management system.'
   },
@@ -162,7 +162,7 @@ const monitoringConfig = {
 };
 
 module.exports = {
-  openaiConfig,
+  geminiConfig,
   mlServiceConfig,
   aiFeatures,
   modelConfigs,

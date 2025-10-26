@@ -1,18 +1,85 @@
 /**
- * AI Service
- * ===========
- * Handles all AI-related operations using OpenAI GPT-4
+ * AI Service with Google Gemini
+ * ==============================
+ * Handles all AI-related operations using Google Gemini API
  */
 
 const axios = require('axios');
-const { openaiConfig } = require('../config/ai');
+const { geminiConfig } = require('../config/ai');
 
 class AIService {
   constructor() {
-    this.apiKey = openaiConfig.apiKey;
-    this.apiUrl = openaiConfig.apiUrl;
-    this.model = openaiConfig.model;
+    this.apiKey = geminiConfig.apiKey;
+    this.apiUrl = geminiConfig.apiUrl;
+    this.model = geminiConfig.model;
     this.conversationHistory = new Map(); // Store per-user conversation history
+  }
+
+  /**
+   * Call Gemini API
+   * @param {string} prompt - User prompt
+   * @param {Array} history - Optional conversation history
+   * @returns {Promise<string>} AI response
+   */
+  async callGemini(prompt, history = []) {
+    try {
+      // Build contents array for Gemini API
+      const contents = [];
+
+      // Add conversation history
+      history.forEach(msg => {
+        contents.push({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        });
+      });
+
+      // Add current prompt
+      contents.push({
+        role: 'user',
+        parts: [{ text: prompt }]
+      });
+
+      const url = `${this.apiUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
+
+      const response = await axios.post(
+        url,
+        {
+          contents: contents,
+          generationConfig: {
+            temperature: geminiConfig.temperature,
+            maxOutputTokens: geminiConfig.maxTokens,
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: geminiConfig.timeout
+        }
+      );
+
+      // Extract text from Gemini response
+      const text = response.data.candidates[0]?.content?.parts[0]?.text;
+
+      if (!text) {
+        throw new Error('No response from Gemini');
+      }
+
+      return text;
+    } catch (error) {
+      console.error('Gemini API Error:', error.response?.data || error.message);
+
+      if (error.response?.status === 429) {
+        throw new Error('Đã vượt quá giới hạn API. Vui lòng thử lại sau vài phút.');
+      }
+
+      if (error.response?.status === 400) {
+        throw new Error('Yêu cầu không hợp lệ. Vui lòng thử lại.');
+      }
+
+      throw new Error('Không thể kết nối với AI assistant. Vui lòng kiểm tra API key.');
+    }
   }
 
   /**
@@ -33,32 +100,11 @@ class AIService {
       // Build system prompt based on context
       const systemPrompt = this.buildSystemPrompt(context);
 
-      // Build messages array
-      const messages = [
-        { role: 'system', content: systemPrompt },
-        ...history.slice(-10), // Last 10 messages for context
-        { role: 'user', content: message }
-      ];
+      // Combine system prompt with user message
+      const fullPrompt = `${systemPrompt}\n\nUser: ${message}\nAssistant:`;
 
-      // Call OpenAI API
-      const response = await axios.post(
-        `${this.apiUrl}/chat/completions`,
-        {
-          model: this.model,
-          messages: messages,
-          max_tokens: openaiConfig.maxTokens,
-          temperature: openaiConfig.temperature
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          timeout: openaiConfig.timeout
-        }
-      );
-
-      const aiResponse = response.data.choices[0].message.content;
+      // Call Gemini with history
+      const aiResponse = await this.callGemini(fullPrompt, history.slice(-10));
 
       // Update conversation history
       history.push({ role: 'user', content: message });
@@ -71,8 +117,8 @@ class AIService {
 
       return aiResponse;
     } catch (error) {
-      console.error('AI Chat Error:', error.response?.data || error.message);
-      throw new Error('Không thể kết nối với AI assistant. Vui lòng thử lại.');
+      console.error('AI Chat Error:', error.message);
+      throw error;
     }
   }
 
@@ -89,36 +135,36 @@ class AIService {
   buildSystemPrompt(context) {
     const { role, name, language = 'Vietnamese' } = context;
 
-    let prompt = `You are an intelligent AI assistant for an educational management system.
-Always respond in ${language}.`;
+    let prompt = `Bạn là trợ lý AI thông minh cho hệ thống quản lý giáo dục.
+Luôn trả lời bằng tiếng ${language}.`;
 
     if (role === 'student') {
-      prompt += `\n\nYou are helping a student named ${name || 'Student'}.
-Your role is to:
-- Answer questions about assignments, courses, and grades
-- Provide study tips and learning strategies
-- Help with homework and exam preparation
-- Motivate and encourage learning
-- Explain concepts in a simple, student-friendly way`;
+      prompt += `\n\nBạn đang giúp đỡ học sinh tên ${name || 'Học sinh'}.
+Vai trò của bạn:
+- Trả lời câu hỏi về bài tập, khóa học và điểm số
+- Cung cấp mẹo học tập và chiến lược học hiệu quả
+- Giúp đỡ với bài tập và ôn thi
+- Động viên và khuyến khích học tập
+- Giải thích khái niệm một cách đơn giản, dễ hiểu`;
     } else if (role === 'teacher') {
-      prompt += `\n\nYou are assisting a teacher named ${name || 'Teacher'}.
-Your role is to:
-- Help with lesson planning and curriculum design
-- Suggest teaching strategies and assessment methods
-- Provide insights on student performance
-- Assist with grading and feedback
-- Recommend educational resources`;
+      prompt += `\n\nBạn đang hỗ trợ giáo viên tên ${name || 'Giáo viên'}.
+Vai trò của bạn:
+- Giúp lập kế hoạch bài giảng và thiết kế chương trình
+- Đề xuất phương pháp giảng dạy và đánh giá
+- Cung cấp thông tin về hiệu suất học sinh
+- Hỗ trợ chấm điểm và phản hồi
+- Gợi ý tài liệu giáo dục`;
     } else if (role === 'admin') {
-      prompt += `\n\nYou are supporting a school administrator.
-Your role is to:
-- Provide insights on school performance metrics
-- Suggest improvements for academic programs
-- Help with policy and decision-making
-- Analyze trends and patterns
-- Generate reports and summaries`;
+      prompt += `\n\nBạn đang hỗ trợ quản trị viên trường học.
+Vai trò của bạn:
+- Cung cấp thông tin về chỉ số hiệu suất trường
+- Đề xuất cải thiện chương trình học tập
+- Giúp đỡ với chính sách và ra quyết định
+- Phân tích xu hướng và mẫu hình
+- Tạo báo cáo và tóm tắt`;
     }
 
-    prompt += `\n\nBe helpful, friendly, and professional. If you don't know something, admit it honestly.`;
+    prompt += `\n\nHãy hữu ích, thân thiện và chuyên nghiệp. Nếu bạn không biết điều gì, hãy thừa nhận một cách trung thực.`;
 
     return prompt;
   }
@@ -130,41 +176,25 @@ Your role is to:
     try {
       const { name, grades, weakSubjects, strengths } = studentData;
 
-      const prompt = `Analyze this student's performance and provide personalized study recommendations:
+      const prompt = `Phân tích hiệu suất học sinh này và đưa ra gợi ý học tập cá nhân hóa:
 
-Student: ${name}
-Average Grade: ${grades.average}/10
-Weak Subjects: ${weakSubjects.join(', ')}
-Strong Subjects: ${strengths.join(', ')}
+Học sinh: ${name}
+Điểm trung bình: ${grades.average}/10
+Môn yếu: ${weakSubjects.join(', ')}
+Môn mạnh: ${strengths.join(', ')}
 
-Please provide:
-1. Top 3 specific study recommendations
-2. Time management tips
-3. Suggested focus areas for improvement
-4. Motivational advice
+Vui lòng cung cấp:
+1. Top 3 gợi ý học tập cụ thể
+2. Mẹo quản lý thời gian
+3. Các lĩnh vực tập trung để cải thiện
+4. Lời khuyên động viên
 
-Format your response in Vietnamese with clear bullet points.`;
+Trả lời bằng tiếng Việt với các gạch đầu dòng rõ ràng.`;
 
-      const response = await axios.post(
-        `${this.apiUrl}/chat/completions`,
-        {
-          model: this.model,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 800,
-          temperature: 0.7
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          timeout: openaiConfig.timeout
-        }
-      );
-
-      return response.data.choices[0].message.content;
+      const response = await this.callGemini(prompt);
+      return response;
     } catch (error) {
-      console.error('Recommendation Error:', error.response?.data || error.message);
+      console.error('Recommendation Error:', error.message);
       throw new Error('Không thể tạo gợi ý học tập');
     }
   }
@@ -234,41 +264,25 @@ Format your response in Vietnamese with clear bullet points.`;
     try {
       const { interests, completedCourses, avgGrade, careerGoals } = studentProfile;
 
-      const prompt = `Based on this student profile, recommend 5 relevant courses:
+      const prompt = `Dựa trên hồ sơ học sinh này, gợi ý 5 khóa học phù hợp:
 
-Interests: ${interests.join(', ')}
-Completed Courses: ${completedCourses.join(', ')}
-Average Grade: ${avgGrade}/10
-Career Goals: ${careerGoals}
+Sở thích: ${interests.join(', ')}
+Khóa học đã hoàn thành: ${completedCourses.join(', ')}
+Điểm trung bình: ${avgGrade}/10
+Mục tiêu nghề nghiệp: ${careerGoals}
 
-For each recommendation, provide:
-- Course name
-- Why it's recommended
-- Expected difficulty level
-- How it aligns with career goals
+Cho mỗi gợi ý, cung cấp:
+- Tên khóa học
+- Lý do được gợi ý
+- Độ khó dự kiến
+- Phù hợp với mục tiêu nghề nghiệp như thế nào
 
-Respond in Vietnamese.`;
+Trả lời bằng tiếng Việt.`;
 
-      const response = await axios.post(
-        `${this.apiUrl}/chat/completions`,
-        {
-          model: this.model,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 1000,
-          temperature: 0.8
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          timeout: openaiConfig.timeout
-        }
-      );
-
-      return response.data.choices[0].message.content;
+      const response = await this.callGemini(prompt);
+      return response;
     } catch (error) {
-      console.error('Course Recommendation Error:', error.response?.data || error.message);
+      console.error('Course Recommendation Error:', error.message);
       throw new Error('Không thể tạo gợi ý khóa học');
     }
   }
@@ -280,46 +294,30 @@ Respond in Vietnamese.`;
     try {
       const { studentName, grades, attendance, behavior, period } = reportData;
 
-      const prompt = `Generate a comprehensive report summary for this student:
+      const prompt = `Tạo bản tóm tắt báo cáo toàn diện cho học sinh này:
 
-Student: ${studentName}
-Period: ${period}
-Average Grade: ${grades.average}/10
-Attendance Rate: ${attendance.rate}%
-Behavior Score: ${behavior.score}/10
+Học sinh: ${studentName}
+Kỳ: ${period}
+Điểm trung bình: ${grades.average}/10
+Tỷ lệ điểm danh: ${attendance.rate}%
+Điểm hạnh kiểm: ${behavior.score}/10
 
-Subjects:
+Các môn học:
 ${grades.subjects.map(s => `- ${s.name}: ${s.score}/10`).join('\n')}
 
-Please write:
-1. Overall Performance Summary
-2. Strengths and Achievements
-3. Areas for Improvement
-4. Specific Recommendations for Parents
-5. Next Steps
+Vui lòng viết:
+1. Tóm tắt hiệu suất tổng thể
+2. Điểm mạnh và thành tích
+3. Lĩnh vực cần cải thiện
+4. Gợi ý cụ thể cho phụ huynh
+5. Các bước tiếp theo
 
-Write in Vietnamese, professional yet warm tone suitable for parents.`;
+Viết bằng tiếng Việt, giọng điệu chuyên nghiệp nhưng ấm áp, phù hợp với phụ huynh.`;
 
-      const response = await axios.post(
-        `${this.apiUrl}/chat/completions`,
-        {
-          model: this.model,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 1200,
-          temperature: 0.6
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          timeout: openaiConfig.timeout
-        }
-      );
-
-      return response.data.choices[0].message.content;
+      const response = await this.callGemini(prompt);
+      return response;
     } catch (error) {
-      console.error('Report Generation Error:', error.response?.data || error.message);
+      console.error('Report Generation Error:', error.message);
       throw new Error('Không thể tạo báo cáo tóm tắt');
     }
   }
