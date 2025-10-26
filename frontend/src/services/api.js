@@ -7,8 +7,22 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-// API Base URL
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// API Base URL - Auto-detect for LAN access
+const getBaseURL = () => {
+  // If REACT_APP_API_URL is set and we're accessing via localhost, use it
+  if (process.env.REACT_APP_API_URL && window.location.hostname === 'localhost') {
+    return process.env.REACT_APP_API_URL;
+  }
+
+  // For LAN access, use the current hostname
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = '5000';
+
+  return `${protocol}//${hostname}:${port}/api`;
+};
+
+const BASE_URL = getBaseURL();
 
 /**
  * Create Axios Instance
