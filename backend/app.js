@@ -61,15 +61,20 @@ app.use(helmet());
 app.use(cors({
   origin: function (origin, callback) {
     // Get allowed origins from environment or use defaults
-    const allowedOrigins = process.env.CORS_ORIGIN 
+    const allowedOrigins = process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
       : ['http://localhost:3000', 'http://localhost:3001'];
-    
+
     // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) {
       return callback(null, true);
     }
-    
+
+    // Check if wildcard is allowed
+    if (allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+
     // Check if origin is allowed
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
