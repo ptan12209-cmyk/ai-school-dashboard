@@ -32,6 +32,8 @@ import {
 import { toast } from 'react-toastify';
 import api from '../services/api';
 import { format } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const AIChatbotPage = () => {
   const { user } = useSelector((state) => state.auth || {});
@@ -259,18 +261,55 @@ const AIChatbotPage = () => {
                       p: 2,
                       backgroundColor: message.role === 'user' ? 'primary.light' : 'white',
                       color: message.role === 'user' ? 'white' : 'text.primary',
-                      borderRadius: 2
+                      borderRadius: 2,
+                      '& p': { margin: '0.5em 0' },
+                      '& p:first-of-type': { marginTop: 0 },
+                      '& p:last-of-type': { marginBottom: 0 },
+                      '& ul, & ol': { marginLeft: '1.5em', marginTop: '0.5em', marginBottom: '0.5em' },
+                      '& li': { marginBottom: '0.25em' },
+                      '& strong': { fontWeight: 600 },
+                      '& em': { fontStyle: 'italic' },
+                      '& code': {
+                        backgroundColor: message.role === 'user' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.05)',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        fontFamily: 'monospace',
+                        fontSize: '0.9em'
+                      },
+                      '& pre': {
+                        backgroundColor: message.role === 'user' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.05)',
+                        padding: '12px',
+                        borderRadius: '4px',
+                        overflow: 'auto',
+                        '& code': {
+                          backgroundColor: 'transparent',
+                          padding: 0
+                        }
+                      },
+                      '& h1, & h2, & h3, & h4': {
+                        marginTop: '0.8em',
+                        marginBottom: '0.4em',
+                        fontWeight: 600
+                      },
+                      '& blockquote': {
+                        borderLeft: `3px solid ${message.role === 'user' ? 'rgba(255,255,255,0.3)' : '#ccc'}`,
+                        paddingLeft: '1em',
+                        marginLeft: 0,
+                        fontStyle: 'italic'
+                      }
                     }}
                   >
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word'
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        // Custom styling for paragraphs
+                        p: ({node, ...props}) => <Typography variant="body1" component="p" {...props} />,
+                        // Custom styling for lists
+                        li: ({node, ...props}) => <li style={{fontSize: '1rem'}} {...props} />,
                       }}
                     >
                       {message.content}
-                    </Typography>
+                    </ReactMarkdown>
                   </Paper>
                   <Typography
                     variant="caption"
