@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { jwtConfig } = require('../config/auth');
-const { User } = require('../models');
+const { User, Teacher, Student } = require('../models');
 
 const verifyToken = async (req, res, next) => {
   try {
@@ -43,14 +43,27 @@ const verifyToken = async (req, res, next) => {
         message: 'Account is inactive'
       });
     }
-    
+
     // Attach user to request object
     req.user = {
       id: user.id,
       email: user.email,
       role: user.role
     };
-    
+
+    // Load role-specific profile
+    if (user.role === 'teacher') {
+      const teacherProfile = await Teacher.findOne({ where: { user_id: user.id } });
+      if (teacherProfile) {
+        req.user.teacherProfile = teacherProfile;
+      }
+    } else if (user.role === 'student') {
+      const studentProfile = await Student.findOne({ where: { user_id: user.id } });
+      if (studentProfile) {
+        req.user.studentProfile = studentProfile;
+      }
+    }
+
     next();
     
   } catch (error) {
