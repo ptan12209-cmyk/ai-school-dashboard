@@ -1,0 +1,375 @@
+// LoadingStates.scss - Styles for loading state components
+
+.centered-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  width: 100%;
+  padding: 40px 20px;
+}
+
+.inline-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #595959;
+  font-size: 14px;
+}
+
+.overlay-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: 8px;
+
+  &.transparent {
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+.saving-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1890ff;
+  font-size: 14px;
+  padding: 4px 12px;
+  background-color: #e6f7ff;
+  border-radius: 4px;
+  border: 1px solid #91d5ff;
+}
+
+.syncing-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1890ff;
+  font-size: 14px;
+  padding: 4px 12px;
+  background-color: #e6f7ff;
+  border-radius: 4px;
+}
+
+.processing-state {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+
+  .processing-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    color: #595959;
+
+    .processing-progress {
+      font-size: 12px;
+      color: #8c8c8c;
+      font-weight: 500;
+    }
+  }
+}
+
+.empty-state-container {
+  padding: 40px 20px;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .empty-message {
+    font-size: 16px;
+    font-weight: 500;
+    color: #262626;
+    margin-bottom: 8px;
+  }
+
+  .empty-description {
+    font-size: 14px;
+    color: #8c8c8c;
+  }
+}
+
+.error-state-container {
+  padding: 40px 20px;
+  min-height: 300px;
+
+  .retry-button {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: #ff7875;
+    }
+  }
+}
+
+.no-results-state {
+  padding: 40px 20px;
+  min-height: 300px;
+
+  .no-results-message {
+    font-size: 16px;
+    font-weight: 500;
+    color: #262626;
+    margin-bottom: 8px;
+  }
+
+  .no-results-description {
+    font-size: 14px;
+    color: #8c8c8c;
+    margin-bottom: 16px;
+  }
+
+  .clear-filters-button {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: #40a9ff;
+    }
+  }
+}
+
+.timeout-state {
+  padding: 40px 20px;
+  min-height: 300px;
+}
+
+.cancellable-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+
+  .cancel-button {
+    background-color: transparent;
+    color: #ff4d4f;
+    border: 1px solid #ff4d4f;
+    padding: 6px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: #ff4d4f;
+      color: white;
+    }
+  }
+}
+
+.loading-alert {
+  margin-bottom: 16px;
+
+  .ant-spin {
+    vertical-align: middle;
+  }
+}
+
+.skeleton-table-row {
+  .skeleton-table-cell {
+    padding: 16px;
+
+    .skeleton-line {
+      height: 20px;
+      background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e0e0e0 50%,
+        #f0f0f0 75%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.card-loader-wrapper {
+  position: relative;
+
+  &.loading {
+    min-height: 200px;
+  }
+
+  .content-loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.full-page-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+
+  .loading-logo {
+    margin-bottom: 32px;
+    font-size: 48px;
+  }
+}
+
+.lazy-load-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  color: #8c8c8c;
+
+  .lazy-load-text {
+    font-size: 14px;
+  }
+}
+
+.refreshing-indicator {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background-color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #1890ff;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+
+  span {
+    font-weight: 500;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .centered-loader {
+    min-height: 150px;
+    padding: 20px 10px;
+  }
+
+  .empty-state-container,
+  .error-state-container,
+  .no-results-state,
+  .timeout-state {
+    padding: 20px 10px;
+    min-height: 200px;
+  }
+
+  .refreshing-indicator {
+    top: 60px;
+    right: 10px;
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .full-page-loading {
+    .loading-logo {
+      font-size: 36px;
+      margin-bottom: 24px;
+    }
+  }
+}
+
+// Dark mode support (if needed in the future)
+@media (prefers-color-scheme: dark) {
+  .overlay-loader {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  .saving-state {
+    background-color: rgba(24, 144, 255, 0.2);
+    border-color: #1890ff;
+  }
+
+  .refreshing-indicator {
+    background-color: #1f1f1f;
+    color: #40a9ff;
+  }
+
+  .full-page-loading {
+    background-color: #141414;
+  }
+}
+
+// Animation classes
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

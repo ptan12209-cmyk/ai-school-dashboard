@@ -1,6 +1,7 @@
 const { Grade, Student, Course, Teacher, User, Class } = require('../models');
 const { catchAsync, NotFoundError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
+const notificationScheduler = require('../services/notificationScheduler');
 
 /**
  * @route   GET /api/grades
@@ -270,20 +271,34 @@ exports.createGrade = catchAsync(async (req, res) => {
     is_published: is_published !== undefined ? is_published : false
   });
   
-  // Fetch complete grade data
+  // Fetch complete grade data with User for notifications
   const gradeData = await Grade.findByPk(newGrade.id, {
     include: [
-      { model: Student, as: 'student', attributes: ['id', 'first_name', 'last_name'] },
+      {
+        model: Student,
+        as: 'student',
+        attributes: ['id', 'first_name', 'last_name'],
+        include: [{ model: User, as: 'user', attributes: ['id', 'email'] }]
+      },
       { model: Course, as: 'course', attributes: ['id', 'name', 'code', 'subject'] }
     ]
   });
-  
+
+  // Send notification if grade is published
+  if (newGrade.is_published) {
+    await notificationScheduler.sendGradeNotification(
+      gradeData,
+      gradeData.student,
+      gradeData.course
+    );
+  }
+
   // Convert score to number for consistent API response
   const formattedGrade = {
     ...gradeData.toJSON(),
     score: parseFloat(gradeData.score)
   };
-  
+
   res.status(201).json({
     success: true,
     message: 'Grade created successfully',
@@ -334,21 +349,35 @@ exports.updateGrade = catchAsync(async (req, res) => {
   }
   
   await grade.update(updates);
-  
-  // Fetch updated data with associations
+
+  // Fetch updated data with associations including User for notifications
   const updatedGrade = await Grade.findByPk(id, {
     include: [
-      { model: Student, as: 'student', attributes: ['id', 'first_name', 'last_name'] },
+      {
+        model: Student,
+        as: 'student',
+        attributes: ['id', 'first_name', 'last_name'],
+        include: [{ model: User, as: 'user', attributes: ['id', 'email'] }]
+      },
       { model: Course, as: 'course', attributes: ['id', 'name', 'code', 'subject'] }
     ]
   });
-  
+
+  // Send notification if grade is being published (either newly published or was already published)
+  if (updatedGrade.is_published) {
+    await notificationScheduler.sendGradeNotification(
+      updatedGrade,
+      updatedGrade.student,
+      updatedGrade.course
+    );
+  }
+
   // Convert score to number for consistent API response
   const formattedGrade = {
     ...updatedGrade.toJSON(),
     score: parseFloat(updatedGrade.score)
   };
-  
+
   res.json({
     success: true,
     message: 'Grade updated successfully',

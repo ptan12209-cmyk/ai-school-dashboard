@@ -272,16 +272,16 @@ class AssignmentService {
       include: [{ model: User, as: 'user' }]
     });
 
-    if (io && student.user) {
+    if (io && student && student.user) {
       await notificationService.createNotification({
-        user_id: student.user_id,
+        userId: student.user.id,
         type: 'assignment',
         title: 'Đã Nộp Bài Thành Công',
         message: `Bạn đã nộp bài "${assignment.title}". ${needsManualGrading ? 'Đang chờ giáo viên chấm điểm.' : `Điểm: ${submission.score}/${submission.max_score}`}`,
-        related_type: 'submission',
-        related_id: submission.id,
+        relatedType: 'submission',
+        relatedId: submission.id,
         priority: 'medium'
-      }, { io, sendEmail: false });
+      }, { io, sendEmail: false, user: student.user });
     }
 
     return await Submission.findByPk(submission.id, {
@@ -338,7 +338,7 @@ class AssignmentService {
         related_type: 'submission',
         related_id: submission.id,
         priority: 'high'
-      }, { io, sendEmail: true });
+      }, { io, sendEmail: true, user: submission.student.user });
     }
 
     return submission;
@@ -364,12 +364,12 @@ class AssignmentService {
       include: [{ model: User, as: 'user' }]
     });
 
-    const studentUserIds = students.map(s => s.user_id).filter(Boolean);
+    const studentUsers = students.map(s => s.user).filter(Boolean);
 
     // Send bulk notification
-    if (io && studentUserIds.length > 0) {
+    if (io && studentUsers.length > 0) {
       await notificationService.createBulkNotifications(
-        studentUserIds,
+        studentUsers,
         {
           type: 'assignment',
           title: 'Bài Tập Mới',

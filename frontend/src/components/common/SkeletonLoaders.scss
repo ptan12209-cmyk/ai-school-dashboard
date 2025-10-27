@@ -1,0 +1,229 @@
+// SkeletonLoaders.scss - Styles for skeleton loading components
+
+.skeleton-table {
+  .ant-table-thead > tr > th {
+    background-color: transparent !important;
+  }
+
+  .ant-skeleton {
+    margin: 0 !important;
+  }
+}
+
+.skeleton-stat-card {
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .ant-card-body {
+    width: 100%;
+  }
+}
+
+.skeleton-stats-row {
+  margin-bottom: 16px;
+}
+
+.skeleton-list {
+  .ant-list-item {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+}
+
+.skeleton-form {
+  .ant-skeleton-element {
+    width: 100%;
+  }
+}
+
+.skeleton-profile {
+  .ant-skeleton-avatar {
+    margin-bottom: 16px;
+  }
+}
+
+.skeleton-detail-page {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.skeleton-dashboard {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.skeleton-page-header {
+  padding: 16px 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.skeleton-data-grid {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.skeleton-card-grid {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.full-page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  width: 100%;
+
+  .loader-message {
+    color: #8c8c8c;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+}
+
+// Fade-in animation for skeleton components
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Shimmer effect for skeleton elements
+.ant-skeleton-element {
+  .ant-skeleton-button,
+  .ant-skeleton-input,
+  .ant-skeleton-avatar {
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Loading state overlay
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  border-radius: 8px;
+
+  &.dark {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+// Content loading state
+.content-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+// Skeleton responsive adjustments
+@media (max-width: 768px) {
+  .skeleton-stats-row {
+    .skeleton-stat-card {
+      min-height: 120px;
+    }
+  }
+
+  .skeleton-page-header {
+    .ant-row {
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+
+  .skeleton-data-grid {
+    .ant-card:first-child {
+      .ant-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+  }
+}
+
+// Custom skeleton colors
+.skeleton-light {
+  .ant-skeleton-element {
+    background: linear-gradient(
+      90deg,
+      #f0f0f0 25%,
+      #e0e0e0 50%,
+      #f0f0f0 75%
+    );
+    background-size: 200% 100%;
+  }
+}
+
+.skeleton-dark {
+  .ant-skeleton-element {
+    background: linear-gradient(
+      90deg,
+      #303030 25%,
+      #404040 50%,
+      #303030 75%
+    );
+    background-size: 200% 100%;
+  }
+}
+
+// Pulse animation variant
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Wave animation variant
+.skeleton-wave {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: skeleton-wave 1.5s infinite;
+  }
+}
+
+@keyframes skeleton-wave {
+  100% {
+    transform: translateX(100%);
+  }
+}

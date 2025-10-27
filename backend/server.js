@@ -52,7 +52,13 @@ async function startServer() {
     app.locals.io = io;
 
     /**
-     * Step 4: Start HTTP Server
+     * Step 4: Initialize Notification Scheduler
+     */
+    const notificationScheduler = require('./services/notificationScheduler');
+    notificationScheduler.initializeScheduler();
+
+    /**
+     * Step 5: Start HTTP Server
      */
     const server = httpServer.listen(PORT, HOST, () => {
       console.log('');

@@ -8,7 +8,10 @@
       "Bash(npm install:*)",
       "Bash(test:*)",
       "Bash(node -e:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npm view:*)"
     ],
     "deny": [],
     "ask": []

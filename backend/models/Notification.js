@@ -31,6 +31,7 @@ const Notification = sequelize.define('Notification', {
       'grade_posted',        // Điểm số mới
       'attendance_marked',   // Điểm danh
       'assignment_due',      // Hạn nộp bài
+      'assignment',          // Bài tập mới/nộp bài
       'announcement',        // Thông báo chung
       'message',            // Tin nhắn
       'alert',              // Cảnh báo
