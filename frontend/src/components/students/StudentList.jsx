@@ -49,10 +49,12 @@ import {
   selectAllStudents,
   selectStudentsLoading,
   selectPagination,
-  clearMessages
+  clearMessages,
+  createStudent
 } from '../../redux/slices/studentSlice';
 import StudentFilter from './StudentFilter.jsx';
-import { exportToExcel, exportToCSV, formatStudentsForExport } from '../../utils/exportUtils';
+import { exportToExcel, exportToCSV, formatStudentsForExport, validateStudentsData } from '../../utils/exportUtils';
+import BulkImportModal from '../common/BulkImportModal.jsx';
 import './StudentList.scss';
 
 const { Title, Text } = Typography;
@@ -67,6 +69,7 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const loadStudents = useCallback(() => {
     dispatch(fetchStudents({
@@ -157,6 +160,39 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
       default:
         break;
     }
+  };
+
+  // Handle bulk import
+  const handleBulkImport = async (validStudents) => {
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    for (const student of validStudents) {
+      try {
+        await dispatch(createStudent(student)).unwrap();
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push({
+          student: `${student.first_name} ${student.last_name}`,
+          error: error.message
+        });
+      }
+    }
+
+    // Refresh student list
+    loadStudents();
+
+    if (results.failed === 0) {
+      message.success(`Successfully imported ${results.success} students`);
+    } else {
+      message.warning(`Imported ${results.success} students, ${results.failed} failed`);
+    }
+
+    return results;
   };
 
   // More actions menu
@@ -445,8 +481,13 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
               >
                 <Button icon={<DownloadOutlined />}>Export</Button>
               </Dropdown>
-              
-              <Button icon={<UploadOutlined />}>Import</Button>
+
+              <Button
+                icon={<UploadOutlined />}
+                onClick={() => setImportModalOpen(true)}
+              >
+                Import
+              </Button>
               
               <Button 
                 type="primary" 
@@ -507,6 +548,16 @@ const StudentList = ({ onAdd, onEdit, onView }) => {
           </div>
         )}
       </Card>
+
+      {/* Bulk Import Modal */}
+      <BulkImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleBulkImport}
+        validateData={validateStudentsData}
+        type="students"
+        title="Bulk Import Students"
+      />
     </div>
   );
 };

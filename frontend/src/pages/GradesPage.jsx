@@ -40,9 +40,11 @@ import {
   Delete as DeleteIcon,
   Assessment as AssessmentIcon,
   FileDownload as DownloadIcon,
+  CloudUpload as UploadIcon,
 } from '@mui/icons-material';
 import * as gradeService from '../services/gradeService';
-import { exportToExcel, exportToCSV, formatGradesForExport } from '../utils/exportUtils';
+import { exportToExcel, exportToCSV, formatGradesForExport, validateGradesData } from '../utils/exportUtils';
+import BulkImportModal from '../components/common/BulkImportModal';
 
 const GradesPage = () => {
   const [grades, setGrades] = useState([]);
@@ -55,6 +57,7 @@ const GradesPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [gradeToDelete, setGradeToDelete] = useState(null);
   const [error, setError] = useState('');
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -284,6 +287,35 @@ const GradesPage = () => {
     exportToCSV(formattedData, 'grades');
   };
 
+  /**
+   * Handle Bulk Import
+   */
+  const handleBulkImport = async (validGrades) => {
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    for (const grade of validGrades) {
+      try {
+        await gradeService.createGrade(grade);
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push({
+          grade: `${grade.student_id} - ${grade.course_id}`,
+          error: error.message
+        });
+      }
+    }
+
+    // Refresh grades list
+    fetchGrades();
+
+    return results;
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -368,6 +400,13 @@ const GradesPage = () => {
               disabled={grades.length === 0}
             >
               Export CSV
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<UploadIcon />}
+              onClick={() => setImportModalOpen(true)}
+            >
+              Import Grades
             </Button>
           </Box>
         </CardContent>
@@ -610,6 +649,16 @@ const GradesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Bulk Import Modal */}
+      <BulkImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleBulkImport}
+        validateData={validateGradesData}
+        type="grades"
+        title="Bulk Import Grades"
+      />
     </Box>
   );
 };

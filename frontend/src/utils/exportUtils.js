@@ -200,3 +200,164 @@ export const downloadTemplate = (type) => {
 
   exportToExcel(templateData, `${type}_template`, 'Template');
 };
+
+/**
+ * Parse Excel file and return data as array of objects
+ * @param {File} file - Excel file to parse
+ * @returns {Promise<Array>} Parsed data
+ */
+export const parseExcelFile = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // Get first sheet
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        // Convert to JSON
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+          raw: false, // Keep values as strings for better control
+          defval: '' // Default value for empty cells
+        });
+
+        resolve(jsonData);
+      } catch (error) {
+        reject(new Error('Failed to parse Excel file: ' + error.message));
+      }
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+/**
+ * Validate and transform students data from Excel
+ * @param {Array} data - Raw data from Excel
+ * @returns {Object} { valid: Array, errors: Array }
+ */
+export const validateStudentsData = (data) => {
+  const valid = [];
+  const errors = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2; // +2 because Excel is 1-indexed and has header row
+    const rowErrors = [];
+
+    // Required fields validation
+    if (!row.first_name || row.first_name.trim() === '') {
+      rowErrors.push('First name is required');
+    }
+    if (!row.last_name || row.last_name.trim() === '') {
+      rowErrors.push('Last name is required');
+    }
+    if (!row.email || row.email.trim() === '') {
+      rowErrors.push('Email is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
+      rowErrors.push('Invalid email format');
+    }
+
+    // Optional field validation
+    if (row.phone && row.phone.length > 0 && !/^[0-9+\-() ]+$/.test(row.phone)) {
+      rowErrors.push('Invalid phone format');
+    }
+
+    if (row.gender && !['Male', 'Female', 'Other'].includes(row.gender)) {
+      rowErrors.push('Gender must be Male, Female, or Other');
+    }
+
+    if (rowErrors.length > 0) {
+      errors.push({
+        row: rowNumber,
+        data: row,
+        errors: rowErrors
+      });
+    } else {
+      // Transform data to match backend expectations
+      valid.push({
+        first_name: row.first_name.trim(),
+        last_name: row.last_name.trim(),
+        email: row.email.trim().toLowerCase(),
+        phone: row.phone?.trim() || '',
+        date_of_birth: row.date_of_birth || null,
+        gender: row.gender || 'Other',
+        class_id: row.class_id || null,
+        parent_name: row.parent_name?.trim() || '',
+        parent_phone: row.parent_phone?.trim() || '',
+        parent_email: row.parent_email?.trim() || '',
+        address: row.address?.trim() || '',
+        enrollment_date: row.enrollment_date || new Date().toISOString().split('T')[0],
+        status: row.status || 'Active'
+      });
+    }
+  });
+
+  return { valid, errors };
+};
+
+/**
+ * Validate and transform grades data from Excel
+ * @param {Array} data - Raw data from Excel
+ * @returns {Object} { valid: Array, errors: Array }
+ */
+export const validateGradesData = (data) => {
+  const valid = [];
+  const errors = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    const rowErrors = [];
+
+    // Required fields validation
+    if (!row.student_id || row.student_id.trim() === '') {
+      rowErrors.push('Student ID is required');
+    }
+    if (!row.course_id || row.course_id.trim() === '') {
+      rowErrors.push('Course ID is required');
+    }
+    if (!row.score && row.score !== 0) {
+      rowErrors.push('Score is required');
+    } else {
+      const score = parseFloat(row.score);
+      if (isNaN(score) || score < 0 || score > 100) {
+        rowErrors.push('Score must be between 0 and 100');
+      }
+    }
+
+    if (!row.grade_type || row.grade_type.trim() === '') {
+      rowErrors.push('Grade type is required');
+    } else if (!['Quiz', 'Test', 'Assignment', 'Project', 'Midterm', 'Final', 'Participation'].includes(row.grade_type)) {
+      rowErrors.push('Invalid grade type');
+    }
+
+    if (rowErrors.length > 0) {
+      errors.push({
+        row: rowNumber,
+        data: row,
+        errors: rowErrors
+      });
+    } else {
+      valid.push({
+        student_id: row.student_id.trim(),
+        course_id: row.course_id.trim(),
+        score: parseFloat(row.score),
+        grade_type: row.grade_type.trim(),
+        semester: row.semester || '1',
+        graded_date: row.graded_date || new Date().toISOString().split('T')[0],
+        weight: parseFloat(row.weight) || 10,
+        notes: row.notes?.trim() || '',
+        is_published: row.is_published === 'true' || row.is_published === true || false
+      });
+    }
+  });
+
+  return { valid, errors };
+};
