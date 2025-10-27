@@ -11,7 +11,6 @@
  * - Notifications
  */
 
-const bcrypt = require('bcryptjs');
 const { sequelize } = require('../config/database');
 const User = require('../models/User');
 const Teacher = require('../models/Teacher');
@@ -24,13 +23,6 @@ const Assignment = require('../models/Assignment');
 const Question = require('../models/Question');
 const Submission = require('../models/Submission');
 const Notification = require('../models/Notification');
-
-/**
- * Helper: Hash password
- */
-const hashPassword = async (password) => {
-  return await bcrypt.hash(password, 10);
-};
 
 /**
  * Helper: Random number in range
@@ -122,10 +114,9 @@ async function seed() {
     // 1. CREATE ADMIN USER
     // ========================================
     console.log('👤 Creating admin user...');
-    const adminPassword = await hashPassword('Admin@123');
     const admin = await User.create({
       email: 'admin@school.edu.vn',
-      password_hash: adminPassword,
+      password_hash: 'Admin@123',
       role: 'admin',
       is_active: true
     });
@@ -136,7 +127,6 @@ async function seed() {
     // ========================================
     console.log('👨‍🏫 Creating teachers...');
     const teachers = [];
-    const teacherPassword = await hashPassword('Teacher@123');
 
     for (let i = 1; i <= 12; i++) {
       const { firstName, lastName } = generateName();
@@ -144,7 +134,7 @@ async function seed() {
 
       const user = await User.create({
         email,
-        password_hash: teacherPassword,
+        password_hash: 'Teacher@123',
         role: 'teacher',
         is_active: true
       });
@@ -190,7 +180,6 @@ async function seed() {
     // ========================================
     console.log('👨‍🎓 Creating students...');
     const students = [];
-    const studentPassword = await hashPassword('Student@123');
 
     for (let i = 1; i <= 120; i++) {
       const { firstName, lastName } = generateName();
@@ -199,7 +188,7 @@ async function seed() {
 
       const user = await User.create({
         email,
-        password_hash: studentPassword,
+        password_hash: 'Student@123',
         role: 'student',
         is_active: true
       });

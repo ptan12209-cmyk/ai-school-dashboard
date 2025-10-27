@@ -44,11 +44,12 @@ const StatisticsCards = ({ stats = {} }) => {
 
   return (
     <Row gutter={[16, 16]}>
-      {statisticsData.map((stat) => (
+      {statisticsData.map((stat, index) => (
         <Col xs={24} sm={12} lg={6} key={stat.title}>
-          <Card 
+          <Card
             hoverable
-            style={{ 
+            className={`card-hover animate-fade-in-up stagger-${index + 1}`}
+            style={{
               borderLeft: `4px solid ${stat.color}`,
               height: '120px'
             }}
@@ -62,7 +63,7 @@ const StatisticsCards = ({ stats = {} }) => {
                   valueStyle={{ color: stat.color, fontSize: '24px' }}
                 />
               </div>
-              <div>
+              <div className="animate-bounce-gentle">
                 {stat.icon}
               </div>
             </div>

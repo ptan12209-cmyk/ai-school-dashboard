@@ -17,7 +17,9 @@ import {
   Tabs,
   List,
   Avatar,
-  Tag
+  Tag,
+  Spin,
+  message
 } from 'antd';
 import {
   BarChartOutlined,
@@ -33,6 +35,7 @@ import {
   UserOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import api from '../services/api.js';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -40,30 +43,125 @@ const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
 
 const ReportPage = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [reportType, setReportType] = useState('academic');
   const [dateRange, setDateRange] = useState(null);
+  const [academicData, setAcademicData] = useState([]);
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [topPerformers, setTopPerformers] = useState([]);
+  const [statistics, setStatistics] = useState({
+    totalStudents: 0,
+    totalCourses: 0,
+    avgAttendance: 0,
+    avgGrade: 0
+  });
 
-  // Mock data for reports
-  const academicData = [
-    { subject: 'Mathematics', avgGrade: 8.5, students: 120, passRate: 92 },
-    { subject: 'Science', avgGrade: 7.8, students: 115, passRate: 88 },
-    { subject: 'English', avgGrade: 8.2, students: 125, passRate: 95 },
-    { subject: 'History', avgGrade: 7.5, students: 110, passRate: 85 }
-  ];
+  // Fetch report data
+  useEffect(() => {
+    fetchReportData();
+  }, []);
 
-  const attendanceData = [
-    { class: '10A', present: 28, total: 30, rate: 93.3 },
-    { class: '10B', present: 25, total: 28, rate: 89.3 },
-    { class: '11A', present: 30, total: 32, rate: 93.8 },
-    { class: '11B', present: 27, total: 30, rate: 90.0 }
-  ];
+  const fetchReportData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const topPerformers = [
-    { name: 'Alice Johnson', grade: 9.5, class: '10A', subject: 'Mathematics' },
-    { name: 'Bob Smith', grade: 9.2, class: '11B', subject: 'Science' },
-    { name: 'Carol Davis', grade: 9.0, class: '10B', subject: 'English' }
-  ];
+      const coursesResponse = await api.get('/courses', { params: { limit: 100 } });
+      const courses = coursesResponse.data?.data?.courses || [];
+
+      const gradesResponse = await api.get('/grades', { params: { limit: 100 } });
+      const grades = gradesResponse.data?.data?.grades || [];
+
+      const studentsResponse = await api.get('/students', { params: { limit: 100 } });
+      const students = studentsResponse.data?.data?.students || [];
+
+      const attendanceResponse = await api.get('/attendance', { params: { limit: 100 } });
+      const attendance = attendanceResponse.data?.data?.attendance || [];
+
+      // Calculate academic data by subject
+      const subjectStats = {};
+      courses.forEach(course => {
+        if (!subjectStats[course.subject]) {
+          subjectStats[course.subject] = {
+            subject: course.subject,
+            students: 0,
+            totalGrade: 0,
+            gradeCount: 0,
+            passCount: 0
+          };
+        }
+
+        const courseGrades = grades.filter(g => g.course_id === course.id);
+        courseGrades.forEach(grade => {
+          subjectStats[course.subject].students++;
+          subjectStats[course.subject].totalGrade += parseFloat(grade.score) || 0;
+          subjectStats[course.subject].gradeCount++;
+          if (parseFloat(grade.score) >= 60) {
+            subjectStats[course.subject].passCount++;
+          }
+        });
+      });
+
+      const academicResults = Object.values(subjectStats).map(stat => ({
+        subject: stat.subject,
+        students: stat.gradeCount > 0 ? stat.gradeCount : stat.students,
+        avgGrade: stat.gradeCount > 0 ? parseFloat((stat.totalGrade / stat.gradeCount / 10).toFixed(1)) : 0,
+        passRate: stat.gradeCount > 0 ? Math.round((stat.passCount / stat.gradeCount) * 100) : 0
+      }));
+
+      setAcademicData(academicResults);
+
+      // Calculate top performers
+      const studentGrades = {};
+      grades.forEach(grade => {
+        const studentId = grade.student_id;
+        if (!studentGrades[studentId]) {
+          studentGrades[studentId] = {
+            student: grade.student,
+            totalScore: 0,
+            count: 0
+          };
+        }
+        studentGrades[studentId].totalScore += parseFloat(grade.score) || 0;
+        studentGrades[studentId].count++;
+      });
+
+      const topStudents = Object.entries(studentGrades)
+        .map(([id, data]) => ({
+          name: data.student ? `${data.student.first_name} ${data.student.last_name}` : 'Unknown',
+          grade: parseFloat((data.totalScore / data.count / 10).toFixed(1)),
+          class: 'N/A',
+          subject: 'All Subjects'
+        }))
+        .sort((a, b) => b.grade - a.grade)
+        .slice(0, 5);
+
+      setTopPerformers(topStudents);
+
+      // Calculate statistics
+      const totalGrade = grades.reduce((sum, g) => sum + (parseFloat(g.score) || 0), 0);
+      const avgGrade = grades.length > 0 ? parseFloat((totalGrade / grades.length / 10).toFixed(1)) : 0;
+
+      const presentCount = attendance.filter(a => a.status === 'Present').length;
+      const avgAttendance = attendance.length > 0 ? Math.round((presentCount / attendance.length) * 100) : 0;
+
+      setStatistics({
+        totalStudents: students.length,
+        totalCourses: courses.length,
+        avgAttendance,
+        avgGrade
+      });
+
+    } catch (error) {
+      console.error('Error fetching report data:', error);
+      const errorMsg = error?.response?.data?.message || error?.message || 'Không thể tải dữ liệu báo cáo';
+      setError(errorMsg);
+      message.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const academicColumns = [
     {
@@ -92,11 +190,14 @@ const ReportPage = () => {
       title: 'Average Grade',
       dataIndex: 'avgGrade',
       key: 'avgGrade',
-      render: (grade) => (
-        <Tag color={grade >= 8 ? 'green' : grade >= 7 ? 'orange' : 'red'}>
-          {grade.toFixed(1)}
-        </Tag>
-      )
+      render: (grade) => {
+        const gradeValue = typeof grade === 'number' ? grade : parseFloat(grade) || 0;
+        return (
+          <Tag color={gradeValue >= 8 ? 'green' : gradeValue >= 7 ? 'orange' : 'red'}>
+            {gradeValue.toFixed(1)}
+          </Tag>
+        );
+      }
     },
     {
       title: 'Pass Rate',
@@ -143,9 +244,53 @@ const ReportPage = () => {
   ];
 
   const handleExport = (format) => {
-    console.log(`Exporting report as ${format}`);
-    // Implementation would go here
+    // Export functionality will be implemented here
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <Spin size="large" tip="Đang tải dữ liệu báo cáo..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="report-page">
+        <Breadcrumb style={{ marginBottom: 16 }}>
+          <Breadcrumb.Item>
+            <Link to="/dashboard">
+              <HomeOutlined /> Home
+            </Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <BarChartOutlined /> Reports
+          </Breadcrumb.Item>
+        </Breadcrumb>
+
+        <Title level={2}>
+          <BarChartOutlined /> Reports & Analytics
+        </Title>
+
+        <Card style={{ marginTop: 24 }}>
+          <Empty
+            description={
+              <div>
+                <Text type="danger" strong style={{ fontSize: 16 }}>{error}</Text>
+                <br />
+                <Text type="secondary">Vui lòng thử lại sau hoặc liên hệ quản trị viên</Text>
+              </div>
+            }
+          >
+            <Button type="primary" onClick={fetchReportData}>
+              Thử Lại
+            </Button>
+          </Empty>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="report-page">
@@ -239,9 +384,9 @@ const ReportPage = () => {
             <Col span={8}>
               <Card>
                 <Statistic
-                  title="Overall Pass Rate"
-                  value={90}
-                  suffix="%"
+                  title="Average Grade"
+                  value={statistics.avgGrade}
+                  suffix="/10"
                   valueStyle={{ color: '#52c41a' }}
                   prefix={<TrophyOutlined />}
                 />
@@ -251,7 +396,7 @@ const ReportPage = () => {
               <Card>
                 <Statistic
                   title="Average Attendance"
-                  value={91.6}
+                  value={statistics.avgAttendance}
                   suffix="%"
                   valueStyle={{ color: '#1890ff' }}
                   prefix={<CalendarOutlined />}
@@ -262,7 +407,7 @@ const ReportPage = () => {
               <Card>
                 <Statistic
                   title="Total Students"
-                  value={470}
+                  value={statistics.totalStudents}
                   valueStyle={{ color: '#722ed1' }}
                   prefix={<TeamOutlined />}
                 />

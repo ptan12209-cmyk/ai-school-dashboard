@@ -1,19 +1,3 @@
-/**
- * Server Entry Point
- * ==================
- * Starts the Express server and connects to database
- * 
- * Week 3-4: To be implemented
- * - Database connection
- * - Server startup
- * - Graceful shutdown
- * - Error handling
- * 
- * Usage:
- * - Development: npm run dev (with nodemon)
- * - Production: npm start
- */
-
 const app = require('./app');
 const http = require('http');
 require('dotenv').config();
@@ -68,7 +52,13 @@ async function startServer() {
     app.locals.io = io;
 
     /**
-     * Step 4: Start HTTP Server
+     * Step 4: Initialize Notification Scheduler
+     */
+    const notificationScheduler = require('./services/notificationScheduler');
+    notificationScheduler.initializeScheduler();
+
+    /**
+     * Step 5: Start HTTP Server
      */
     const server = httpServer.listen(PORT, HOST, () => {
       console.log('');

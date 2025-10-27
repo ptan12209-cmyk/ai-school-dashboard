@@ -35,10 +35,13 @@ const StudentAssignmentsPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { assignments, loading, error } = useSelector((state) => state.assignments);
+  const { user } = useSelector((state) => state.auth || {});
 
   useEffect(() => {
-    dispatch(fetchStudentAssignments());
-  }, [dispatch]);
+    if (user?.role === 'student') {
+      dispatch(fetchStudentAssignments());
+    }
+  }, [dispatch, user]);
 
   // Get status chip props
   const getStatusChip = (assignment) => {
@@ -120,17 +123,32 @@ const StudentAssignmentsPage = () => {
         </Typography>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {assignments.length === 0 ? (
-        <Alert severity="info">
-          Chưa có bài tập nào được giao
+      {user?.role !== 'student' ? (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          Chỉ học sinh mới có thể xem bài tập của mình.
+          {user?.role === 'teacher' && (
+            <Button
+              variant="text"
+              onClick={() => navigate('/assignments/teacher')}
+              sx={{ ml: 2 }}
+            >
+              Đi đến Quản Lý Bài Tập
+            </Button>
+          )}
         </Alert>
       ) : (
+        <>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+
+          {assignments.length === 0 ? (
+            <Alert severity="info">
+              Chưa có bài tập nào được giao
+            </Alert>
+          ) : (
         <Grid container spacing={3}>
           {assignments.map((assignment) => {
             const statusChip = getStatusChip(assignment);
@@ -242,6 +260,8 @@ const StudentAssignmentsPage = () => {
             );
           })}
         </Grid>
+          )}
+        </>
       )}
     </Box>
   );

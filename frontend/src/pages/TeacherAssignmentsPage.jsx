@@ -20,7 +20,10 @@ import {
   Menu,
   MenuItem,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Select,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -33,17 +36,50 @@ import {
 } from '@mui/icons-material';
 import { fetchAssignmentsByCourse, deleteAssignment, publishAssignment } from '../redux/slices/assignmentSlice.js';
 import { toast } from 'react-toastify';
+import api from '../services/api.js';
 
 const TeacherAssignmentsPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { assignments, loading, error } = useSelector((state) => state.assignments);
+  const { user } = useSelector((state) => state.auth || {});
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [loadingCourses, setLoadingCourses] = useState(false);
 
-  // TODO: Get teacher's courses and allow selection
-  const [selectedCourseId] = useState('demo-course-id'); // Placeholder
+  // Fetch courses on mount
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        const response = await api.get('/courses', { params: { limit: 100 } });
+        const data = response.data;
 
+        if (data && data.data) {
+          const coursesData = Array.isArray(data.data.courses) ? data.data.courses :
+                             Array.isArray(data.data) ? data.data :
+                             [];
+          setCourses(coursesData);
+
+          // Auto-select first course if available
+          if (coursesData.length > 0) {
+            setSelectedCourseId(coursesData[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+        toast.error('Không thể tải danh sách khóa học');
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Fetch assignments when course is selected
   useEffect(() => {
     if (selectedCourseId) {
       dispatch(fetchAssignmentsByCourse({ courseId: selectedCourseId }));
@@ -148,13 +184,31 @@ const TeacherAssignmentsPage = () => {
             Tạo và quản lý bài tập, kiểm tra
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/assignments/create')}
-        >
-          Tạo bài tập mới
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControl sx={{ minWidth: 250 }}>
+            <InputLabel>Chọn Khóa Học</InputLabel>
+            <Select
+              value={selectedCourseId}
+              label="Chọn Khóa Học"
+              onChange={(e) => setSelectedCourseId(e.target.value)}
+              disabled={loadingCourses || courses.length === 0}
+            >
+              {courses.map((course) => (
+                <MenuItem key={course.id} value={course.id}>
+                  {course.name} ({course.code})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/assignments/create', { state: { courseId: selectedCourseId } })}
+            disabled={!selectedCourseId}
+          >
+            Tạo bài tập mới
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -163,9 +217,13 @@ const TeacherAssignmentsPage = () => {
         </Alert>
       )}
 
-      {assignments.length === 0 ? (
+      {!selectedCourseId ? (
         <Alert severity="info">
-          Chưa có bài tập nào. Nhấn "Tạo bài tập mới" để bắt đầu.
+          Vui lòng chọn một khóa học để xem bài tập.
+        </Alert>
+      ) : assignments.length === 0 ? (
+        <Alert severity="info">
+          Chưa có bài tập nào cho khóa học này. Nhấn "Tạo bài tập mới" để bắt đầu.
         </Alert>
       ) : (
         <Grid container spacing={3}>

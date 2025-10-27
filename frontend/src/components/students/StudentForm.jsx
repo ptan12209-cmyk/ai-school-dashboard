@@ -57,8 +57,14 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
     if (student) {
       form.setFieldsValue({
         ...student,
-        dateOfBirth: student.dateOfBirth ? moment(student.dateOfBirth) : null,
+        firstName: student.first_name || student.firstName,
+        lastName: student.last_name || student.lastName,
+        dateOfBirth: student.date_of_birth || student.dateOfBirth ? moment(student.date_of_birth || student.dateOfBirth) : null,
         enrollmentDate: student.enrollmentDate ? moment(student.enrollmentDate) : null,
+        classId: student.class_id || student.classId,
+        parentName: student.parent_name || student.parentName,
+        parentPhone: student.parent_phone || student.parentPhone,
+        parentEmail: student.parent_email || student.parentEmail,
         status: student.status || 'Active'
       });
       setAvatarUrl(student.avatar || '');
@@ -66,7 +72,7 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
       // Set default values for new student
       form.setFieldsValue({
         status: 'Active',
-        gender: 'Male',
+        gender: 'M',
         enrollmentDate: moment()
       });
     }
@@ -140,15 +146,14 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
     if (!value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject(new Error('Please enter a valid email address'));
+    return Promise.reject(new Error('Vui lòng nhập địa chỉ email hợp lệ'));
   };
 
-  // Validate phone number
   const validatePhone = (_, value) => {
     if (!value || /^[0-9]{10,15}$/.test(value.replace(/\D/g, ''))) {
       return Promise.resolve();
     }
-    return Promise.reject(new Error('Please enter a valid phone number'));
+    return Promise.reject(new Error('Vui lòng nhập số điện thoại hợp lệ'));
   };
 
   return (
@@ -161,19 +166,18 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
           autoComplete="off"
         >
           <Title level={4}>
-            {student ? 'Edit Student' : 'Add New Student'}
+            {student ? 'Sửa Học Sinh' : 'Thêm Học Sinh Mới'}
           </Title>
-          
-          <Divider>Personal Information</Divider>
 
-          {/* Avatar Upload */}
+          <Divider>Thông Tin Cá Nhân</Divider>
+
           <Row gutter={24}>
             <Col span={24}>
-              <Form.Item label="Profile Photo">
+              <Form.Item label="Ảnh Đại Diện">
                 <Space align="start">
-                  <Avatar 
-                    size={100} 
-                    src={avatarUrl} 
+                  <Avatar
+                    size={100}
+                    src={avatarUrl}
                     icon={<UserOutlined />}
                     style={{ backgroundColor: '#1890ff' }}
                   />
@@ -185,7 +189,7 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
                     onChange={handleAvatarUpload}
                   >
                     <Button icon={<CameraOutlined />}>
-                      Change Photo
+                      Đổi Ảnh
                     </Button>
                   </Upload>
                 </Space>
@@ -212,19 +216,36 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
               </Form.Item>
             </Col>
 
-            {/* Full Name */}
+            {/* First Name */}
             <Col xs={24} md={12}>
               <Form.Item
-                name="name"
-                label="Full Name"
+                name="firstName"
+                label="First Name"
                 rules={[
-                  { required: true, message: 'Please enter student name' },
-                  { min: 2, message: 'Name must be at least 2 characters' }
+                  { required: true, message: 'Please enter first name' },
+                  { min: 1, message: 'First name must be at least 1 character' }
                 ]}
               >
                 <Input
                   prefix={<UserOutlined />}
-                  placeholder="Enter full name"
+                  placeholder="Enter first name"
+                />
+              </Form.Item>
+            </Col>
+
+            {/* Last Name */}
+            <Col xs={24} md={12}>
+              <Form.Item
+                name="lastName"
+                label="Last Name"
+                rules={[
+                  { required: true, message: 'Please enter last name' },
+                  { min: 1, message: 'Last name must be at least 1 character' }
+                ]}
+              >
+                <Input
+                  prefix={<UserOutlined />}
+                  placeholder="Enter last name"
                 />
               </Form.Item>
             </Col>
@@ -246,6 +267,27 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
                 />
               </Form.Item>
             </Col>
+
+            {/* Password - only for new students */}
+            {!student && (
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="password"
+                  label="Password"
+                  rules={[
+                    { required: true, message: 'Please enter password' },
+                    { min: 8, message: 'Password must be at least 8 characters' },
+                    { pattern: /[A-Z]/, message: 'Password must contain at least one uppercase letter' },
+                    { pattern: /[a-z]/, message: 'Password must contain at least one lowercase letter' },
+                    { pattern: /[0-9]/, message: 'Password must contain at least one number' }
+                  ]}
+                >
+                  <Input.Password
+                    placeholder="Enter password"
+                  />
+                </Form.Item>
+              </Col>
+            )}
 
             {/* Phone */}
             <Col xs={24} md={12}>
@@ -289,8 +331,8 @@ const StudentForm = ({ student, onSuccess, onCancel, classes = [] }) => {
                 rules={[{ required: true, message: 'Please select gender' }]}
               >
                 <Select placeholder="Select gender">
-                  <Option value="Male">Male</Option>
-                  <Option value="Female">Female</Option>
+                  <Option value="M">Male</Option>
+                  <Option value="F">Female</Option>
                   <Option value="Other">Other</Option>
                 </Select>
               </Form.Item>

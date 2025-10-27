@@ -1,11 +1,3 @@
-/**
- * Class Model
- * ===========
- * Represents a class/homeroom in the school
- * 
- * Week 3-4 Day 5
- */
-
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 

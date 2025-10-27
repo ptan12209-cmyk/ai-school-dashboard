@@ -1,11 +1,3 @@
-/**
- * Class Controller
- * ==================
- * CRUD operations for class/homeroom management
- * 
- * Week 3-4 Day 5 - Part 4
- */
-
 const { Class, Teacher, Student, User, Course } = require('../models');
 const { catchAsync, NotFoundError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');

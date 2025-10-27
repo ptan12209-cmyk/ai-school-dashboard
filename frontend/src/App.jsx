@@ -15,6 +15,9 @@ import AppRoutes from './routes.js';
 // Socket.io Provider
 import SocketProvider from './components/notifications/SocketProvider.jsx';
 
+// Error Boundary
+import ErrorBoundary from './components/common/ErrorBoundary.jsx';
+
 // Styles
 import 'antd/dist/reset.css'; // Ant Design 5
 import 'react-toastify/dist/ReactToastify.css';
@@ -100,25 +103,27 @@ const theme = createTheme({
  */
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <SocketProvider>
-        <AppRoutes />
-      </SocketProvider>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <SocketProvider>
+          <AppRoutes />
+        </SocketProvider>
 
-      {/* Toast Notifications */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-    </ThemeProvider>
+        {/* Toast Notifications */}
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

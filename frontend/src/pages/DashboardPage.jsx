@@ -82,19 +82,20 @@ const DashboardPage = () => {
   return (
     <div style={{ padding: '24px' }}>
       {/* Header */}
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="animate-fade-in-down" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title level={2}>Tổng Quan</Title>
         <Button
           icon={<ReloadOutlined />}
           onClick={handleRefresh}
           loading={refreshing}
+          className="hover-grow btn-press"
         >
           Làm Mới
         </Button>
       </div>
 
       {/* Welcome Message */}
-      <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+      <div className="animate-fade-in-up" style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
         <Title level={4} style={{ margin: 0 }}>
           Chào mừng trở lại, {user?.firstName || 'User'}!
         </Title>

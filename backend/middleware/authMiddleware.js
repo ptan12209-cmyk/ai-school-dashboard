@@ -1,20 +1,7 @@
-/**
- * Authentication Middleware
- * =========================
- * JWT token verification and user authentication
- * 
- * Week 3-4 Day 3
- */
-
 const jwt = require('jsonwebtoken');
 const { jwtConfig } = require('../config/auth');
-const { User } = require('../models');
+const { User, Teacher, Student } = require('../models');
 
-/**
- * Verify JWT Token Middleware
- * ============================
- * Checks if request has valid JWT token
- */
 const verifyToken = async (req, res, next) => {
   try {
     // Get token from Authorization header
@@ -56,14 +43,27 @@ const verifyToken = async (req, res, next) => {
         message: 'Account is inactive'
       });
     }
-    
+
     // Attach user to request object
     req.user = {
       id: user.id,
       email: user.email,
       role: user.role
     };
-    
+
+    // Load role-specific profile
+    if (user.role === 'teacher') {
+      const teacherProfile = await Teacher.findOne({ where: { user_id: user.id } });
+      if (teacherProfile) {
+        req.user.teacherProfile = teacherProfile;
+      }
+    } else if (user.role === 'student') {
+      const studentProfile = await Student.findOne({ where: { user_id: user.id } });
+      if (studentProfile) {
+        req.user.studentProfile = studentProfile;
+      }
+    }
+
     next();
     
   } catch (error) {
@@ -90,14 +90,6 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-/**
- * Check User Role Middleware
- * ===========================
- * Verify user has required role(s)
- * 
- * Usage: checkRole('admin')
- * Usage: checkRole('admin', 'teacher')
- */
 const checkRole = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -120,12 +112,6 @@ const checkRole = (...allowedRoles) => {
   };
 };
 
-/**
- * Optional Auth Middleware
- * ========================
- * Attach user if token exists, but don't fail if not
- * Useful for endpoints that work with or without authentication
- */
 const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;

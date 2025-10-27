@@ -1,0 +1,326 @@
+/**
+ * AI Service with Google Gemini
+ * ==============================
+ * Handles all AI-related operations using Google Gemini API
+ */
+
+const axios = require('axios');
+const { geminiConfig } = require('../config/ai');
+
+class AIService {
+  constructor() {
+    this.apiKey = geminiConfig.apiKey;
+    this.apiUrl = geminiConfig.apiUrl;
+    this.model = geminiConfig.model;
+    this.conversationHistory = new Map(); // Store per-user conversation history
+  }
+
+  /**
+   * Call Gemini API
+   * @param {string} prompt - User prompt
+   * @param {Array} history - Optional conversation history
+   * @returns {Promise<string>} AI response
+   */
+  async callGemini(prompt, history = []) {
+    try {
+      // Build contents array for Gemini API
+      const contents = [];
+
+      // Add conversation history
+      history.forEach(msg => {
+        contents.push({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        });
+      });
+
+      // Add current prompt
+      contents.push({
+        role: 'user',
+        parts: [{ text: prompt }]
+      });
+
+      const url = `${this.apiUrl}/models/${this.model}:generateContent?key=${this.apiKey}`;
+
+      const response = await axios.post(
+        url,
+        {
+          contents: contents,
+          generationConfig: {
+            temperature: geminiConfig.temperature,
+            maxOutputTokens: geminiConfig.maxTokens,
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: geminiConfig.timeout
+        }
+      );
+
+      // Extract text from Gemini response
+      const text = response.data.candidates[0]?.content?.parts[0]?.text;
+
+      if (!text) {
+        throw new Error('No response from Gemini');
+      }
+
+      return text;
+    } catch (error) {
+      console.error('Gemini API Error:', error.response?.data || error.message);
+
+      if (error.response?.status === 429) {
+        throw new Error('Đã vượt quá giới hạn API. Vui lòng thử lại sau vài phút.');
+      }
+
+      if (error.response?.status === 400) {
+        throw new Error('Yêu cầu không hợp lệ. Vui lòng thử lại.');
+      }
+
+      throw new Error('Không thể kết nối với AI assistant. Vui lòng kiểm tra API key.');
+    }
+  }
+
+  /**
+   * Chat with AI Assistant
+   * @param {string} userId - User ID
+   * @param {string} message - User message
+   * @param {string} context - Additional context (role, student data, etc.)
+   * @returns {Promise<string>} AI response
+   */
+  async chat(userId, message, context = {}) {
+    try {
+      // Get or create conversation history
+      if (!this.conversationHistory.has(userId)) {
+        this.conversationHistory.set(userId, []);
+      }
+      const history = this.conversationHistory.get(userId);
+
+      // Build system prompt based on context
+      const systemPrompt = this.buildSystemPrompt(context);
+
+      // Combine system prompt with user message
+      const fullPrompt = `${systemPrompt}\n\nUser: ${message}\nAssistant:`;
+
+      // Call Gemini with history
+      const aiResponse = await this.callGemini(fullPrompt, history.slice(-10));
+
+      // Update conversation history
+      history.push({ role: 'user', content: message });
+      history.push({ role: 'assistant', content: aiResponse });
+
+      // Keep only last 20 messages
+      if (history.length > 20) {
+        history.splice(0, history.length - 20);
+      }
+
+      return aiResponse;
+    } catch (error) {
+      console.error('AI Chat Error:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Clear conversation history for a user
+   */
+  clearHistory(userId) {
+    this.conversationHistory.delete(userId);
+  }
+
+  /**
+   * Build system prompt based on user context
+   */
+  buildSystemPrompt(context) {
+    const { role, name, language = 'Vietnamese' } = context;
+
+    let prompt = `Bạn là trợ lý AI thông minh cho hệ thống quản lý giáo dục.
+Luôn trả lời bằng tiếng ${language}.`;
+
+    if (role === 'student') {
+      prompt += `\n\nBạn đang giúp đỡ học sinh tên ${name || 'Học sinh'}.
+Vai trò của bạn:
+- Trả lời câu hỏi về bài tập, khóa học và điểm số
+- Cung cấp mẹo học tập và chiến lược học hiệu quả
+- Giúp đỡ với bài tập và ôn thi
+- Động viên và khuyến khích học tập
+- Giải thích khái niệm một cách đơn giản, dễ hiểu`;
+    } else if (role === 'teacher') {
+      prompt += `\n\nBạn đang hỗ trợ giáo viên tên ${name || 'Giáo viên'}.
+Vai trò của bạn:
+- Giúp lập kế hoạch bài giảng và thiết kế chương trình
+- Đề xuất phương pháp giảng dạy và đánh giá
+- Cung cấp thông tin về hiệu suất học sinh
+- Hỗ trợ chấm điểm và phản hồi
+- Gợi ý tài liệu giáo dục`;
+    } else if (role === 'admin') {
+      prompt += `\n\nBạn đang hỗ trợ quản trị viên trường học.
+Vai trò của bạn:
+- Cung cấp thông tin về chỉ số hiệu suất trường
+- Đề xuất cải thiện chương trình học tập
+- Giúp đỡ với chính sách và ra quyết định
+- Phân tích xu hướng và mẫu hình
+- Tạo báo cáo và tóm tắt`;
+    }
+
+    prompt += `\n\nHãy hữu ích, thân thiện và chuyên nghiệp. Nếu bạn không biết điều gì, hãy thừa nhận một cách trung thực.`;
+
+    return prompt;
+  }
+
+  /**
+   * Generate study recommendations for a student
+   */
+  async generateStudyRecommendations(studentData) {
+    try {
+      const { name, grades, weakSubjects, strengths } = studentData;
+
+      const prompt = `Phân tích hiệu suất học sinh này và đưa ra gợi ý học tập cá nhân hóa:
+
+Học sinh: ${name}
+Điểm trung bình: ${grades.average}/10
+Môn yếu: ${weakSubjects.join(', ')}
+Môn mạnh: ${strengths.join(', ')}
+
+Vui lòng cung cấp:
+1. Top 3 gợi ý học tập cụ thể
+2. Mẹo quản lý thời gian
+3. Các lĩnh vực tập trung để cải thiện
+4. Lời khuyên động viên
+
+Trả lời bằng tiếng Việt với các gạch đầu dòng rõ ràng.`;
+
+      const response = await this.callGemini(prompt);
+      return response;
+    } catch (error) {
+      console.error('Recommendation Error:', error.message);
+      throw new Error('Không thể tạo gợi ý học tập');
+    }
+  }
+
+  /**
+   * Predict student performance trend
+   */
+  predictPerformanceTrend(grades) {
+    // Calculate trend using linear regression
+    if (grades.length < 2) {
+      return { trend: 'insufficient_data', prediction: null };
+    }
+
+    // Simple linear regression
+    const n = grades.length;
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+
+    grades.forEach((grade, index) => {
+      const x = index + 1;
+      const y = parseFloat(grade.score);
+      sumX += x;
+      sumY += y;
+      sumXY += x * y;
+      sumX2 += x * x;
+    });
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+
+    // Predict next grade
+    const nextX = n + 1;
+    const prediction = slope * nextX + intercept;
+
+    // Determine trend
+    let trend;
+    if (slope > 0.3) trend = 'improving';
+    else if (slope < -0.3) trend = 'declining';
+    else trend = 'stable';
+
+    return {
+      trend,
+      prediction: Math.max(0, Math.min(10, prediction)).toFixed(2),
+      slope: slope.toFixed(3),
+      confidence: this.calculateConfidence(grades)
+    };
+  }
+
+  /**
+   * Calculate confidence level based on grade variance
+   */
+  calculateConfidence(grades) {
+    const scores = grades.map(g => parseFloat(g.score));
+    const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const variance = scores.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / scores.length;
+    const stdDev = Math.sqrt(variance);
+
+    // Lower std dev = higher confidence
+    if (stdDev < 0.5) return 'high';
+    if (stdDev < 1.5) return 'medium';
+    return 'low';
+  }
+
+  /**
+   * Generate course recommendations based on student interests and performance
+   */
+  async generateCourseRecommendations(studentProfile) {
+    try {
+      const { interests, completedCourses, avgGrade, careerGoals } = studentProfile;
+
+      const prompt = `Dựa trên hồ sơ học sinh này, gợi ý 5 khóa học phù hợp:
+
+Sở thích: ${interests.join(', ')}
+Khóa học đã hoàn thành: ${completedCourses.join(', ')}
+Điểm trung bình: ${avgGrade}/10
+Mục tiêu nghề nghiệp: ${careerGoals}
+
+Cho mỗi gợi ý, cung cấp:
+- Tên khóa học
+- Lý do được gợi ý
+- Độ khó dự kiến
+- Phù hợp với mục tiêu nghề nghiệp như thế nào
+
+Trả lời bằng tiếng Việt.`;
+
+      const response = await this.callGemini(prompt);
+      return response;
+    } catch (error) {
+      console.error('Course Recommendation Error:', error.message);
+      throw new Error('Không thể tạo gợi ý khóa học');
+    }
+  }
+
+  /**
+   * Generate report summary using AI
+   */
+  async generateReportSummary(reportData) {
+    try {
+      const { studentName, grades, attendance, behavior, period } = reportData;
+
+      const prompt = `Tạo bản tóm tắt báo cáo toàn diện cho học sinh này:
+
+Học sinh: ${studentName}
+Kỳ: ${period}
+Điểm trung bình: ${grades.average}/10
+Tỷ lệ điểm danh: ${attendance.rate}%
+Điểm hạnh kiểm: ${behavior.score}/10
+
+Các môn học:
+${grades.subjects.map(s => `- ${s.name}: ${s.score}/10`).join('\n')}
+
+Vui lòng viết:
+1. Tóm tắt hiệu suất tổng thể
+2. Điểm mạnh và thành tích
+3. Lĩnh vực cần cải thiện
+4. Gợi ý cụ thể cho phụ huynh
+5. Các bước tiếp theo
+
+Viết bằng tiếng Việt, giọng điệu chuyên nghiệp nhưng ấm áp, phù hợp với phụ huynh.`;
+
+      const response = await this.callGemini(prompt);
+      return response;
+    } catch (error) {
+      console.error('Report Generation Error:', error.message);
+      throw new Error('Không thể tạo báo cáo tóm tắt');
+    }
+  }
+}
+
+module.exports = new AIService();

@@ -28,7 +28,21 @@ class SocketService {
 
     this.store = store;
 
-    const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+    // Auto-detect socket URL for LAN access
+    const getSocketURL = () => {
+      if (process.env.REACT_APP_SOCKET_URL) {
+        return process.env.REACT_APP_SOCKET_URL;
+      }
+
+      // Use current hostname with backend port
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const hostname = window.location.hostname;
+      const port = '5000';
+
+      return `${protocol}//${hostname}:${port}`;
+    };
+
+    const SOCKET_URL = getSocketURL();
 
     this.socket = io(SOCKET_URL, {
       auth: {

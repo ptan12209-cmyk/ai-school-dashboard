@@ -221,9 +221,11 @@ const teacherSlice = createSlice({
       })
       .addCase(fetchTeachers.fulfilled, (state, action) => {
         state.loading = false;
-        state.teachers = action.payload.teachers || action.payload.data || [];
-        state.totalTeachers = action.payload.total || 0;
-        state.totalPages = action.payload.totalPages || Math.ceil(action.payload.total / state.pageSize);
+        // Handle backend response: { success: true, data: { teachers: [...], pagination: {...} } }
+        const responseData = action.payload.data || action.payload;
+        state.teachers = responseData.teachers || [];
+        state.totalTeachers = responseData.pagination?.total || responseData.total || 0;
+        state.totalPages = responseData.pagination?.pages || responseData.totalPages || Math.ceil((responseData.pagination?.total || 0) / state.pageSize);
       })
       .addCase(fetchTeachers.rejected, (state, action) => {
         state.loading = false;

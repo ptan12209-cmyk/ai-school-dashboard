@@ -18,10 +18,8 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-// Import configurations
 const { corsConfig, rateLimitConfig } = require('./config/auth');
 
-// TODO: Week 3-4 - Import routes
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const studentRoutes = require('./routes/student.routes');
@@ -32,10 +30,9 @@ const gradeRoutes = require('./routes/grade.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const assignmentRoutes = require('./routes/assignment.routes');
-// const dashboardRoutes = require('./routes/dashboard.routes');
-// const aiRoutes = require('./routes/ai.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
+const aiRoutes = require('./routes/ai.routes');
 
-// TODO: Week 3-4 - Import middleware
 const errorHandler = require('./middleware/errorHandler');
 
 /**
@@ -64,15 +61,20 @@ app.use(helmet());
 app.use(cors({
   origin: function (origin, callback) {
     // Get allowed origins from environment or use defaults
-    const allowedOrigins = process.env.CORS_ORIGIN 
+    const allowedOrigins = process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
       : ['http://localhost:3000', 'http://localhost:3001'];
-    
+
     // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) {
       return callback(null, true);
     }
-    
+
+    // Check if wildcard is allowed
+    if (allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+
     // Check if origin is allowed
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
@@ -175,16 +177,6 @@ app.get('/', (req, res) => {
   });
 });
 
-/**
- * ============================================
- * API ROUTES
- * ============================================
- * Mount all route handlers under /api prefix
- * 
- * TODO: Week 3-4 - Uncomment when routes are implemented
- */
-
-// API version prefix
 const API_PREFIX = '/api';
 
 /**
@@ -232,12 +224,12 @@ app.use(`${API_PREFIX}/assignments`, assignmentRoutes);
 /**
  * Dashboard routes (protected)
  */
-// app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 
 /**
  * AI routes (protected)
  */
-// app.use(`${API_PREFIX}/ai`, aiRoutes);
+app.use(`${API_PREFIX}/ai`, aiRoutes);
 
 /**
  * ============================================
@@ -257,10 +249,6 @@ app.use((req, res, next) => {
   });
 });
 
-/**
- * Global Error Handler
- * TODO: Week 3-4 - Use custom error handler middleware
- */
 app.use((err, req, res, next) => {
   // Log error for debugging
   console.error('Error occurred:', {

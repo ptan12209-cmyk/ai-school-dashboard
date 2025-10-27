@@ -21,6 +21,7 @@ class NotificationService {
     try {
       const {
         userId,
+        user_id, // Support both userId and user_id for backward compatibility
         type = 'system',
         title,
         message,
@@ -31,9 +32,12 @@ class NotificationService {
         expiresAt
       } = data;
 
+      // Use userId if provided, otherwise fall back to user_id
+      const recipientUserId = userId || user_id;
+
       // Create notification in database
       const notification = await Notification.create({
-        user_id: userId,
+        user_id: recipientUserId,
         type,
         title,
         message,
@@ -51,7 +55,7 @@ class NotificationService {
 
       // Emit real-time notification via Socket.io
       if (options.io && options.io.to) {
-        this.emitRealTimeNotification(options.io, userId, notification);
+        this.emitRealTimeNotification(options.io, recipientUserId, notification);
       }
 
       return notification;
@@ -63,14 +67,21 @@ class NotificationService {
 
   /**
    * Create notifications for multiple users
+   * @param {Array} recipients - Array of user IDs or user objects
+   * @param {Object} data - Notification data
+   * @param {Object} options - Options including sendEmail
    */
-  async createBulkNotifications(userIds, data, options = {}) {
+  async createBulkNotifications(recipients, data, options = {}) {
     const notifications = [];
 
-    for (const userId of userIds) {
+    for (const recipient of recipients) {
+      // Handle both user IDs and user objects
+      const userId = typeof recipient === 'object' ? recipient.id : recipient;
+      const userObject = typeof recipient === 'object' ? recipient : null;
+
       const notification = await this.createNotification(
         { ...data, userId },
-        options
+        { ...options, user: userObject }
       );
       notifications.push(notification);
     }
@@ -116,7 +127,7 @@ class NotificationService {
    */
   emitRealTimeNotification(io, userId, notification) {
     try {
-      io.to(`user_${userId}`).emit('notification', {
+      io.to(`user_${userId}`).emit('new_notification', {
         id: notification.id,
         type: notification.type,
         title: notification.title,
@@ -291,7 +302,7 @@ class NotificationService {
       message: alertData.message,
       priority: 'urgent',
       metadata: alertData
-    }, { ...options, sendEmail: true });
+    }, { ...options, sendEmail: options.sendEmail || false });
   }
 }
 

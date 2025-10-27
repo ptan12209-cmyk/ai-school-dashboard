@@ -1,11 +1,3 @@
-/**
- * Attendance Routes
- * ==================
- * Routes for attendance tracking
- * 
- * Week 3-4 Day 5 - Part 5
- */
-
 const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
