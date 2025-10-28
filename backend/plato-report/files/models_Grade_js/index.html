@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - models\Grade.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>models\Grade.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">64.08</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">346</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">34.09</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.37</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">const { DataTypes } = require(&#039;sequelize&#039;);
+const { sequelize } = require(&#039;../config/database&#039;);
+
+const Grade = sequelize.define(&#039;Grade&#039;, {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  
+  student_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;students&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;CASCADE&#039;
+  },
+  
+  course_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;courses&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;CASCADE&#039;
+  },
+  
+  score: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: false,
+    validate: {
+      min: {
+        args: [0],
+        msg: &#039;Score cannot be negative&#039;
+      },
+      max: {
+        args: [100],
+        msg: &#039;Score cannot exceed 100&#039;
+      }
+    }
+  },
+  
+  letter_grade: {
+    type: DataTypes.STRING(2),
+    allowNull: true
+  },
+  
+  grade_type: {
+    type: DataTypes.ENUM(&#039;Quiz&#039;, &#039;Test&#039;, &#039;Assignment&#039;, &#039;Project&#039;, &#039;Midterm&#039;, &#039;Final&#039;, &#039;Participation&#039;),
+    allowNull: false,
+    defaultValue: &#039;Assignment&#039;
+  },
+  
+  weight: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 1.0,
+    validate: {
+      min: {
+        args: [0],
+        msg: &#039;Weight cannot be negative&#039;
+      },
+      max: {
+        args: [100],
+        msg: &#039;Weight cannot exceed 100&#039;
+      }
+    },
+    comment: &#039;Weight percentage for this grade (e.g., 10 for 10%)&#039;
+  },
+  
+  semester: {
+    type: DataTypes.ENUM(&#039;1&#039;, &#039;2&#039;, &#039;Final&#039;),
+    allowNull: false
+  },
+  
+  graded_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  },
+  
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  
+  is_published: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: &#039;Whether the grade is visible to students&#039;
+  }
+}, {
+  tableName: &#039;grades&#039;,
+  timestamps: true,
+  underscored: true,
+  indexes: [
+    {
+      unique: false,
+      fields: [&#039;student_id&#039;]
+    },
+    {
+      unique: false,
+      fields: [&#039;course_id&#039;]
+    },
+    {
+      unique: false,
+      fields: [&#039;semester&#039;]
+    },
+    {
+      unique: false,
+      fields: [&#039;graded_date&#039;]
+    },
+    {
+      // Ensure one grade per student per course per type per semester
+      unique: true,
+      fields: [&#039;student_id&#039;, &#039;course_id&#039;, &#039;grade_type&#039;, &#039;semester&#039;]
+    }
+  ],
+  hooks: {
+    /**
+     * Before save hook - Calculate letter grade
+     */
+    beforeSave: (grade) =&gt; {
+      grade.letter_grade = Grade.calculateLetterGrade(grade.score);
+    }
+  }
+});
+
+/**
+ * Instance Methods
+ */
+
+/**
+ * Check if grade is passing
+ */
+Grade.prototype.isPassing = function() {
+  return parseFloat(this.score) &gt;= 60;
+};
+
+/**
+ * Get grade status
+ */
+Grade.prototype.getStatus = function() {
+  const score = parseFloat(this.score);
+  
+  if (score &gt;= 90) return &#039;Excellent&#039;;
+  if (score &gt;= 80) return &#039;Good&#039;;
+  if (score &gt;= 70) return &#039;Satisfactory&#039;;
+  if (score &gt;= 60) return &#039;Passing&#039;;
+  return &#039;Failing&#039;;
+};
+
+/**
+ * Class Methods (Static)
+ */
+
+/**
+ * Calculate letter grade from score
+ */
+Grade.calculateLetterGrade = function(score) {
+  const numScore = parseFloat(score);
+  
+  if (numScore &gt;= 90) return &#039;A&#039;;
+  if (numScore &gt;= 80) return &#039;B&#039;;
+  if (numScore &gt;= 70) return &#039;C&#039;;
+  if (numScore &gt;= 60) return &#039;D&#039;;
+  return &#039;F&#039;;
+};
+
+/**
+ * Calculate GPA from letter grade
+ */
+Grade.calculateGPA = function(letterGrade) {
+  const gpaMap = {
+    &#039;A&#039;: 4.0,
+    &#039;B&#039;: 3.0,
+    &#039;C&#039;: 2.0,
+    &#039;D&#039;: 1.0,
+    &#039;F&#039;: 0.0
+  };
+  
+  return gpaMap[letterGrade] || 0.0;
+};
+
+/**
+ * Find grades by student
+ */
+Grade.findByStudent = function(studentId, options = {}) {
+  const where = { student_id: studentId };
+  
+  if (options.semester) {
+    where.semester = options.semester;
+  }
+  
+  if (options.courseId) {
+    where.course_id = options.courseId;
+  }
+  
+  return this.findAll({
+    where,
+    order: [[&#039;graded_date&#039;, &#039;DESC&#039;]]
+  });
+};
+
+/**
+ * Find grades by course
+ */
+Grade.findByCourse = function(courseId, options = {}) {
+  const where = { course_id: courseId };
+  
+  if (options.semester) {
+    where.semester = options.semester;
+  }
+  
+  if (options.isPublished !== undefined) {
+    where.is_published = options.isPublished;
+  }
+  
+  return this.findAll({
+    where,
+    order: [[&#039;graded_date&#039;, &#039;DESC&#039;]]
+  });
+};
+
+/**
+ * Calculate student&#039;s GPA
+ */
+Grade.calculateStudentGPA = async function(studentId, options = {}) {
+  const Course = require(&#039;./Course&#039;);
+  
+  const where = { 
+    student_id: studentId,
+    is_published: true
+  };
+  
+  if (options.semester) {
+    where.semester = options.semester;
+  }
+  
+  const grades = await this.findAll({
+    where,
+    include: [{
+      model: Course,
+      as: &#039;course&#039;,
+      attributes: [&#039;credits&#039;]
+    }]
+  });
+  
+  if (grades.length === 0) {
+    return {
+      gpa: 0.0,
+      totalCredits: 0,
+      gradeCount: 0
+    };
+  }
+  
+  let totalPoints = 0;
+  let totalCredits = 0;
+  
+  grades.forEach(grade =&gt; {
+    const gradePoints = this.calculateGPA(grade.letter_grade);
+    const credits = parseFloat(grade.course.credits);
+    totalPoints += gradePoints * credits;
+    totalCredits += credits;
+  });
+  
+  const gpa = totalCredits &gt; 0 ? (totalPoints / totalCredits).toFixed(2) : 0.0;
+  
+  return {
+    gpa: parseFloat(gpa),
+    totalCredits,
+    gradeCount: grades.length
+  };
+};
+
+/**
+ * Get grade distribution for a course
+ */
+Grade.getDistribution = async function(courseId) {
+  const grades = await this.findAll({
+    where: { 
+      course_id: courseId,
+      is_published: true
+    },
+    attributes: [&#039;letter_grade&#039;],
+    raw: true
+  });
+  
+  const distribution = {
+    &#039;A&#039;: 0,
+    &#039;B&#039;: 0,
+    &#039;C&#039;: 0,
+    &#039;D&#039;: 0,
+    &#039;F&#039;: 0
+  };
+  
+  grades.forEach(grade =&gt; {
+    if (distribution.hasOwnProperty(grade.letter_grade)) {
+      distribution[grade.letter_grade]++;
+    }
+  });
+  
+  return distribution;
+};
+
+/**
+ * Get grade statistics
+ */
+Grade.getStats = async function() {
+  const total = await this.count();
+  const published = await this.count({ where: { is_published: true } });
+  
+  const byLetterGrade = await this.findAll({
+    attributes: [
+      &#039;letter_grade&#039;,
+      [sequelize.fn(&#039;COUNT&#039;, sequelize.col(&#039;id&#039;)), &#039;count&#039;]
+    ],
+    where: { is_published: true },
+    group: [&#039;letter_grade&#039;],
+    order: [[&#039;letter_grade&#039;, &#039;ASC&#039;]],
+    raw: true
+  });
+  
+  const avgScore = await this.findOne({
+    attributes: [
+      [sequelize.fn(&#039;AVG&#039;, sequelize.col(&#039;score&#039;)), &#039;avgScore&#039;]
+    ],
+    where: { is_published: true },
+    raw: true
+  });
+  
+  return {
+    total,
+    published,
+    averageScore: avgScore &amp;&amp; avgScore.avgScore ? parseFloat(avgScore.avgScore).toFixed(2) : null,
+    byLetterGrade: byLetterGrade.map(item =&gt; ({
+      grade: item.letter_grade,
+      count: parseInt(item.count)
+    }))
+  };
+};
+
+module.exports = Grade;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

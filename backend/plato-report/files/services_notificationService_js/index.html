@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - services\notificationService.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>services\notificationService.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">61.41</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">309</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">45.47</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.96</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/**
+ * Notification Service
+ * ====================
+ * Handles creation and delivery of notifications
+ */
+
+const Notification = require(&#039;../models/Notification&#039;);
+const emailService = require(&#039;./emailService&#039;);
+
+class NotificationService {
+  /**
+   * Create and send a notification
+   * @param {Object} data - Notification data
+   * @param {String} data.userId - Recipient user ID
+   * @param {String} data.type - Notification type
+   * @param {String} data.title - Notification title
+   * @param {String} data.message - Notification message
+   * @param {Object} options - Additional options
+   */
+  async createNotification(data, options = {}) {
+    try {
+      const {
+        userId,
+        user_id, // Support both userId and user_id for backward compatibility
+        type = &#039;system&#039;,
+        title,
+        message,
+        relatedType,
+        relatedId,
+        priority = &#039;medium&#039;,
+        metadata = {},
+        expiresAt
+      } = data;
+
+      // Use userId if provided, otherwise fall back to user_id
+      const recipientUserId = userId || user_id;
+
+      // Create notification in database
+      const notification = await Notification.create({
+        user_id: recipientUserId,
+        type,
+        title,
+        message,
+        related_type: relatedType,
+        related_id: relatedId,
+        priority,
+        metadata,
+        expires_at: expiresAt
+      });
+
+      // Send email if requested
+      if (options.sendEmail) {
+        await this.sendEmailNotification(notification, options.user);
+      }
+
+      // Emit real-time notification via Socket.io
+      if (options.io &amp;&amp; options.io.to) {
+        this.emitRealTimeNotification(options.io, recipientUserId, notification);
+      }
+
+      return notification;
+    } catch (error) {
+      console.error(&#039;Error creating notification:&#039;, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create notifications for multiple users
+   * @param {Array} recipients - Array of user IDs or user objects
+   * @param {Object} data - Notification data
+   * @param {Object} options - Options including sendEmail
+   */
+  async createBulkNotifications(recipients, data, options = {}) {
+    const notifications = [];
+
+    for (const recipient of recipients) {
+      // Handle both user IDs and user objects
+      const userId = typeof recipient === &#039;object&#039; ? recipient.id : recipient;
+      const userObject = typeof recipient === &#039;object&#039; ? recipient : null;
+
+      const notification = await this.createNotification(
+        { ...data, userId },
+        { ...options, user: userObject }
+      );
+      notifications.push(notification);
+    }
+
+    return notifications;
+  }
+
+  /**
+   * Send email notification
+   */
+  async sendEmailNotification(notification, user) {
+    try {
+      if (!user || !user.email) {
+        console.warn(&#039;Cannot send email: user or email not provided&#039;);
+        return;
+      }
+
+      const emailData = {
+        to: user.email,
+        subject: notification.title,
+        type: notification.type,
+        data: {
+          title: notification.title,
+          message: notification.message,
+          userName: `${user.firstName} ${user.lastName}`,
+          priority: notification.priority,
+          createdAt: notification.created_at
+        }
+      };
+
+      await emailService.sendNotificationEmail(emailData);
+      await notification.markEmailSent();
+
+      return true;
+    } catch (error) {
+      console.error(&#039;Error sending email notification:&#039;, error);
+      return false;
+    }
+  }
+
+  /**
+   * Emit real-time notification via Socket.io
+   */
+  emitRealTimeNotification(io, userId, notification) {
+    try {
+      io.to(`user_${userId}`).emit(&#039;new_notification&#039;, {
+        id: notification.id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        priority: notification.priority,
+        createdAt: notification.created_at,
+        metadata: notification.metadata
+      });
+
+      console.log(`✅ Real-time notification sent to user ${userId}`);
+    } catch (error) {
+      console.error(&#039;Error emitting real-time notification:&#039;, error);
+    }
+  }
+
+  /**
+   * Get user notifications with pagination
+   */
+  async getUserNotifications(userId, options = {}) {
+    const {
+      page = 1,
+      limit = 20,
+      unreadOnly = false,
+      type = null
+    } = options;
+
+    const where = { user_id: userId };
+
+    if (unreadOnly) {
+      where.is_read = false;
+    }
+
+    if (type) {
+      where.type = type;
+    }
+
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Notification.findAndCountAll({
+      where,
+      order: [[&#039;created_at&#039;, &#039;DESC&#039;]],
+      limit,
+      offset
+    });
+
+    return {
+      notifications: rows,
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+      hasMore: offset + rows.length &lt; count
+    };
+  }
+
+  /**
+   * Mark notification as read
+   */
+  async markAsRead(notificationId, userId) {
+    const notification = await Notification.findOne({
+      where: {
+        id: notificationId,
+        user_id: userId
+      }
+    });
+
+    if (!notification) {
+      throw new Error(&#039;Notification not found&#039;);
+    }
+
+    return await notification.markAsRead();
+  }
+
+  /**
+   * Mark all notifications as read for user
+   */
+  async markAllAsRead(userId) {
+    return await Notification.markAllAsRead(userId);
+  }
+
+  /**
+   * Delete notification
+   */
+  async deleteNotification(notificationId, userId) {
+    const result = await Notification.destroy({
+      where: {
+        id: notificationId,
+        user_id: userId
+      }
+    });
+
+    return result &gt; 0;
+  }
+
+  /**
+   * Get unread count
+   */
+  async getUnreadCount(userId) {
+    return await Notification.getUnreadCount(userId);
+  }
+
+  /**
+   * Notification type helpers
+   */
+
+  // Grade posted notification
+  async notifyGradePosted(studentId, gradeData, options = {}) {
+    return await this.createNotification({
+      userId: studentId,
+      type: &#039;grade_posted&#039;,
+      title: &#039;Điểm Số Mới&#039;,
+      message: `Bạn nhận được điểm ${gradeData.score} cho môn ${gradeData.subject}`,
+      relatedType: &#039;grade&#039;,
+      relatedId: gradeData.gradeId,
+      priority: &#039;medium&#039;,
+      metadata: { grade: gradeData.score, subject: gradeData.subject }
+    }, options);
+  }
+
+  // Attendance marked notification
+  async notifyAttendanceMarked(studentId, attendanceData, options = {}) {
+    const isAbsent = attendanceData.status === &#039;absent&#039;;
+
+    return await this.createNotification({
+      userId: studentId,
+      type: &#039;attendance_marked&#039;,
+      title: isAbsent ? &#039;Thông Báo Vắng Mặt&#039; : &#039;Điểm Danh&#039;,
+      message: isAbsent
+        ? `Bạn đã vắng mặt buổi học ${attendanceData.subject} ngày ${attendanceData.date}`
+        : `Điểm danh buổi học ${attendanceData.subject} ngày ${attendanceData.date}`,
+      relatedType: &#039;attendance&#039;,
+      relatedId: attendanceData.attendanceId,
+      priority: isAbsent ? &#039;high&#039; : &#039;low&#039;,
+      metadata: attendanceData
+    }, options);
+  }
+
+  // Assignment due notification
+  async notifyAssignmentDue(studentId, assignmentData, options = {}) {
+    return await this.createNotification({
+      userId: studentId,
+      type: &#039;assignment_due&#039;,
+      title: &#039;Nhắc Nhở Nộp Bài&#039;,
+      message: `Bài tập ${assignmentData.name} sắp đến hạn: ${assignmentData.dueDate}`,
+      relatedType: &#039;assignment&#039;,
+      relatedId: assignmentData.assignmentId,
+      priority: &#039;high&#039;,
+      metadata: assignmentData
+    }, options);
+  }
+
+  // System announcement
+  async notifyAnnouncement(userIds, announcementData, options = {}) {
+    return await this.createBulkNotifications(
+      userIds,
+      {
+        type: &#039;announcement&#039;,
+        title: announcementData.title,
+        message: announcementData.message,
+        priority: announcementData.priority || &#039;medium&#039;,
+        metadata: announcementData
+      },
+      options
+    );
+  }
+
+  // Alert notification
+  async notifyAlert(userId, alertData, options = {}) {
+    return await this.createNotification({
+      userId,
+      type: &#039;alert&#039;,
+      title: alertData.title,
+      message: alertData.message,
+      priority: &#039;urgent&#039;,
+      metadata: alertData
+    }, { ...options, sendEmail: options.sendEmail || false });
+  }
+}
+
+module.exports = new NotificationService();</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

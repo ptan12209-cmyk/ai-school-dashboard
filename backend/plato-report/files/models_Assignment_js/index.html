@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - models\Assignment.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>models\Assignment.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">67.19</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">284</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">32.47</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.10</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/**
+ * Assignment Model
+ * ================
+ * Represents homework, quizzes, and exams
+ */
+
+const { DataTypes } = require(&#039;sequelize&#039;);
+const { sequelize } = require(&#039;../config/database&#039;);
+
+const Assignment = sequelize.define(&#039;Assignment&#039;, {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+
+  // Basic Information
+  title: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: &#039;Tiêu đề không được để trống&#039; },
+      len: { args: [3, 255], msg: &#039;Tiêu đề phải từ 3-255 ký tự&#039; }
+    }
+  },
+
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+
+  instructions: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: &#039;Hướng dẫn chi tiết cho học sinh&#039;
+  },
+
+  // Type &amp; Category
+  type: {
+    type: DataTypes.ENUM(&#039;homework&#039;, &#039;quiz&#039;, &#039;exam&#039;, &#039;practice&#039;),
+    allowNull: false,
+    defaultValue: &#039;homework&#039;,
+    comment: &#039;Loại bài tập&#039;
+  },
+
+  // Relationships
+  course_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;courses&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;CASCADE&#039;
+  },
+
+  teacher_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;teachers&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;RESTRICT&#039;
+  },
+
+  // Grading
+  total_points: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 100,
+    validate: {
+      min: { args: [0], msg: &#039;Điểm tối đa phải &gt;= 0&#039; },
+      max: { args: [1000], msg: &#039;Điểm tối đa phải &lt;= 1000&#039; }
+    }
+  },
+
+  passing_score: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: true,
+    validate: {
+      min: { args: [0], msg: &#039;Điểm đạt phải &gt;= 0&#039; }
+    },
+    comment: &#039;Điểm tối thiểu để đạt&#039;
+  },
+
+  // Timing
+  available_from: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: &#039;Thời gian bắt đầu có thể làm bài&#039;
+  },
+
+  due_date: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: &#039;Hạn nộp bài&#039;
+  },
+
+  time_limit: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: &#039;Thời gian làm bài (phút), null = không giới hạn&#039;
+  },
+
+  // Late Submission
+  allow_late_submission: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    comment: &#039;Cho phép nộp muộn&#039;
+  },
+
+  late_penalty_percent: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: true,
+    defaultValue: 10,
+    validate: {
+      min: { args: [0], msg: &#039;Phần trăm phạt phải &gt;= 0&#039; },
+      max: { args: [100], msg: &#039;Phần trăm phạt phải &lt;= 100&#039; }
+    },
+    comment: &#039;Phần trăm trừ điểm khi nộp muộn (mỗi ngày)&#039;
+  },
+
+  // Settings
+  max_attempts: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 1,
+    validate: {
+      min: { args: [1], msg: &#039;Số lần làm tối thiểu là 1&#039; }
+    },
+    comment: &#039;Số lần làm bài tối đa&#039;
+  },
+
+  shuffle_questions: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: &#039;Xáo trộn thứ tự câu hỏi&#039;
+  },
+
+  show_correct_answers: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    comment: &#039;Hiển thị đáp án đúng sau khi nộp&#039;
+  },
+
+  auto_grade: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    comment: &#039;Tự động chấm điểm (cho multiple choice)&#039;
+  },
+
+  // Status
+  status: {
+    type: DataTypes.ENUM(&#039;draft&#039;, &#039;published&#039;, &#039;closed&#039;, &#039;archived&#039;),
+    defaultValue: &#039;draft&#039;,
+    allowNull: false
+  },
+
+  // Statistics
+  total_submissions: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    comment: &#039;Tổng số bài nộp&#039;
+  },
+
+  avg_score: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: true,
+    comment: &#039;Điểm trung bình&#039;
+  },
+
+  // Metadata
+  metadata: {
+    type: DataTypes.JSONB,
+    defaultValue: {},
+    comment: &#039;Dữ liệu bổ sung (attachments, settings, etc.)&#039;
+  }
+}, {
+  tableName: &#039;assignments&#039;,
+  timestamps: true,
+  underscored: true,
+  indexes: [
+    { fields: [&#039;course_id&#039;] },
+    { fields: [&#039;teacher_id&#039;] },
+    { fields: [&#039;status&#039;] },
+    { fields: [&#039;due_date&#039;] },
+    { fields: [&#039;type&#039;] }
+  ]
+});
+
+/**
+ * Instance Methods
+ */
+
+// Check if assignment is available
+Assignment.prototype.isAvailable = function() {
+  const now = new Date();
+
+  if (this.status !== &#039;published&#039;) return false;
+
+  if (this.available_from &amp;&amp; now &lt; new Date(this.available_from)) {
+    return false;
+  }
+
+  return true;
+};
+
+// Check if assignment is overdue
+Assignment.prototype.isOverdue = function() {
+  if (!this.due_date) return false;
+  return new Date() &gt; new Date(this.due_date);
+};
+
+// Calculate late penalty
+Assignment.prototype.calculateLatePenalty = function(submittedAt) {
+  if (!this.due_date || !this.allow_late_submission) return 0;
+
+  const dueDate = new Date(this.due_date);
+  const submitDate = new Date(submittedAt);
+
+  if (submitDate &lt;= dueDate) return 0;
+
+  const daysLate = Math.ceil((submitDate - dueDate) / (1000 * 60 * 60 * 24));
+  const penalty = daysLate * (this.late_penalty_percent || 0);
+
+  return Math.min(penalty, 100); // Max 100% penalty
+};
+
+// Update statistics
+Assignment.prototype.updateStatistics = async function() {
+  const { Submission } = require(&#039;./index&#039;);
+
+  const submissions = await Submission.findAll({
+    where: { assignment_id: this.id, status: &#039;graded&#039; },
+    attributes: [&#039;score&#039;]
+  });
+
+  this.total_submissions = submissions.length;
+
+  if (submissions.length &gt; 0) {
+    const totalScore = submissions.reduce((sum, sub) =&gt; sum + parseFloat(sub.score || 0), 0);
+    this.avg_score = (totalScore / submissions.length).toFixed(2);
+  } else {
+    this.avg_score = null;
+  }
+
+  await this.save();
+};
+
+/**
+ * Static Methods
+ */
+
+// Get upcoming assignments
+Assignment.getUpcoming = async function(courseId, limit = 5) {
+  return await Assignment.findAll({
+    where: {
+      course_id: courseId,
+      status: &#039;published&#039;,
+      due_date: {
+        [sequelize.Sequelize.Op.gte]: new Date()
+      }
+    },
+    order: [[&#039;due_date&#039;, &#039;ASC&#039;]],
+    limit
+  });
+};
+
+// Get overdue assignments
+Assignment.getOverdue = async function(courseId) {
+  return await Assignment.findAll({
+    where: {
+      course_id: courseId,
+      status: &#039;published&#039;,
+      due_date: {
+        [sequelize.Sequelize.Op.lt]: new Date()
+      }
+    },
+    order: [[&#039;due_date&#039;, &#039;DESC&#039;]]
+  });
+};
+
+module.exports = Assignment;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

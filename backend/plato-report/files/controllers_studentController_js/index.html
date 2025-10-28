@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - controllers\studentController.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>controllers\studentController.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">48.00</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">430</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">57.22</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.94</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">const { User, Student } = require(&#039;../models&#039;);
+const { catchAsync, NotFoundError, ValidationError, ConflictError, AuthorizationError } = require(&#039;../middleware/errorHandler&#039;);
+const { Op } = require(&#039;sequelize&#039;);
+
+/**
+ * @route   GET /api/students
+ * @desc    Get all students with pagination and filtering
+ * @access  Teacher, Admin
+ */
+exports.getAllStudents = catchAsync(async (req, res) =&gt; {
+  // Check permissions
+  if (![&#039;admin&#039;, &#039;teacher&#039;].includes(req.user.role)) {
+    throw new AuthorizationError(&#039;Only admins and teachers can view all students&#039;);
+  }
+  
+  // Pagination
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+  
+  // Filtering
+  const where = {};
+  
+  if (req.query.gender) {
+    where.gender = req.query.gender;
+  }
+  
+  if (req.query.class_id) {
+    where.class_id = req.query.class_id;
+  }
+  
+  // Unassigned students (no class)
+  if (req.query.unassigned === &#039;true&#039;) {
+    where.class_id = null;
+  }
+  
+  // Search by name
+  if (req.query.search) {
+    where[Op.or] = [
+      { first_name: { [Op.iLike]: `%${req.query.search}%` } },
+      { last_name: { [Op.iLike]: `%${req.query.search}%` } }
+    ];
+  }
+  
+  // Sorting with whitelist validation to prevent SQL injection
+  const order = [];
+  if (req.query.sort) {
+    const sortField = req.query.sort.startsWith(&#039;-&#039;)
+      ? req.query.sort.substring(1)
+      : req.query.sort;
+    const sortOrder = req.query.sort.startsWith(&#039;-&#039;) ? &#039;DESC&#039; : &#039;ASC&#039;;
+
+    // Whitelist of allowed sort fields
+    const allowedSortFields = [&#039;student_id&#039;, &#039;first_name&#039;, &#039;last_name&#039;, &#039;date_of_birth&#039;, &#039;gender&#039;, &#039;grade_level&#039;, &#039;enrollment_date&#039;, &#039;created_at&#039;, &#039;updated_at&#039;];
+
+    if (allowedSortFields.includes(sortField)) {
+      order.push([sortField, sortOrder]);
+    } else {
+      // If invalid sort field, use default
+      order.push([&#039;last_name&#039;, &#039;ASC&#039;]);
+    }
+  } else {
+    order.push([&#039;last_name&#039;, &#039;ASC&#039;]);
+  }
+  
+  // Include user data
+  const include = [
+    {
+      model: User,
+      as: &#039;user&#039;,
+      attributes: [&#039;id&#039;, &#039;email&#039;, &#039;is_active&#039;],
+      where: req.user.role === &#039;admin&#039; 
+        ? {} 
+        : { is_active: true } // Non-admins only see active students
+    }
+  ];
+  
+  // Query
+  const { count, rows } = await Student.findAndCountAll({
+    where,
+    include,
+    limit,
+    offset,
+    order
+  });
+  
+  res.json({
+    success: true,
+    data: {
+      students: rows,
+      pagination: {
+        total: count,
+        page,
+        pages: Math.ceil(count / limit),
+        limit
+      }
+    }
+  });
+});
+
+/**
+ * @route   GET /api/students/:id
+ * @desc    Get student by ID
+ * @access  Teacher, Admin, or Self
+ */
+exports.getStudentById = catchAsync(async (req, res) =&gt; {
+  const { id } = req.params;
+  
+  const student = await Student.findByPk(id, {
+    include: [
+      {
+        model: User,
+        as: &#039;user&#039;,
+        attributes: [&#039;id&#039;, &#039;email&#039;, &#039;is_active&#039;]
+      }
+    ]
+  });
+  
+  if (!student) {
+    throw new NotFoundError(&#039;Student not found&#039;);
+  }
+  
+  // Check permissions
+  const isAdmin = req.user.role === &#039;admin&#039;;
+  const isTeacher = req.user.role === &#039;teacher&#039;;
+  const isSelf = student.user_id === req.user.id;
+  
+  if (!isAdmin &amp;&amp; !isTeacher &amp;&amp; !isSelf) {
+    throw new AuthorizationError(&#039;Access denied&#039;);
+  }
+  
+  res.json({
+    success: true,
+    data: { student }
+  });
+});
+
+/**
+ * @route   POST /api/students
+ * @desc    Create new student
+ * @access  Admin only
+ */
+exports.createStudent = catchAsync(async (req, res) =&gt; {
+  const {
+    email,
+    password,
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    phone,
+    address,
+    parentName,
+    parentPhone,
+    parentEmail,
+    classId
+  } = req.body;
+
+  // Validate required fields
+  if (!firstName || !lastName) {
+    return res.status(400).json({
+      success: false,
+      message: &#039;First name and last name are required&#039;
+    });
+  }
+
+  if (!dateOfBirth) {
+    return res.status(400).json({
+      success: false,
+      message: &#039;Date of birth is required&#039;
+    });
+  }
+
+  // Validate date of birth is in the past
+  const birthDate = new Date(dateOfBirth);
+  if (birthDate &gt;= new Date()) {
+    return res.status(400).json({
+      success: false,
+      message: &#039;Date of birth must be in the past&#039;
+    });
+  }
+
+  // Check if email already exists
+  const existingUser = await User.findOne({ where: { email } });
+  if (existingUser) {
+    throw new ConflictError(&#039;Email already exists&#039;);
+  }
+
+  // Validate password
+  const passwordValidation = User.validatePassword(password);
+  if (!passwordValidation.valid) {
+    throw new ValidationError(&#039;Password does not meet requirements&#039;);
+  }
+  
+  // Create user account
+  const user = await User.create({
+    email,
+    password_hash: password,
+    role: &#039;student&#039;,
+    is_active: true
+  });
+  
+  // Create student profile
+  const student = await Student.create({
+    user_id: user.id,
+    first_name: firstName,
+    last_name: lastName,
+    date_of_birth: dateOfBirth,
+    gender: gender || null,
+    phone: phone || null,
+    address: address || null,
+    parent_name: parentName || null,
+    parent_phone: parentPhone || null,
+    parent_email: parentEmail || null,
+    class_id: classId || null
+  });
+  
+  res.status(201).json({
+    success: true,
+    message: &#039;Student created successfully&#039;,
+    data: {
+      student: {
+        id: student.id,
+        user_id: user.id,
+        first_name: student.first_name,
+        last_name: student.last_name,
+        date_of_birth: student.date_of_birth,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        }
+      }
+    }
+  });
+});
+
+/**
+ * @route   PUT /api/students/:id
+ * @desc    Update student
+ * @access  Admin or Self (limited fields)
+ */
+exports.updateStudent = catchAsync(async (req, res) =&gt; {
+  const { id } = req.params;
+  const isAdmin = req.user.role === &#039;admin&#039;;
+  
+  const student = await Student.findByPk(id, {
+    include: [{ model: User, as: &#039;user&#039; }]
+  });
+  
+  if (!student) {
+    throw new NotFoundError(&#039;Student not found&#039;);
+  }
+  
+  // Check permissions
+  const isSelf = student.user_id === req.user.id;
+  if (!isAdmin &amp;&amp; !isSelf) {
+    throw new AuthorizationError(&#039;You can only update your own profile&#039;);
+  }
+  
+  // Fields that can be updated - handle both camelCase and snake_case
+  const updates = {};
+  
+  if (isAdmin) {
+    // Admin can update all fields
+    if (req.body.firstName !== undefined) updates.first_name = req.body.firstName;
+    if (req.body.first_name !== undefined) updates.first_name = req.body.first_name;
+    if (req.body.lastName !== undefined) updates.last_name = req.body.lastName;
+    if (req.body.last_name !== undefined) updates.last_name = req.body.last_name;
+    if (req.body.dateOfBirth !== undefined) updates.date_of_birth = req.body.dateOfBirth;
+    if (req.body.date_of_birth !== undefined) updates.date_of_birth = req.body.date_of_birth;
+    if (req.body.gender !== undefined) updates.gender = req.body.gender;
+    if (req.body.phone !== undefined) updates.phone = req.body.phone;
+    if (req.body.address !== undefined) updates.address = req.body.address;
+    if (req.body.parentName !== undefined) updates.parent_name = req.body.parentName;
+    if (req.body.parent_name !== undefined) updates.parent_name = req.body.parent_name;
+    if (req.body.parentPhone !== undefined) updates.parent_phone = req.body.parentPhone;
+    if (req.body.parent_phone !== undefined) updates.parent_phone = req.body.parent_phone;
+    if (req.body.parentEmail !== undefined) updates.parent_email = req.body.parentEmail;
+    if (req.body.parent_email !== undefined) updates.parent_email = req.body.parent_email;
+    if (req.body.classId !== undefined) updates.class_id = req.body.classId;
+    if (req.body.class_id !== undefined) updates.class_id = req.body.class_id;
+  } else {
+    // Students can only update contact info
+    if (req.body.phone !== undefined) updates.phone = req.body.phone;
+    if (req.body.address !== undefined) updates.address = req.body.address;
+  }
+  
+  await student.update(updates);
+  
+  res.json({
+    success: true,
+    message: &#039;Student updated successfully&#039;,
+    data: { student }
+  });
+});
+
+/**
+ * @route   DELETE /api/students/:id
+ * @desc    Delete student (soft delete by deactivating user)
+ * @access  Admin only
+ */
+exports.deleteStudent = catchAsync(async (req, res) =&gt; {
+  const { id } = req.params;
+  
+  const student = await Student.findByPk(id, {
+    include: [{ model: User, as: &#039;user&#039; }]
+  });
+  
+  if (!student) {
+    throw new NotFoundError(&#039;Student not found&#039;);
+  }
+  
+  // Prevent deleting yourself
+  if (student.user_id === req.user.id) {
+    throw new ValidationError(&#039;You cannot delete your own account&#039;);
+  }
+  
+  // Soft delete by deactivating user account
+  await student.user.update({ is_active: false });
+  
+  res.json({
+    success: true,
+    message: &#039;Student deleted successfully&#039;,
+    data: { deletedStudentId: id }
+  });
+});
+
+/**
+ * @route   GET /api/students/:id/grades
+ * @desc    Get student&#039;s grades
+ * @access  Student (self), Teacher, Admin
+ * @note    Will be implemented in Day 5 when Grade model is ready
+ */
+exports.getStudentGrades = catchAsync(async (req, res) =&gt; {
+  const { id } = req.params;
+  
+  const student = await Student.findByPk(id);
+  
+  if (!student) {
+    throw new NotFoundError(&#039;Student not found&#039;);
+  }
+  
+  // Check permissions
+  const isAdmin = req.user.role === &#039;admin&#039;;
+  const isTeacher = req.user.role === &#039;teacher&#039;;
+  const isSelf = student.user_id === req.user.id;
+  
+  if (!isAdmin &amp;&amp; !isTeacher &amp;&amp; !isSelf) {
+    throw new AuthorizationError(&#039;Access denied&#039;);
+  }
+
+  res.json({
+    success: true,
+    message: &#039;Grade feature will be implemented in Day 5&#039;,
+    data: {
+      grades: []
+    }
+  });
+});
+
+/**
+ * @route   GET /api/students/unassigned
+ * @desc    Get students without a class
+ * @access  Teacher, Admin
+ */
+exports.getUnassignedStudents = catchAsync(async (req, res) =&gt; {
+  // Check permissions
+  if (![&#039;admin&#039;, &#039;teacher&#039;].includes(req.user.role)) {
+    throw new AuthorizationError(&#039;Only admins and teachers can view unassigned students&#039;);
+  }
+  
+  const students = await Student.findUnassigned();
+  
+  res.json({
+    success: true,
+    data: {
+      student: students,
+      count: students.length
+    }
+  });
+});
+
+/**
+ * @route   GET /api/students/stats
+ * @desc    Get student statistics
+ * @access  Admin only
+ */
+exports.getStudentStats = catchAsync(async (req, res) =&gt; {
+  const [total, active, assigned, unassigned, byGender] = await Promise.all([
+    Student.count(),
+    Student.count({
+      include: [{
+        model: User,
+        as: &#039;user&#039;,
+        where: { is_active: true }
+      }]
+    }),
+    Student.count({
+      where: { class_id: { [Op.ne]: null } }
+    }),
+    Student.count({
+      where: { class_id: null }
+    }),
+    Student.findAll({
+      attributes: [
+        &#039;gender&#039;,
+        [Student.sequelize.fn(&#039;COUNT&#039;, Student.sequelize.col(&#039;id&#039;)), &#039;count&#039;]
+      ],
+      where: {
+        gender: { [Op.ne]: null }
+      },
+      group: [&#039;gender&#039;]
+    })
+  ]);
+  
+  res.json({
+    success: true,
+    data: {
+      total,
+      active,
+      assigned,
+      unassigned,
+      byGender: byGender.map(g =&gt; ({
+        gender: g.gender,
+        count: parseInt(g.dataValues.count)
+      }))
+    }
+  });
+});</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

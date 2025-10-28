@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - controllers\authController.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>controllers\authController.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">46.15</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">360</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">45.43</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.61</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">const { User, Teacher, Student } = require(&#039;../models&#039;);
+
+/**
+ * @route   POST /api/auth/register
+ * @desc    Register a new user
+ * @access  Public
+ */
+exports.register = async (req, res, next) =&gt; {
+  try {
+    const { 
+      email, 
+      password, 
+      role, 
+      firstName, 
+      lastName,
+      dateOfBirth,
+      gender,
+      department,
+      phone,
+      parentName,
+      parentPhone,
+      parentEmail
+    } = req.body;
+    
+    // Validate required fields first
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: &#039;Email and password are required&#039;
+      });
+    }
+    // Normalize email to lowercase and trim whitespace to prevent duplicates
+    const trimmedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ where: { email: trimmedEmail } });
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: &#039;Email already exists&#039;
+      });
+    }
+    
+    // Validate password strength
+    const passwordValidation = User.validatePassword(password);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: &#039;Password does not meet requirements&#039;,
+        errors: passwordValidation.errors
+      });
+    }
+    
+    // Create user
+    const user = await User.create({
+      email: trimmedEmail,
+      password_hash: password, // Will be hashed by beforeCreate hook
+      role: role || &#039;student&#039;,
+      is_active: true
+    });
+    
+    // Create profile based on role
+    let profile = null;
+    
+    try {
+      if (role === &#039;teacher&#039; &amp;&amp; firstName &amp;&amp; lastName) {
+        profile = await Teacher.create({
+          user_id: user.id,
+          first_name: firstName,
+          last_name: lastName,
+          department: department || null,
+          phone: phone || null,
+          hire_date: new Date()
+        });
+      } else if (role === &#039;student&#039; &amp;&amp; firstName &amp;&amp; lastName &amp;&amp; dateOfBirth) {
+        profile = await Student.create({
+          user_id: user.id,
+          first_name: firstName,
+          last_name: lastName,
+          date_of_birth: dateOfBirth,
+          gender: gender || null,
+          phone: phone || null,
+          parent_name: parentName || null,
+          parent_phone: parentPhone || null,
+          parent_email: parentEmail || null
+        });
+      }
+    } catch (profileError) {
+      // Rollback user creation if profile creation fails
+      await user.destroy();
+      
+      return res.status(400).json({
+        success: false,
+        message: profileError.message || &#039;Failed to create user profile&#039;
+      });
+    }
+    
+    // Generate token
+    const token = user.generateToken();
+    
+    res.status(201).json({
+      success: true,
+      message: &#039;User registered successfully&#039;,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        },
+        profile,
+        token
+      }
+    });
+    
+  } catch (error) {
+    console.error(&#039;Register error:&#039;, error);
+    
+    // Handle Sequelize validation errors
+    if (error.name === &#039;SequelizeValidationError&#039;) {
+      return res.status(400).json({
+        success: false,
+        message: &#039;Validation error&#039;,
+        errors: error.errors.map(e =&gt; ({
+          field: e.path,
+          message: e.message
+        }))
+      });
+    }
+    
+    // Handle unique constraint errors
+    if (error.name === &#039;SequelizeUniqueConstraintError&#039;) {
+      return res.status(409).json({
+        success: false,
+        message: &#039;Email already exists&#039;
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: &#039;Server error during registration&#039;,
+      error: process.env.NODE_ENV === &#039;development&#039; ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * @route   POST /api/auth/login
+ * @desc    Login user and return token
+ * @access  Public
+ */
+exports.login = async (req, res, next) =&gt; {
+  try {
+    const { email, password } = req.body;
+    
+    // âœ… COMPREHENSIVE VALIDATION
+    // Return 400 (validation error) for missing fields
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: &#039;Email and password are required&#039;
+      });
+    }
+
+    // Normalize email to lowercase and trim whitespace
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Find user with password (using withPassword scope)
+    const user = await User.findByEmail(normalizedEmail);
+    if (!user) {
+      // Return 401 for invalid credentials (user not found)
+      return res.status(401).json({
+        success: false,
+        message: &#039;Invalid email or password&#039;
+      });
+    }
+    
+    // Check if account is active
+    if (!user.is_active) {
+      return res.status(403).json({
+        success: false,
+        message: &#039;Account is inactive. Please contact administrator.&#039;
+      });
+    }
+    
+    // Verify password
+    const isValidPassword = await user.comparePassword(password);
+    
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: &#039;Invalid email or password&#039;
+      });
+    }
+    
+    // Get user profile based on role
+    let profile = null;
+    
+    if (user.role === &#039;teacher&#039;) {
+      profile = await Teacher.findOne({ where: { user_id: user.id } });
+    } else if (user.role === &#039;student&#039;) {
+      profile = await Student.findOne({ where: { user_id: user.id } });
+    }
+    
+    // Generate token
+    const token = user.generateToken();
+    
+    res.json({
+      success: true,
+      message: &#039;Login successful&#039;,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          is_active: user.is_active
+        },
+        profile: profile ? {
+          id: profile.id,
+          firstName: profile.first_name,
+          lastName: profile.last_name,
+          fullName: profile.getFullName ? profile.getFullName() : `${profile.first_name} ${profile.last_name}`
+        } : null,
+        token
+      }
+    });
+    
+  } catch (error) {
+    console.error(&#039;Login error:&#039;, error);
+    
+    res.status(500).json({
+      success: false,
+      message: &#039;Server error during login&#039;,
+      error: process.env.NODE_ENV === &#039;development&#039; ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * @route   GET /api/auth/me
+ * @desc    Get current user profile
+ * @access  Private (requires authentication)
+ */
+exports.getCurrentUser = async (req, res, next) =&gt; {
+  try {
+    // User is already attached to req by authMiddleware
+    const userId = req.user.id;
+    
+    // Fetch user with profile
+    const user = await User.findByPk(userId, {
+      attributes: [&#039;id&#039;, &#039;email&#039;, &#039;role&#039;, &#039;is_active&#039;, &#039;created_at&#039;]
+    });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: &#039;User not found&#039;
+      });
+    }
+    
+    // Get profile based on role
+    let profile = null;
+    
+    if (user.role === &#039;teacher&#039;) {
+      profile = await Teacher.findOne({ 
+        where: { user_id: user.id }
+      });
+    } else if (user.role === &#039;student&#039;) {
+      profile = await Student.findOne({ 
+        where: { user_id: user.id }
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        user: user.toJSON(),
+        profile: profile ? profile.toJSON() : null
+      }
+    });
+    
+  } catch (error) {
+    console.error(&#039;Get current user error:&#039;, error);
+    
+    res.status(500).json({
+      success: false,
+      message: &#039;Server error&#039;,
+      error: process.env.NODE_ENV === &#039;development&#039; ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user (client-side should delete token)
+ * @access  Private
+ */
+exports.logout = async (req, res, next) =&gt; {
+  try {
+    // With JWT, logout is handled client-side by deleting the token
+    // This endpoint is mainly for logging/tracking purposes
+    
+    res.json({
+      success: true,
+      message: &#039;Logout successful&#039;,
+      data: {
+        loggedOut: true,
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+  } catch (error) {
+    console.error(&#039;Logout error:&#039;, error);
+    
+    res.status(500).json({
+      success: false,
+      message: &#039;Server error&#039;,
+      error: process.env.NODE_ENV === &#039;development&#039; ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * @route   POST /api/auth/refresh-token
+ * @desc    Refresh access token
+ * @access  Private
+ */
+exports.refreshToken = async (req, res, next) =&gt; {
+  try {
+    // User is already authenticated via authMiddleware
+    const userId = req.user.id;
+    
+    const user = await User.findByPk(userId);
+    
+    if (!user || !user.is_active) {
+      return res.status(401).json({
+        success: false,
+        message: &#039;User not found or inactive&#039;
+      });
+    }
+    
+    // Generate new token
+    const token = user.generateToken();
+    
+    res.json({
+      success: true,
+      data: { token }
+    });
+    
+  } catch (error) {
+    console.error(&#039;Refresh token error:&#039;, error);
+    
+    res.status(500).json({
+      success: false,
+      message: &#039;Server error&#039;,
+      error: process.env.NODE_ENV === &#039;development&#039; ? error.message : undefined
+    });
+  }
+};
+
+module.exports = exports;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

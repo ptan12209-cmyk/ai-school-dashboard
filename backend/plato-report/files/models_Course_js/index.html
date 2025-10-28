@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - models\Course.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>models\Course.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">68.27</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">329</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">28.22</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.41</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">const { DataTypes } = require(&#039;sequelize&#039;);
+const { sequelize } = require(&#039;../config/database&#039;);
+
+const Course = sequelize.define(&#039;Course&#039;, {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  
+  name: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: &#039;Course name cannot be empty&#039; },
+      len: {
+        args: [1, 100],
+        msg: &#039;Course name must be 1-100 characters&#039;
+      }
+    }
+  },
+  
+  code: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    unique: true,
+    validate: {
+      notEmpty: { msg: &#039;Course code cannot be empty&#039; },
+      is: {
+        args: /^[A-Z0-9-]+$/i,
+        msg: &#039;Course code can only contain letters, numbers, and hyphens&#039;
+      }
+    }
+  },
+  
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  
+  class_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;classes&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;CASCADE&#039;
+  },
+  
+  teacher_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;teachers&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;RESTRICT&#039;
+  },
+  
+  subject: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: &#039;Subject cannot be empty&#039; }
+    }
+  },
+  
+  credits: {
+    type: DataTypes.DECIMAL(3, 1),
+    allowNull: false,
+    defaultValue: 1.0,
+    validate: {
+      min: {
+        args: [0.5],
+        msg: &#039;Credits must be at least 0.5&#039;
+      },
+      max: {
+        args: [10.0],
+        msg: &#039;Credits cannot exceed 10.0&#039;
+      }
+    }
+  },
+  
+  semester: {
+    type: DataTypes.ENUM(&#039;1&#039;, &#039;2&#039;, &#039;Full Year&#039;),
+    allowNull: false,
+    defaultValue: &#039;Full Year&#039;
+  },
+  
+  school_year: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    defaultValue: &#039;2024-2025&#039;,
+    validate: {
+      is: {
+        args: /^\d{4}-\d{4}$/,
+        msg: &#039;School year must be in format YYYY-YYYY&#039;
+      }
+    }
+  },
+  
+  schedule: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+    comment: &#039;Schedule in format: [{day: &quot;Monday&quot;, time: &quot;08:00-09:00&quot;}]&#039;
+  },
+  
+  is_active: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  }
+}, {
+  tableName: &#039;courses&#039;,
+  timestamps: true,
+  underscored: true,
+  indexes: [
+    {
+      unique: true,
+      fields: [&#039;code&#039;]
+    },
+    {
+      unique: false,
+      fields: [&#039;class_id&#039;]
+    },
+    {
+      unique: false,
+      fields: [&#039;teacher_id&#039;]
+    },
+    {
+      unique: false,
+      fields: [&#039;subject&#039;]
+    },
+    {
+      unique: false,
+      fields: [&#039;school_year&#039;]
+    }
+  ]
+});
+
+/**
+ * Instance Methods
+ */
+
+/**
+ * Get student count enrolled in course
+ */
+Course.prototype.getEnrollmentCount = async function() {
+  const Class = require(&#039;./Class&#039;);
+  const Student = require(&#039;./Student&#039;);
+  
+  const classData = await Class.findByPk(this.class_id, {
+    include: [{
+      model: Student,
+      as: &#039;students&#039;,
+      attributes: [&#039;id&#039;]
+    }]
+  });
+  
+  return classData &amp;&amp; classData.students ? classData.students.length : 0;
+};
+
+/**
+ * Get average grade for course
+ */
+Course.prototype.getAverageGrade = async function() {
+  const Grade = require(&#039;./Grade&#039;);
+  
+  const result = await Grade.findOne({
+    where: { course_id: this.id },
+    attributes: [
+      [sequelize.fn(&#039;AVG&#039;, sequelize.col(&#039;score&#039;)), &#039;avgScore&#039;]
+    ],
+    raw: true
+  });
+  
+  return result &amp;&amp; result.avgScore ? parseFloat(result.avgScore).toFixed(2) : null;
+};
+
+/**
+ * Get course statistics
+ */
+Course.prototype.getStatistics = async function() {
+  const Grade = require(&#039;./Grade&#039;);
+  
+  const grades = await Grade.findAll({
+    where: { course_id: this.id },
+    attributes: [&#039;score&#039;],
+    raw: true
+  });
+  
+  if (grades.length === 0) {
+    return {
+      totalGrades: 0,
+      average: null,
+      highest: null,
+      lowest: null,
+      passRate: null
+    };
+  }
+  
+  const scores = grades.map(g =&gt; parseFloat(g.score));
+  const average = scores.reduce((a, b) =&gt; a + b, 0) / scores.length;
+  const passed = scores.filter(s =&gt; s &gt;= 60).length;
+  
+  return {
+    totalGrades: grades.length,
+    average: average.toFixed(2),
+    highest: Math.max(...scores),
+    lowest: Math.min(...scores),
+    passRate: ((passed / grades.length) * 100).toFixed(1)
+  };
+};
+
+/**
+ * Class Methods (Static)
+ */
+
+/**
+ * Find courses by subject
+ */
+Course.findBySubject = function(subject) {
+  return this.findAll({
+    where: { 
+      subject,
+      is_active: true
+    },
+    order: [[&#039;name&#039;, &#039;ASC&#039;]]
+  });
+};
+
+/**
+ * Find courses by teacher
+ */
+Course.findByTeacher = function(teacherId) {
+  return this.findAll({
+    where: { 
+      teacher_id: teacherId,
+      is_active: true
+    },
+    order: [[&#039;name&#039;, &#039;ASC&#039;]]
+  });
+};
+
+/**
+ * Find courses by class
+ */
+Course.findByClass = function(classId) {
+  return this.findAll({
+    where: { 
+      class_id: classId,
+      is_active: true
+    },
+    order: [[&#039;subject&#039;, &#039;ASC&#039;]]
+  });
+};
+
+/**
+ * Find courses by school year
+ */
+Course.findBySchoolYear = function(schoolYear) {
+  return this.findAll({
+    where: { 
+      school_year: schoolYear,
+      is_active: true
+    },
+    order: [[&#039;subject&#039;, &#039;ASC&#039;], [&#039;name&#039;, &#039;ASC&#039;]]
+  });
+};
+
+/**
+ * Get all unique subjects
+ */
+Course.getAllSubjects = async function() {
+  const subjects = await this.findAll({
+    attributes: [
+      [sequelize.fn(&#039;DISTINCT&#039;, sequelize.col(&#039;subject&#039;)), &#039;subject&#039;]
+    ],
+    where: { is_active: true },
+    order: [[&#039;subject&#039;, &#039;ASC&#039;]],
+    raw: true
+  });
+  
+  return subjects.map(s =&gt; s.subject);
+};
+
+/**
+ * Get course statistics
+ */
+Course.getStats = async function() {
+  const total = await this.count();
+  const active = await this.count({ where: { is_active: true } });
+  
+  const bySubject = await this.findAll({
+    attributes: [
+      &#039;subject&#039;,
+      [sequelize.fn(&#039;COUNT&#039;, sequelize.col(&#039;id&#039;)), &#039;count&#039;]
+    ],
+    where: { is_active: true },
+    group: [&#039;subject&#039;],
+    order: [[sequelize.fn(&#039;COUNT&#039;, sequelize.col(&#039;id&#039;)), &#039;DESC&#039;]],
+    raw: true
+  });
+  
+  const bySemester = await this.findAll({
+    attributes: [
+      &#039;semester&#039;,
+      [sequelize.fn(&#039;COUNT&#039;, sequelize.col(&#039;id&#039;)), &#039;count&#039;]
+    ],
+    where: { is_active: true },
+    group: [&#039;semester&#039;],
+    raw: true
+  });
+  
+  return {
+    total,
+    active,
+    bySubject: bySubject.map(item =&gt; ({
+      subject: item.subject,
+      count: parseInt(item.count)
+    })),
+    bySemester: bySemester.map(item =&gt; ({
+      semester: item.semester,
+      count: parseInt(item.count)
+    }))
+  };
+};
+
+module.exports = Course;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
