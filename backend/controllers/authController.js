@@ -38,14 +38,7 @@ exports.register = async (req, res, next) => {
       parentEmail
     } = req.body;
 
-    // Validate required fields first
-    if (!email || !password) {
-      await t.rollback();
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required'
-      });
-    }
+
     // Normalize email to lowercase and trim whitespace to prevent duplicates
     const trimmedEmail = email.toLowerCase().trim();
 
@@ -62,16 +55,7 @@ exports.register = async (req, res, next) => {
       });
     }
 
-    // Validate password strength
-    const passwordValidation = User.validatePassword(password);
-    if (!passwordValidation.valid) {
-      await t.rollback();
-      return res.status(400).json({
-        success: false,
-        message: 'Password does not meet requirements',
-        errors: passwordValidation.errors
-      });
-    }
+
 
     // Create user (within transaction)
     const user = await User.create({

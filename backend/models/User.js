@@ -34,7 +34,6 @@ const User = sequelize.define('User', {
   email: {
     type: DataTypes.STRING(255),
     allowNull: false,
-    unique: true,
     validate: {
       isEmail: {
         msg: 'Must be a valid email address'
@@ -76,8 +75,10 @@ const User = sequelize.define('User', {
   // Model options
   tableName: 'users',
   timestamps: true,
+  paranoid: true,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
+  deletedAt: 'deleted_at',
   underscored: true, // Use snake_case for column names
 
   // Indexes

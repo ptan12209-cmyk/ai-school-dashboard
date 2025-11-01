@@ -64,7 +64,7 @@ const config = {
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false // For services like Heroku
+        rejectUnauthorized: true // Set to true to prevent man-in-the-middle attacks
       }
     }
   }

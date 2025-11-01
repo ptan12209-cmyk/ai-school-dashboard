@@ -91,6 +91,47 @@ const verifyToken = async (req, res, next) => {
 };
 
 /**
+ * Verify Refresh Token Middleware
+ * ===============================
+ * Verifies a JWT but ignores expiration. To be used ONLY for the refresh token endpoint.
+ */
+const verifyRefreshToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, message: 'No token provided.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Invalid token format.' });
+  }
+
+  try {
+    // Verify the token but ignore the expiration date
+    const decoded = jwt.verify(token, jwtConfig.secret, { ignoreExpiration: true });
+
+    const user = await User.findByPk(decoded.id);
+
+    if (!user || !user.is_active) {
+      return res.status(401).json({ success: false, message: 'User not found or inactive.' });
+    }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    };
+
+    next();
+  } catch (error) {
+    // This will still catch other JWT errors like invalid signature
+    return res.status(401).json({ success: false, message: 'Invalid token.' });
+  }
+};
+
+/**
  * Check User Role Middleware
  * ===========================
  * Verify user has required role(s)
@@ -157,6 +198,7 @@ const optionalAuth = async (req, res, next) => {
 
 module.exports = {
   verifyToken,
+  verifyRefreshToken,
   checkRole,
   optionalAuth
 };

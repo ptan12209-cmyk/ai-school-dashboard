@@ -33,26 +33,8 @@ const AttendanceCalendar = ({
   const [selectedStudent, setSelectedStudent] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(moment());
 
-  // Mock data if none provided
-  const mockStudents = [
-    { id: 1, name: 'Alice Johnson', class: '10A' },
-    { id: 2, name: 'Bob Smith', class: '10A' },
-    { id: 3, name: 'Carol Davis', class: '10B' },
-  ];
-
-  const mockAttendance = [
-    { studentId: 1, date: '2024-01-15', status: 'present' },
-    { studentId: 1, date: '2024-01-16', status: 'present' },
-    { studentId: 1, date: '2024-01-17', status: 'late' },
-    { studentId: 1, date: '2024-01-18', status: 'absent' },
-    { studentId: 1, date: '2024-01-19', status: 'present' },
-    { studentId: 2, date: '2024-01-15', status: 'present' },
-    { studentId: 2, date: '2024-01-16', status: 'absent' },
-    { studentId: 2, date: '2024-01-17', status: 'present' },
-  ];
-
-  const studentData = students.length > 0 ? students : mockStudents;
-  const attendance = attendanceData.length > 0 ? attendanceData : mockAttendance;
+  const studentData = students;
+  const attendance = attendanceData;
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -154,17 +136,28 @@ const AttendanceCalendar = ({
   // Calculate monthly statistics
   const monthStart = selectedMonth.clone().startOf('month');
   const monthEnd = selectedMonth.clone().endOf('month');
-  const monthAttendance = attendance.filter(a => {
+
+  const relevantAttendance = selectedStudent
+    ? attendance.filter(a => a.studentId === parseInt(selectedStudent))
+    : attendance;
+
+  const monthAttendance = relevantAttendance.filter(a => {
     const date = moment(a.date);
     return date.isBetween(monthStart, monthEnd, 'day', '[]');
   });
 
+  const uniqueDaysWithRecords = new Set(monthAttendance.map(a => a.date)).size;
+
   const monthlyStats = {
-    totalDays: monthAttendance.length,
+    totalDays: uniqueDaysWithRecords,
     presentDays: monthAttendance.filter(a => a.status === 'present').length,
     absentDays: monthAttendance.filter(a => a.status === 'absent').length,
     lateDays: monthAttendance.filter(a => a.status === 'late').length
   };
+
+  const attendanceRate = monthlyStats.totalDays > 0
+    ? ((monthlyStats.presentDays + monthlyStats.lateDays) / monthlyStats.totalDays * 100).toFixed(0)
+    : 0;
 
   return (
     <Card title="Attendance Calendar">
@@ -229,7 +222,7 @@ const AttendanceCalendar = ({
           <Col span={6}>
             <div style={{ textAlign: 'center', padding: '8px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
               <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1890ff' }}>
-                {((monthlyStats.presentDays + monthlyStats.lateDays) / monthlyStats.totalDays * 100).toFixed(0)}%
+                {attendanceRate}%
               </div>
               <Text type="secondary" style={{ fontSize: '12px' }}>Rate</Text>
             </div>

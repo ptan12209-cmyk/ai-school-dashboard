@@ -36,7 +36,7 @@ const assignmentRoutes = require('./routes/assignment.routes');
 // const aiRoutes = require('./routes/ai.routes');
 
 // TODO: Week 3-4 - Import middleware
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 /**
  * Initialize Express Application
@@ -271,50 +271,11 @@ app.use(`${API_PREFIX}/assignments`, assignmentRoutes);
  * ============================================
  */
 
-/**
- * 404 Handler - Route not found
- */
-app.use((req, res, next) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-    path: req.originalUrl,
-    method: req.method
-  });
-});
+// Use the custom 404 handler
+app.use(notFound);
 
-/**
- * Global Error Handler
- * TODO: Week 3-4 - Use custom error handler middleware
- */
-app.use((err, req, res, next) => {
-  // Log error for debugging
-  console.error('Error occurred:', {
-    message: err.message,
-    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
-    path: req.path,
-    method: req.method
-  });
-  
-  // CORS error
-  if (err.message === 'Not allowed by CORS') {
-    return res.status(403).json({
-      success: false,
-      message: 'CORS policy: This origin is not allowed to access this resource',
-      origin: req.get('origin')
-    });
-  }
-  
-  // Default error response
-  res.status(err.statusCode || 500).json({  // ✅ ĐÚNG: err.statusCode là number
-    success: false,
-    message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV !== 'production' && { 
-      stack: err.stack,
-      details: err 
-    })
-  });
-});
+// Use the global error handler
+app.use(errorHandler);
 /**
  * Export Express app
  * Server will be started in server.js

@@ -8,11 +8,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../../services/authService.js';
 
+// Get token from localStorage for initial state
+const token = localStorage.getItem('token');
+
 // Initial state
 const initialState = {
   user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  token: token,
+  isAuthenticated: !!token,
   loading: false,
   error: null
 };
@@ -22,7 +25,6 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      // authService.login already sets the token in localStorage
       const response = await authService.login(credentials);
       return response;
     } catch (error) {
@@ -35,7 +37,6 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      // authService.register already sets the token in localStorage
       const response = await authService.register(userData);
       return response;
     } catch (error) {
@@ -49,10 +50,9 @@ export const logout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await authService.logout();
-      localStorage.removeItem('token');
       return {};
     } catch (error) {
-      localStorage.removeItem('token');
+      // Still proceed with logout on the client even if server call fails
       return rejectWithValue(error.response?.data?.message || 'Logout failed');
     }
   }
@@ -63,9 +63,8 @@ export const getCurrentUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await authService.getCurrentUser();
-      return response;
+      return response.data; // Return just the data part of the response
     } catch (error) {
-      localStorage.removeItem('token');
       return rejectWithValue(error.response?.data?.message || 'Failed to get user');
     }
   }
@@ -91,11 +90,13 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
+        const { user, token } = action.payload.data;
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.data.user;
-        state.token = action.payload.data.token;
+        state.user = user;
+        state.token = token;
         state.error = null;
+        localStorage.setItem('token', token);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -103,6 +104,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.error = action.payload;
+        localStorage.removeItem('token');
       })
       // Register
       .addCase(register.pending, (state) => {
@@ -110,11 +112,13 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(register.fulfilled, (state, action) => {
+        const { user, token } = action.payload.data;
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.data.user;
-        state.token = action.payload.data.token;
+        state.user = user;
+        state.token = token;
         state.error = null;
+        localStorage.setItem('token', token);
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
@@ -122,6 +126,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.error = action.payload;
+        localStorage.removeItem('token');
       })
       // Logout
       .addCase(logout.pending, (state) => {
@@ -133,6 +138,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.error = null;
+        localStorage.removeItem('token');
       })
       .addCase(logout.rejected, (state) => {
         state.loading = false;
@@ -140,6 +146,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.error = null;
+        localStorage.removeItem('token');
       })
       // Get current user
       .addCase(getCurrentUser.pending, (state) => {
@@ -148,13 +155,14 @@ const authSlice = createSlice({
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload;
+        state.user = action.payload.user;
       })
       .addCase(getCurrentUser.rejected, (state) => {
         state.loading = false;
         state.isAuthenticated = false;
         state.user = null;
         state.token = null;
+        localStorage.removeItem('token');
       });
   }
 });

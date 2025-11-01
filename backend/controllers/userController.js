@@ -220,8 +220,8 @@ exports.deleteUser = catchAsync(async (req, res) => {
     throw new NotFoundError('User not found');
   }
   
-  // Soft delete by setting is_active to false
-  await user.update({ is_active: false });
+  // Soft delete the user
+  await user.destroy();
   
   res.json({
     success: true,
