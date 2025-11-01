@@ -11,7 +11,7 @@
  * - âœ… Proper status codes for all scenarios
  */
 
-const { User, Teacher, Student } = require('../models');
+const { User, Teacher, Student, sequelize } = require('../models');
 
 /**
  * @route   POST /api/auth/register
@@ -19,12 +19,15 @@ const { User, Teacher, Student } = require('../models');
  * @access  Public
  */
 exports.register = async (req, res, next) => {
+  // ✅ SECURITY FIX: Start transaction for atomic operations
+  const t = await sequelize.transaction();
+
   try {
-    const { 
-      email, 
-      password, 
-      role, 
-      firstName, 
+    const {
+      email,
+      password,
+      role,
+      firstName,
       lastName,
       dateOfBirth,
       gender,
@@ -34,9 +37,10 @@ exports.register = async (req, res, next) => {
       parentPhone,
       parentEmail
     } = req.body;
-    
+
     // Validate required fields first
     if (!email || !password) {
+      await t.rollback();
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -45,72 +49,70 @@ exports.register = async (req, res, next) => {
     // Normalize email to lowercase and trim whitespace to prevent duplicates
     const trimmedEmail = email.toLowerCase().trim();
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { email: trimmedEmail } });
+    // Check if user already exists (within transaction)
+    const existingUser = await User.findOne({
+      where: { email: trimmedEmail },
+      transaction: t
+    });
     if (existingUser) {
+      await t.rollback();
       return res.status(409).json({
         success: false,
         message: 'Email already exists'
       });
     }
-    
+
     // Validate password strength
     const passwordValidation = User.validatePassword(password);
     if (!passwordValidation.valid) {
+      await t.rollback();
       return res.status(400).json({
         success: false,
         message: 'Password does not meet requirements',
         errors: passwordValidation.errors
       });
     }
-    
-    // Create user
+
+    // Create user (within transaction)
     const user = await User.create({
       email: trimmedEmail,
       password_hash: password, // Will be hashed by beforeCreate hook
       role: role || 'student',
       is_active: true
-    });
-    
-    // Create profile based on role
+    }, { transaction: t });
+
+    // Create profile based on role (within same transaction)
     let profile = null;
-    
-    try {
-      if (role === 'teacher' && firstName && lastName) {
-        profile = await Teacher.create({
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          department: department || null,
-          phone: phone || null,
-          hire_date: new Date()
-        });
-      } else if (role === 'student' && firstName && lastName && dateOfBirth) {
-        profile = await Student.create({
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          date_of_birth: dateOfBirth,
-          gender: gender || null,
-          phone: phone || null,
-          parent_name: parentName || null,
-          parent_phone: parentPhone || null,
-          parent_email: parentEmail || null
-        });
-      }
-    } catch (profileError) {
-      // Rollback user creation if profile creation fails
-      await user.destroy();
-      
-      return res.status(400).json({
-        success: false,
-        message: profileError.message || 'Failed to create user profile'
-      });
+
+    if (role === 'teacher' && firstName && lastName) {
+      profile = await Teacher.create({
+        user_id: user.id,
+        first_name: firstName,
+        last_name: lastName,
+        department: department || null,
+        phone: phone || null,
+        hire_date: new Date()
+      }, { transaction: t });
+    } else if (role === 'student' && firstName && lastName && dateOfBirth) {
+      profile = await Student.create({
+        user_id: user.id,
+        first_name: firstName,
+        last_name: lastName,
+        date_of_birth: dateOfBirth,
+        gender: gender || null,
+        phone: phone || null,
+        parent_name: parentName || null,
+        parent_phone: parentPhone || null,
+        parent_email: parentEmail || null
+      }, { transaction: t });
     }
-    
-    // Generate token
+
+    // ✅ Commit transaction only if everything succeeds
+    await t.commit();
+
+    // Generate token after successful commit
     const token = user.generateToken();
-    
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -124,10 +126,13 @@ exports.register = async (req, res, next) => {
         token
       }
     });
-    
+
   } catch (error) {
+    // ✅ Rollback transaction on any error
+    await t.rollback();
+
     console.error('Register error:', error);
-    
+
     // Handle Sequelize validation errors
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
@@ -139,7 +144,7 @@ exports.register = async (req, res, next) => {
         }))
       });
     }
-    
+
     // Handle unique constraint errors
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(409).json({
@@ -147,7 +152,7 @@ exports.register = async (req, res, next) => {
         message: 'Email already exists'
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Server error during registration',

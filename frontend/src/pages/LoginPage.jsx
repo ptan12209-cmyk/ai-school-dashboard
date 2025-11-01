@@ -250,21 +250,23 @@ const LoginPage = () => {
               </Typography>
             </Box>
 
-            {/* Demo Credentials */}
-            <Box sx={{ mt: 4, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Tài Khoản Demo:</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Quản trị: admin@school.com / admin123
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Giáo viên: teacher@school.com / teacher123
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Học sinh: student@school.com / student123
-              </Typography>
-            </Box>
+            {/* Demo Credentials - Only show in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <Box sx={{ mt: 4, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <strong>Tài Khoản Demo:</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Quản trị: admin@school.com / admin123
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Giáo viên: teacher@school.com / teacher123
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Học sinh: student@school.com / student123
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Paper>
       </Box>

@@ -35,15 +35,17 @@ function initializeSocket(httpServer) {
       // Get user from database
       const user = await User.findByPk(decoded.id);
 
-      if (!user) {
-        return next(new Error('User not found'));
+      // ✅ SECURITY FIX: Check if user exists AND is active
+      if (!user || !user.is_active) {
+        return next(new Error('User not found or inactive'));
       }
 
       // Attach user to socket
       socket.user = {
         id: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        is_active: user.is_active
       };
 
       next();
