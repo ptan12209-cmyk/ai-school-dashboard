@@ -29,6 +29,11 @@ import AIChatbotPage from './pages/AIChatbotPage.jsx';
 import StudentAssignmentsPage from './pages/StudentAssignmentsPage.jsx';
 import TakeAssignmentPage from './pages/TakeAssignmentPage.jsx';
 import TeacherAssignmentsPage from './pages/TeacherAssignmentsPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import StudentDetailPage from './pages/StudentDetailPage.jsx';
+import TeacherDetailPage from './pages/TeacherDetailPage.jsx';
+import ClassDetailPage from './pages/ClassDetailPage.jsx';
+import CourseDetailPage from './pages/CourseDetailPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 
 // Auth Guard
@@ -57,6 +62,7 @@ const AppRoutes = () => {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         </Route>
 
       {/* Protected Routes with Main Layout */}
@@ -68,15 +74,19 @@ const AppRoutes = () => {
           
           {/* Student Management */}
           <Route path="/students" element={<StudentsPage />} />
-          
+          <Route path="/students/:id" element={<StudentDetailPage />} />
+
           {/* Teacher Management */}
           <Route path="/teachers" element={<TeachersPage />} />
+          <Route path="/teachers/:id" element={<TeacherDetailPage />} />
 
           {/* Class Management */}
           <Route path="/classes" element={<ClassesPage />} />
+          <Route path="/classes/:id" element={<ClassDetailPage />} />
 
           {/* Course Management */}
           <Route path="/courses" element={<CoursePage />} />
+          <Route path="/courses/:id" element={<CourseDetailPage />} />
           
           {/* Grade Management */}
           <Route path="/grades" element={<GradesPage />} />
