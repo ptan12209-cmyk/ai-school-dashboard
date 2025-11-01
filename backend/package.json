@@ -13,7 +13,7 @@
     "lint:fix": "eslint ./**/*.js --fix",
     "db:migrate": "echo 'Migration script not found'",
     "db:seed": "node seeders/seed.js",
-    "db:reset": "echo 'Reset script not found'",
+    "db:reset": "node reset-db.js",
     "db:test": "node scripts/test-db-connection.js",
     "seed": "node seeders/seed.js",
     "seed:demo": "node seeders/seed.js"
