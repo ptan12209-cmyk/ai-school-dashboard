@@ -63,14 +63,32 @@ app.use(helmet());
  */
 app.use(cors({
   origin: function (origin, callback) {
+    // Development mode - allow all localhost origins
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
     // Get allowed origins from environment or use defaults
-    const allowedOrigins = process.env.CORS_ORIGIN
+    let allowedOrigins = process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
       : ['http://localhost:3000', 'http://localhost:3001'];
 
-    // ✅ SECURITY FIX: Only allow no-origin in development/test
+    // ✅ FIX: Always include localhost in development
+    if (isDevelopment) {
+      allowedOrigins = [
+        ...new Set([
+          ...allowedOrigins,
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'http://localhost:5001',
+          'http://127.0.0.1:3000',
+          'http://127.0.0.1:3001',
+          'http://127.0.0.1:5001'
+        ])
+      ];
+    }
+
+    // Allow no-origin in development/test
     if (!origin) {
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+      if (isDevelopment) {
         console.log('⚠️  DEV: Allowing request with no origin (Postman/curl)');
         return callback(null, true);
       } else {
@@ -81,9 +99,11 @@ app.use(cors({
 
     // Check if origin is allowed
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS: Allowing origin: ${origin}`);
       return callback(null, true);
     } else {
-      console.warn(`⚠️  Blocked request from unauthorized origin: ${origin}`);
+      console.warn(`⚠️  CORS: Blocked unauthorized origin: ${origin}`);
+      console.warn(`   Allowed origins: ${allowedOrigins.join(', ')}`);
       return callback(new Error('Not allowed by CORS'), false);
     }
   },
