@@ -48,7 +48,8 @@ async function startServer() {
      */
     if (NODE_ENV === 'development') {
       // Sync database models (non-destructive in development)
-      await sequelize.sync({ alter: true });
+      // Changed from { alter: true } to avoid SQL syntax errors with existing schema
+      await sequelize.sync({ force: false });
       console.log('✅ Database models synchronized');
       console.log('⚠️  NOTE: For schema changes, use migrations in production');
     } else if (NODE_ENV === 'production') {
