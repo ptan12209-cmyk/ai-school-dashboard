@@ -32,7 +32,7 @@ const gradeRoutes = require('./routes/grade.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const assignmentRoutes = require('./routes/assignment.routes');
-// const dashboardRoutes = require('./routes/dashboard.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 // const aiRoutes = require('./routes/ai.routes');
 
 // TODO: Week 3-4 - Import middleware
@@ -64,9 +64,15 @@ app.use(helmet());
 app.use(cors({
   origin: function (origin, callback) {
     // Get allowed origins from environment or use defaults
-    const allowedOrigins = process.env.CORS_ORIGIN 
-      ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
-      : ['http://localhost:3000', 'http://localhost:3001'];
+    // Start with default origins for development
+    let allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+
+    // If CORS_ORIGIN is set in the environment, add those origins to the list
+    if (process.env.CORS_ORIGIN) {
+      const envOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+      // Use a Set to avoid duplicates
+      allowedOrigins = [...new Set([...allowedOrigins, ...envOrigins])];
+    }
     
     // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) {
@@ -232,7 +238,7 @@ app.use(`${API_PREFIX}/assignments`, assignmentRoutes);
 /**
  * Dashboard routes (protected)
  */
-// app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 
 /**
  * AI routes (protected)

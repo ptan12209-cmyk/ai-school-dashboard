@@ -14,6 +14,13 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validation');
 
 /**
+ * @route   GET /api/auth/health
+ * @desc    Health check for auth routes
+ * @access  Public
+ */
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok', scope: 'auth' }));
+
+/**
  * @route   POST /api/auth/register
  * @desc    Đăng ký người dùng mới
  * @access  Public
@@ -117,6 +124,71 @@ router.post('/logout',
   verifyToken, // Sẽ uncomment sau
   authController.logout
 );
+
+/**
+ * @route   POST /api/auth/refresh
+ * @desc    Làm mới access token
+ * @access  Private (cần refresh token)
+ */
+router.post('/refresh', (req, res) => {
+  try {
+    return res.status(501).json({ status: 'not_implemented', endpoint: 'POST /auth/refresh' });
+  } catch (e) {
+    return res.status(500).json({ error: 'internal_error', detail: String(e) });
+  }
+});
+
+/**
+ * @route   POST /api/auth/forgot-password
+ * @desc    Yêu cầu reset mật khẩu
+ * @access  Public
+ */
+router.post('/forgot-password', (req, res) => {
+    try {
+        return res.status(501).json({ status: 'not_implemented', endpoint: 'POST /auth/forgot-password' });
+    } catch (e) {
+        return res.status(500).json({ error: 'internal_error', detail: String(e) });
+    }
+});
+
+/**
+ * @route   POST /api/auth/reset-password
+ * @desc    Reset mật khẩu với token
+ * @access  Public
+ */
+router.post('/reset-password', (req, res) => {
+    try {
+        return res.status(501).json({ status: 'not_implemented', endpoint: 'POST /auth/reset-password' });
+    } catch (e) {
+        return res.status(500).json({ error: 'internal_error', detail: String(e) });
+    }
+});
+
+/**
+ * @route   POST /api/auth/change-password
+ * @desc    Thay đổi mật khẩu người dùng đã đăng nhập
+ * @access  Private
+ */
+router.post('/change-password', verifyToken, (req, res) => {
+    try {
+        return res.status(501).json({ status: 'not_implemented', endpoint: 'POST /auth/change-password' });
+    } catch (e) {
+        return res.status(500).json({ error: 'internal_error', detail: String(e) });
+    }
+});
+
+/**
+ * @route   POST /api/auth/verify-email
+ * @desc    Xác thực email với token
+ * @access  Public
+ */
+router.post('/verify-email', (req, res) => {
+    try {
+        return res.status(501).json({ status: 'not_implemented', endpoint: 'POST /auth/verify-email' });
+    } catch (e) {
+        return res.status(500).json({ error: 'internal_error', detail: String(e) });
+    }
+});
 
 module.exports = router;
 

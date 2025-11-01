@@ -1,0 +1,122 @@
+# Developer Notes: Backend API Fixes & Scaffolding
+
+This document summarizes the automated changes made to the backend to align with frontend API calls, based on the `reports/api-diff-report.md`.
+
+## 1. Summary of Changes
+
+The following changes were made to achieve parity with frontend API requirements:
+
+### A. New & Updated Route Files
+
+-   **`backend/routes/auth.routes.js`**:
+    -   Added placeholder endpoints for:
+        -   `POST /auth/refresh`
+        -   `POST /auth/forgot-password`
+        -   `POST /auth/reset-password`
+        -   `POST /auth/change-password`
+        -   `POST /auth/verify-email`
+
+-   **`backend/routes/assignment.routes.js`**:
+    -   Added placeholder endpoint for:
+        -   `GET /assignments`
+
+-   **`backend/routes/dashboard.routes.js` (New File)**:
+    -   Created a new router for all dashboard-related data aggregation.
+    -   Added placeholder endpoints for:
+        -   `GET /dashboard/stats`
+        -   `GET /dashboard/activities`
+        -   `GET /dashboard/attendance`
+        -   `GET /dashboard/grades`
+        -   `GET /dashboard/students/:studentId/performance`
+        -   `GET /dashboard/teachers/:teacherId/performance`
+        -   `GET /dashboard/classes/:classId/performance`
+        -   `GET /dashboard/ai-predictions`
+        -   `GET /dashboard/notifications`
+        -   `PUT /dashboard/notifications/:notificationId/read`
+        -   `GET /dashboard/quick-stats`
+
+-   **`backend/routes/student.routes.js`**:
+    -   Added numerous placeholder endpoints for student-specific actions (e.g., `archive`, `restore`, `avatar`, `courses`, `parent`, `send-email`, etc.).
+
+-   **`backend/routes/teacher.routes.js`**:
+    -   Added numerous placeholder endpoints for teacher-specific actions (e.g., `achievements`, `archive`, `avatar`, `classes`, `evaluations`, `salary`, `training`, etc.).
+
+### B. Route Aliases (Backward Compatibility)
+
+To prevent breaking the frontend, the following aliases were added. These should be removed after the frontend is updated to use consistent route parameters.
+
+-   **In `student.routes.js`**:
+    -   `GET /:studentId` -> `GET /:id`
+    -   `PUT /:studentId` -> `PUT /:id`
+    -   `DELETE /:studentId` -> `DELETE /:id`
+    -   `GET /:studentId/grades` -> `GET /:id/grade` (plural vs. singular)
+
+-   **In `teacher.routes.js`**:
+    -   `GET /:teacherId` -> `GET /:id`
+    -   `PUT /:teacherId` -> `PUT /:id`
+    -   `DELETE /:teacherId` -> `DELETE /:id`
+    -   `GET /:teacherId/courses` -> `GET /:id/course` (plural vs. singular)
+
+### C. Mounting
+
+-   The new `dashboardRouter` has been imported and mounted in `backend/app.js` at the `/api/dashboard` prefix.
+
+### D. Smoke Tests
+
+-   A new test file `backend/tests/integration/scaffold.test.js` was added.
+-   It includes basic smoke tests to verify:
+    -   The dashboard health check (`/api/dashboard/health`) returns `200 OK`.
+    -   Newly added placeholder routes correctly return `501 Not Implemented`.
+
+## 2. Next Steps: Implementing Business Logic
+
+All new, non-alias routes currently return an HTTP `501 Not Implemented` status. The next step is to implement the actual business logic for these endpoints.
+
+**TODO Checklist:**
+
+-   [ ] **Authentication**: Implement logic in `authController.js` for password reset, token refresh, etc.
+-   [ ] **Assignments**: Implement logic in `assignmentController.js` for `GET /assignments`.
+-   [ ] **Dashboard**: Create `dashboardController.js` and implement data aggregation logic for all dashboard endpoints.
+-   [ ] **Students**: Implement logic in `studentController.js` for the new student-specific actions.
+-   [ ] **Teachers**: Implement logic in `teacherController.js` for the new teacher-specific actions.
+
+## 3. Future Cleanup: Alias Removal Plan
+
+The route aliases are a temporary solution. To clean this up:
+
+1.  **Frontend Update**: The frontend code should be updated to use the canonical routes (`/:id` instead of `/:studentId` or `/:teacherId`, and singular nouns like `/grade` instead of `/grades`).
+2.  **Backend Cleanup**: Once the frontend is migrated, the alias routes in `student.routes.js` and `teacher.routes.js` can be safely removed.
+
+## 4. Git & Pull Request Instructions
+
+The following commands can be used to create a branch, commit the changes, and open a pull request.
+
+**DO NOT RUN THESE COMMANDS IN THE IDE TERMINAL. These are for your reference to use with your local git client.**
+
+```bash
+# 1. Create a new branch
+git checkout -b chore/backend-fixes-missing-routes
+
+# 2. Add all changes to staging
+git add .
+
+# 3. Commit the changes
+git commit -m "feat(api): add missing routes, aliases, and dashboard/assignments/auth/notifications scaffolds"
+
+# 4. Push the branch to the remote repository
+git push -u origin chore/backend-fixes-missing-routes
+
+# 5. Open a pull request in your git provider's UI.
+#    Title: feat(api): backend scaffolds for FE parity (auto-generated by Cursor)
+#    Body: 
+#    This PR adds placeholder backend routes and aliases to match the frontend API calls identified in the api-diff-report.md.
+#
+#    - Added 5 missing auth routes.
+#    - Added 1 missing assignment route.
+#    - Created a new dashboard router with 11 placeholder endpoints.
+#    - Added numerous placeholder endpoints and aliases to the student and teacher routers.
+#    - Added smoke tests for the new routes.
+#
+#    Next steps involve implementing the business logic for the new 501 Not Implemented endpoints as outlined in DEVELOPER_NOTES.md.
+```
+

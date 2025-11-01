@@ -328,7 +328,7 @@ const main = async () => {
 
   const lines = [];
 
-  lines.push('# API Diff Report\n');
+  lines.push('# Route Parity Report\n');
 
   lines.push('## A. FE gọi nhưng BE **không có**\n');
 
@@ -362,7 +362,7 @@ const main = async () => {
 
   await fs.mkdir('reports', { recursive: true });
 
-  const out = path.join('reports', 'api-diff-report.md');
+  const out = path.join('reports', 'route-parity.md');
 
   await fs.writeFile(out, lines.join('\n'), 'utf8');
 

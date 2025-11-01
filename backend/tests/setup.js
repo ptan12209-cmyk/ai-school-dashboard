@@ -168,7 +168,7 @@ static async createClass(token, classData = {}) {
   }
   
   const response = await request(app)
-    .post('/api/class')
+    .post('/api/classes')
     .set('Authorization', `Bearer ${adminToken}`)
     .send({
       name: classData.name || `Test Class ${Date.now()}`,
@@ -204,7 +204,7 @@ static async createClass(token, classData = {}) {
     };
 
     const response = await request(app)
-      .post('/api/course')
+      .post('/api/courses')
       .set('Authorization', `Bearer ${token}`)
       .send(courseData);
 
@@ -227,7 +227,7 @@ static async createClass(token, classData = {}) {
     };
 
     const response = await request(app)
-      .post('/api/grade')
+      .post('/api/grades')
       .set('Authorization', `Bearer ${token}`)
       .send(gradeData);
 
