@@ -30,6 +30,9 @@ import StudentAssignmentsPage from './pages/StudentAssignmentsPage.jsx';
 import TakeAssignmentPage from './pages/TakeAssignmentPage.jsx';
 import TeacherAssignmentsPage from './pages/TeacherAssignmentsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import StudentDetailPage from './pages/StudentDetailPage.jsx';
+import TeacherDetailPage from './pages/TeacherDetailPage.jsx';
+import ClassDetailPage from './pages/ClassDetailPage.jsx';
 
 // Auth Guard
 import PrivateRoute from './components/common/PrivateRoute.jsx';
@@ -68,6 +71,7 @@ const AppRoutes = () => {
           
           {/* Student Management */}
           <Route path="/students" element={<StudentsPage />} />
+          <Route path="/students/:id" element={<StudentDetailPage />} />
           
           {/* Teacher Management */}
           <Route path="/teachers" element={<TeachersPage />} />

@@ -38,7 +38,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Assessment as AssessmentIcon,
+
 } from '@mui/icons-material';
 import * as gradeService from '../services/gradeService';
 
