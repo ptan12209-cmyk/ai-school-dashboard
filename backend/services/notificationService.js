@@ -42,17 +42,10 @@ class NotificationService {
         priority,
         metadata,
         expires_at: expiresAt
-      });
+      }, options);
 
-      // Send email if requested
-      if (options.sendEmail) {
-        await this.sendEmailNotification(notification, options.user);
-      }
-
-      // Emit real-time notification via Socket.io
-      if (options.io && options.io.to) {
-        this.emitRealTimeNotification(options.io, userId, notification);
-      }
+      // Handle side effects
+      await this.processNotificationSideEffects(notification, options);
 
       return notification;
     } catch (error) {
@@ -65,17 +58,50 @@ class NotificationService {
    * Create notifications for multiple users
    */
   async createBulkNotifications(userIds, data, options = {}) {
-    const notifications = [];
+    try {
+      const notificationsData = userIds.map(userId => ({
+        user_id: userId,
+        type: data.type,
+        title: data.title,
+        message: data.message,
+        related_type: data.relatedType,
+        related_id: data.relatedId,
+        priority: data.priority,
+        metadata: data.metadata || {},
+        expires_at: data.expiresAt
+      }));
 
-    for (const userId of userIds) {
-      const notification = await this.createNotification(
-        { ...data, userId },
-        options
-      );
-      notifications.push(notification);
+      const notifications = await Notification.bulkCreate(notificationsData, {
+        ...options,
+        returning: true,
+        validate: true
+      });
+
+      // Handle side effects concurrently
+      await Promise.all(notifications.map(notification =>
+        this.processNotificationSideEffects(notification, options)
+      ));
+
+      return notifications;
+    } catch (error) {
+      console.error('Error creating bulk notifications:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process notification side effects (email, socket)
+   */
+  async processNotificationSideEffects(notification, options) {
+    // Send email if requested
+    if (options.sendEmail) {
+      await this.sendEmailNotification(notification, options.user);
     }
 
-    return notifications;
+    // Emit real-time notification via Socket.io
+    if (options.io && options.io.to) {
+      this.emitRealTimeNotification(options.io, notification.user_id, notification);
+    }
   }
 
   /**
