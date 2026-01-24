@@ -246,6 +246,7 @@ Course.findByTeacher = function(teacherId) {
       teacher_id: teacherId,
       is_active: true
     },
+    include: ['class'],
     order: [['name', 'ASC']]
   });
 };
