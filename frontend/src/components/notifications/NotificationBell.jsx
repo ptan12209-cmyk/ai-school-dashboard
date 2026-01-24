@@ -16,7 +16,8 @@ import {
   Divider,
   Button,
   CircularProgress,
-  Chip
+  Chip,
+  Tooltip
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -221,21 +222,27 @@ const NotificationBell = () => {
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     {!notification.is_read && (
+                      <Tooltip title="Đánh dấu đã đọc">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleMarkAsRead(notification.id, e)}
+                          sx={{ p: 0.5 }}
+                          aria-label="Đánh dấu đã đọc"
+                        >
+                          <CheckCircleIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Xóa thông báo">
                       <IconButton
                         size="small"
-                        onClick={(e) => handleMarkAsRead(notification.id, e)}
+                        onClick={(e) => handleDelete(notification.id, e)}
                         sx={{ p: 0.5 }}
+                        aria-label="Xóa thông báo"
                       >
-                        <CheckCircleIcon fontSize="small" />
+                        <DeleteIcon fontSize="small" />
                       </IconButton>
-                    )}
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleDelete(notification.id, e)}
-                      sx={{ p: 0.5 }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                    </Tooltip>
                   </Box>
                 </Box>
 
