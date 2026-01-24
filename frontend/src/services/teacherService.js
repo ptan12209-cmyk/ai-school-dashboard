@@ -88,6 +88,11 @@ const teacherService = {
     return api.get(`${BASE_URL}/${teacherId}/classes`);
   },
 
+  // Get teacher's courses
+  getTeacherCourses: (teacherId) => {
+    return api.get(`${BASE_URL}/${teacherId}/courses`);
+  },
+
   // Assign class to teacher
   assignClass: (teacherId, classId) => {
     return api.post(`${BASE_URL}/${teacherId}/assign-class`, { classId });
