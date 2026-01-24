@@ -191,7 +191,7 @@ class AssignmentService {
   /**
    * Submit assignment with auto-grading
    */
-  async submitAssignment(submissionId, answers, studentId) {
+  async submitAssignment(submissionId, answers, studentId, io) {
     const submission = await Submission.findByPk(submissionId);
 
     if (!submission || submission.student_id !== studentId) {
@@ -210,6 +210,8 @@ class AssignmentService {
     // Grade each answer
     const gradedAnswers = {};
     let needsManualGrading = false;
+    const correctQuestionIds = [];
+    const incorrectQuestionIds = [];
 
     for (const question of questions) {
       const studentAnswer = answers[question.id];
@@ -237,8 +239,12 @@ class AssignmentService {
           max_points: question.points
         };
 
-        // Update question statistics
-        await question.updateStatistics(isCorrect);
+        // Collect for bulk update
+        if (isCorrect) {
+          correctQuestionIds.push(question.id);
+        } else {
+          incorrectQuestionIds.push(question.id);
+        }
       } else {
         // Needs manual grading
         gradedAnswers[question.id] = {
@@ -250,6 +256,23 @@ class AssignmentService {
         };
         needsManualGrading = true;
       }
+    }
+
+    // Bulk update question statistics
+    if (correctQuestionIds.length > 0) {
+      await Question.increment({ times_answered: 1, times_correct: 1 }, {
+        where: {
+          id: correctQuestionIds
+        }
+      });
+    }
+
+    if (incorrectQuestionIds.length > 0) {
+      await Question.increment({ times_answered: 1 }, {
+        where: {
+          id: incorrectQuestionIds
+        }
+      });
     }
 
     // Check if late
