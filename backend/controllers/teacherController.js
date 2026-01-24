@@ -6,7 +6,7 @@
  * Week 3-4 Day 4
  */
 
-const { Teacher, User, sequelize } = require('../models');
+const { Teacher, User, Course, sequelize } = require('../models');
 const { catchAsync, NotFoundError, ConflictError, ValidationError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
 
@@ -371,12 +371,12 @@ exports.getTeacherCourses = catchAsync(async (req, res) => {
     throw new NotFoundError('Teacher not found');
   }
   
-  // TODO: Implement when Course model is created (Day 5)
+  const courses = await Course.findByTeacher(id);
+
   res.json({
     success: true,
-    message: 'Course feature will be implemented in Day 5',
     data: {
-      courses: []
+      courses
     }
   });
 });
