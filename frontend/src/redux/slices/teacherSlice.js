@@ -27,10 +27,23 @@ const initialState = {
   error: null,
   successMessage: null,
   departments: [],
-  subjects: []
+  subjects: [],
+  courses: []
 };
 
 // Async thunks
+export const fetchTeacherCourses = createAsyncThunk(
+  'teachers/fetchTeacherCourses',
+  async (teacherId, { rejectWithValue }) => {
+    try {
+      const response = await teacherService.getTeacherCourses(teacherId);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch teacher courses');
+    }
+  }
+);
+
 export const fetchTeachers = createAsyncThunk(
   'teachers/fetchTeachers',
   async ({ page, pageSize, search, filters, sortBy, sortOrder } = {}, { rejectWithValue }) => {
@@ -321,6 +334,25 @@ const teacherSlice = createSlice({
       // Assign class
       .addCase(assignClassToTeacher.fulfilled, (state, action) => {
         state.successMessage = 'Class assigned successfully';
+      })
+      // Fetch teacher courses
+      .addCase(fetchTeacherCourses.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeacherCourses.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.data && Array.isArray(action.payload.data.courses)) {
+          state.courses = action.payload.data.courses;
+        } else if (Array.isArray(action.payload.courses)) {
+          state.courses = action.payload.courses;
+        } else {
+          state.courses = [];
+        }
+      })
+      .addCase(fetchTeacherCourses.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   }
 });
@@ -349,6 +381,7 @@ export const selectTeachersError = (state) => state.teachers.error;
 export const selectSuccessMessage = (state) => state.teachers.successMessage;
 export const selectDepartments = (state) => state.teachers.departments;
 export const selectSubjects = (state) => state.teachers.subjects;
+export const selectTeacherCourses = (state) => state.teachers.courses;
 export const selectPagination = (state) => ({
   currentPage: state.teachers.currentPage,
   pageSize: state.teachers.pageSize,

@@ -20,7 +20,10 @@ import {
   Menu,
   MenuItem,
   Alert,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -32,17 +35,40 @@ import {
   Assessment as AssessmentIcon
 } from '@mui/icons-material';
 import { fetchAssignmentsByCourse, deleteAssignment, publishAssignment } from '../redux/slices/assignmentSlice.js';
+import { fetchTeacherCourses, selectTeacherCourses } from '../redux/slices/teacherSlice.js';
+import { getCurrentUser } from '../redux/slices/authSlice.js';
 import { toast } from 'react-toastify';
 
 const TeacherAssignmentsPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { assignments, loading, error } = useSelector((state) => state.assignments);
+  const { user } = useSelector((state) => state.auth);
+  const courses = useSelector(selectTeacherCourses);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
 
-  // TODO: Get teacher's courses and allow selection
-  const [selectedCourseId] = useState('demo-course-id'); // Placeholder
+  // Fetch user if not present (e.g. on reload)
+  useEffect(() => {
+    if (!user) {
+      dispatch(getCurrentUser());
+    }
+  }, [user, dispatch]);
+
+  // Fetch teacher's courses on mount
+  useEffect(() => {
+    if (user?.data?.profile?.id) {
+      dispatch(fetchTeacherCourses(user.data.profile.id));
+    }
+  }, [user, dispatch]);
+
+  // Automatically select the first course
+  useEffect(() => {
+    if (courses.length > 0 && !selectedCourseId) {
+      setSelectedCourseId(courses[0].id);
+    }
+  }, [courses, selectedCourseId]);
 
   useEffect(() => {
     if (selectedCourseId) {
@@ -148,13 +174,29 @@ const TeacherAssignmentsPage = () => {
             Tạo và quản lý bài tập, kiểm tra
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/assignments/create')}
-        >
-          Tạo bài tập mới
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <FormControl sx={{ minWidth: 200 }} size="small">
+            <InputLabel>Chọn khóa học</InputLabel>
+            <Select
+              value={selectedCourseId}
+              label="Chọn khóa học"
+              onChange={(e) => setSelectedCourseId(e.target.value)}
+            >
+              {courses.map((course) => (
+                <MenuItem key={course.id} value={course.id}>
+                  {course.name} {course.class ? `(${course.class.class_name})` : ''}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/assignments/create')}
+          >
+            Tạo bài tập mới
+          </Button>
+        </Box>
       </Box>
 
       {error && (

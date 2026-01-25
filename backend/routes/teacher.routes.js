@@ -179,11 +179,10 @@ router.delete('/:id',
 );
 
 /**
- * @route   GET /api/teachers/:id/course
+ * @route   GET /api/teachers/:id/courses
  * @desc    Get teacher's courses
  * @access  Authenticated users
- * @note    Will be implemented in Day 5
  */
-router.get('/:id/course', teacherController.getTeacherCourses);
+router.get('/:id/courses', teacherController.getTeacherCourses);
 
 module.exports = router;
