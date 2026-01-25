@@ -12,26 +12,29 @@ import { CircularProgress, Box } from '@mui/material';
 import MainLayout from './components/common/MainLayout.jsx';
 import AuthLayout from './components/common/AuthLayout.jsx';
 
-// Page Components
-import LoginPage from './pages/LoginPage.jsx';
-import RegisterPage from './pages/RegisterPage.jsx';
-import DashboardPage from './pages/DashboardPage.jsx';
-import StudentsPage from './pages/StudentsPage.jsx';
-import TeachersPage from './pages/TeachersPage.jsx';
-import ClassesPage from './pages/ClassesPage.jsx';
-import CoursePage from './pages/CoursePage.jsx';
-import GradesPage from './pages/GradesPage.jsx';
-import AttendancePage from './pages/AttendancePage.jsx';
-import ReportPage from './pages/ReportPage.jsx';
-import SettingsPage from './pages/SettingsPage.jsx';
-import AIPredictionPage from './pages/AIPredictionPage.jsx';
-import StudentAssignmentsPage from './pages/StudentAssignmentsPage.jsx';
-import TakeAssignmentPage from './pages/TakeAssignmentPage.jsx';
-import TeacherAssignmentsPage from './pages/TeacherAssignmentsPage.jsx';
-import NotFoundPage from './pages/NotFoundPage.jsx';
-
 // Auth Guard
 import PrivateRoute from './components/common/PrivateRoute.jsx';
+
+// Page Components - Lazy Loaded for Performance
+const LoginPage = React.lazy(() => import('./pages/LoginPage.jsx'));
+const RegisterPage = React.lazy(() => import('./pages/RegisterPage.jsx'));
+const DashboardPage = React.lazy(() => import('./pages/DashboardPage.jsx'));
+const StudentsPage = React.lazy(() => import('./pages/StudentsPage.jsx'));
+const TeachersPage = React.lazy(() => import('./pages/TeachersPage.jsx'));
+const ClassesPage = React.lazy(() => import('./pages/ClassesPage.jsx'));
+const CoursePage = React.lazy(() => import('./pages/CoursePage.jsx'));
+const GradesPage = React.lazy(() => import('./pages/GradesPage.jsx'));
+const AttendancePage = React.lazy(() => import('./pages/AttendancePage.jsx'));
+const ReportPage = React.lazy(() => import('./pages/ReportPage.jsx'));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage.jsx'));
+const AIPredictionPage = React.lazy(() => import('./pages/AIPredictionPage.jsx'));
+const StudentAssignmentsPage = React.lazy(() => import('./pages/StudentAssignmentsPage.jsx'));
+const TakeAssignmentPage = React.lazy(() => import('./pages/TakeAssignmentPage.jsx'));
+const TeacherAssignmentsPage = React.lazy(() => import('./pages/TeacherAssignmentsPage.jsx'));
+const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage.jsx'));
+
+// Auth Guard
+// PrivateRoute imported at the top
 
 // Loading component for Suspense fallback
 const SuspenseLoader = () => (
