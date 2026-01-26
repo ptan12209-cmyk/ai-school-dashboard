@@ -183,7 +183,7 @@ exports.submitAssignment = catchAsync(async (req, res) => {
     });
   }
 
-  const submission = await assignmentService.submitAssignment(submissionId, answers, studentId);
+  const submission = await assignmentService.submitAssignment(submissionId, answers, studentId, io);
 
   res.json({
     success: true,
