@@ -81,22 +81,29 @@ api.interceptors.response.use(
 
       // Try to refresh token
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        
-        if (refreshToken) {
-          const response = await axios.post(`${BASE_URL}/auth/refresh`, {
-            refreshToken
-          });
+        const token = localStorage.getItem('token');
 
-          const { token } = response.data.data;
+        if (token) {
+          // Use correct endpoint and send token in Authorization header
+          const response = await axios.post(
+            `${BASE_URL}/auth/refresh-token`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+
+          const { token: newToken } = response.data.data;
           try {
-            localStorage?.setItem('token', token);
+            localStorage?.setItem('token', newToken);
           } catch (e) {
             console.warn('Failed to save token:', e.message);
           }
 
           // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return api(originalRequest);
         }
       } catch (refreshError) {

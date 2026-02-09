@@ -25,10 +25,14 @@ import AttendancePage from './pages/AttendancePage.jsx';
 import ReportPage from './pages/ReportPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import AIPredictionPage from './pages/AIPredictionPage.jsx';
+import AIChatbotPage from './pages/AIChatbotPage.jsx';
 import StudentAssignmentsPage from './pages/StudentAssignmentsPage.jsx';
 import TakeAssignmentPage from './pages/TakeAssignmentPage.jsx';
 import TeacherAssignmentsPage from './pages/TeacherAssignmentsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import StudentDetailPage from './pages/StudentDetailPage.jsx';
+import TeacherDetailPage from './pages/TeacherDetailPage.jsx';
+import ClassDetailPage from './pages/ClassDetailPage.jsx';
 
 // Auth Guard
 import PrivateRoute from './components/common/PrivateRoute.jsx';
@@ -67,6 +71,7 @@ const AppRoutes = () => {
           
           {/* Student Management */}
           <Route path="/students" element={<StudentsPage />} />
+          <Route path="/students/:id" element={<StudentDetailPage />} />
           
           {/* Teacher Management */}
           <Route path="/teachers" element={<TeachersPage />} />
@@ -96,6 +101,7 @@ const AppRoutes = () => {
 
           {/* AI Features */}
           <Route path="/ai-predictions" element={<AIPredictionPage />} />
+          <Route path="/ai-chatbot" element={<AIChatbotPage />} />
         </Route>
       </Route>
 

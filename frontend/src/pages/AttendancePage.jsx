@@ -40,7 +40,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  CalendarToday as CalendarIcon,
+
   CheckCircle as PresentIcon,
   Cancel as AbsentIcon,
 } from '@mui/icons-material';
@@ -84,7 +84,11 @@ const AttendancePage = () => {
       setError('');
       const response = await attendanceService.getAllAttendance();
 
-      if (response && response.data) {
+      // ✅ FIX: API returns {data: {attendance: [], pagination: {}}}
+      if (response && response.data && response.data.attendance) {
+        setAttendance(response.data.attendance);
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Fallback if data is already an array
         setAttendance(response.data);
       }
     } catch (error) {

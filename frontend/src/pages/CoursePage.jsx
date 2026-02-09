@@ -18,19 +18,16 @@ import {
   Modal,
   Form,
   message,
-  Descriptions,
-  Spin
+  Descriptions
 } from 'antd';
 import {
   BookOutlined,
   HomeOutlined,
   PlusOutlined,
-  SearchOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  UserOutlined,
-  ClockCircleOutlined,
+
   TeamOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
@@ -65,7 +62,11 @@ const CoursePage = () => {
       setLoading(true);
       const response = await courseService.getAllCourses();
 
-      if (response && response.data) {
+      // ✅ FIX: API returns {data: {courses: [], pagination: {}}}
+      if (response && response.data && response.data.courses) {
+        setCourses(response.data.courses);
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Fallback if data is already an array
         setCourses(response.data);
       }
     } catch (error) {

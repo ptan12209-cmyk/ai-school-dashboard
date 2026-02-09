@@ -10,7 +10,7 @@ const { body } = require('express-validator');
 const authController = require('../controllers/authController');
 
 // mport middleware (sẽ tạo sau)
-const { verifyToken } = require('../middleware/authMiddleware');
+const { verifyToken, verifyRefreshToken } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validation');
 
 /**
@@ -116,6 +116,16 @@ router.get('/me',
 router.post('/logout',
   verifyToken, // Sẽ uncomment sau
   authController.logout
+);
+
+/**
+ * @route   POST /api/auth/refresh-token
+ * @desc    Refresh access token
+ * @access  Private (requires valid token)
+ */
+router.post('/refresh-token',
+  verifyRefreshToken,
+  authController.refreshToken
 );
 
 module.exports = router;

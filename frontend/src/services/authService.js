@@ -19,13 +19,6 @@ const authService = {
   login: async (credentials) => {
     try {
       const response = await api.post('/auth/login', credentials);
-      const { user, token } = response.data.data;
-      
-      // Store token and user info
-      localStorage.setItem('token', token);
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userId', user.id);
-      
       return response.data;
     } catch (error) {
       throw error;
@@ -40,13 +33,6 @@ const authService = {
   register: async (userData) => {
     try {
       const response = await api.post('/auth/register', userData);
-      const { user, token } = response.data.data;
-      
-      // Store token and user info
-      localStorage.setItem('token', token);
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userId', user.id);
-      
       return response.data;
     } catch (error) {
       throw error;
@@ -59,22 +45,11 @@ const authService = {
    */
   logout: async () => {
     try {
-      await api.post('/auth/logout');
-      
-      // Clear local storage
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
-      
+      // We don't need to wait for the response, the client-side will log out immediately.
+      api.post('/auth/logout');
       return true;
     } catch (error) {
-      // Clear local storage even if API call fails
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
-      
+      // Even if the API call fails, the client-side logout will proceed.
       throw error;
     }
   },
@@ -100,11 +75,6 @@ const authService = {
   refreshToken: async (refreshToken) => {
     try {
       const response = await api.post('/auth/refresh', { refreshToken });
-      const { token } = response.data.data;
-      
-      // Update token
-      localStorage.setItem('token', token);
-      
       return response.data;
     } catch (error) {
       throw error;
@@ -165,31 +135,6 @@ const authService = {
     } catch (error) {
       throw error;
     }
-  },
-
-  /**
-   * Check if user is authenticated
-   * @returns {Boolean} True if authenticated
-   */
-  isAuthenticated: () => {
-    const token = localStorage.getItem('token');
-    return !!token;
-  },
-
-  /**
-   * Get user role
-   * @returns {String} User role
-   */
-  getUserRole: () => {
-    return localStorage.getItem('userRole');
-  },
-
-  /**
-   * Get user ID
-   * @returns {String} User ID
-   */
-  getUserId: () => {
-    return localStorage.getItem('userId');
   }
 };
 

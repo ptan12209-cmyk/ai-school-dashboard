@@ -38,7 +38,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Assessment as AssessmentIcon,
+
 } from '@mui/icons-material';
 import * as gradeService from '../services/gradeService';
 
@@ -81,7 +81,11 @@ const GradesPage = () => {
       setError('');
       const response = await gradeService.getAllGrades();
 
-      if (response && response.data) {
+      // ✅ FIX: API returns {data: {grades: [], pagination: {}}}
+      if (response && response.data && response.data.grades) {
+        setGrades(response.data.grades);
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Fallback if data is already an array
         setGrades(response.data);
       }
     } catch (error) {

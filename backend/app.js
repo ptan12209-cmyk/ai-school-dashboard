@@ -36,7 +36,7 @@ const assignmentRoutes = require('./routes/assignment.routes');
 // const aiRoutes = require('./routes/ai.routes');
 
 // TODO: Week 3-4 - Import middleware
-const errorHandler = require('./middleware/errorHandler');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 /**
  * Initialize Express Application
@@ -63,21 +63,47 @@ app.use(helmet());
  */
 app.use(cors({
   origin: function (origin, callback) {
+    // Development mode - allow all localhost origins
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
     // Get allowed origins from environment or use defaults
-    const allowedOrigins = process.env.CORS_ORIGIN 
+    let allowedOrigins = process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
       : ['http://localhost:3000', 'http://localhost:3001'];
-    
-    // Allow requests with no origin (mobile apps, Postman, curl)
-    if (!origin) {
-      return callback(null, true);
+
+    // ✅ FIX: Always include localhost in development
+    if (isDevelopment) {
+      allowedOrigins = [
+        ...new Set([
+          ...allowedOrigins,
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'http://localhost:5001',
+          'http://127.0.0.1:3000',
+          'http://127.0.0.1:3001',
+          'http://127.0.0.1:5001'
+        ])
+      ];
     }
-    
+
+    // Allow no-origin in development/test
+    if (!origin) {
+      if (isDevelopment) {
+        console.log('⚠️  DEV: Allowing request with no origin (Postman/curl)');
+        return callback(null, true);
+      } else {
+        console.warn(`❌ PROD: Blocked request with no origin header`);
+        return callback(new Error('Not allowed by CORS - origin required'), false);
+      }
+    }
+
     // Check if origin is allowed
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS: Allowing origin: ${origin}`);
       return callback(null, true);
     } else {
-      console.warn(`⚠️  Blocked request from unauthorized origin: ${origin}`);
+      console.warn(`⚠️  CORS: Blocked unauthorized origin: ${origin}`);
+      console.warn(`   Allowed origins: ${allowedOrigins.join(', ')}`);
       return callback(new Error('Not allowed by CORS'), false);
     }
   },
@@ -245,50 +271,11 @@ app.use(`${API_PREFIX}/assignments`, assignmentRoutes);
  * ============================================
  */
 
-/**
- * 404 Handler - Route not found
- */
-app.use((req, res, next) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-    path: req.originalUrl,
-    method: req.method
-  });
-});
+// Use the custom 404 handler
+app.use(notFound);
 
-/**
- * Global Error Handler
- * TODO: Week 3-4 - Use custom error handler middleware
- */
-app.use((err, req, res, next) => {
-  // Log error for debugging
-  console.error('Error occurred:', {
-    message: err.message,
-    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
-    path: req.path,
-    method: req.method
-  });
-  
-  // CORS error
-  if (err.message === 'Not allowed by CORS') {
-    return res.status(403).json({
-      success: false,
-      message: 'CORS policy: This origin is not allowed to access this resource',
-      origin: req.get('origin')
-    });
-  }
-  
-  // Default error response
-  res.status(err.statusCode || 500).json({  // ✅ ĐÚNG: err.statusCode là number
-    success: false,
-    message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV !== 'production' && { 
-      stack: err.stack,
-      details: err 
-    })
-  });
-});
+// Use the global error handler
+app.use(errorHandler);
 /**
  * Export Express app
  * Server will be started in server.js
