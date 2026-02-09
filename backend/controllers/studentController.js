@@ -6,7 +6,7 @@
  * Week 3-4 Day 4
  */
 
-const { User, Student } = require('../models');
+const { User, Student, Grade, Course } = require('../models');
 const { catchAsync, NotFoundError, ValidationError, ConflictError, AuthorizationError } = require('../middleware/errorHandler');
 const { Op } = require('sequelize');
 
@@ -358,12 +358,39 @@ exports.getStudentGrades = catchAsync(async (req, res) => {
     throw new AuthorizationError('Access denied');
   }
   
-  // TODO: Implement when Grade model is created (Day 5)
+  // Filter by semester if provided
+  const where = { student_id: id };
+  if (req.query.semester) {
+    where.semester = req.query.semester;
+  }
+
+  // Get grades with course details
+  const grades = await Grade.findAll({
+    where,
+    include: [
+      {
+        model: Course,
+        as: 'course',
+        attributes: ['id', 'name', 'code', 'credits', 'subject']
+      }
+    ],
+    order: [['graded_date', 'DESC']]
+  });
+
+  // Calculate GPA
+  const gpaStats = await Grade.calculateStudentGPA(id, {
+    semester: req.query.semester
+  });
+
   res.json({
     success: true,
-    message: 'Grade feature will be implemented in Day 5',
     data: {
-      grades: []
+      grades,
+      stats: {
+        gpa: gpaStats.gpa,
+        totalCredits: gpaStats.totalCredits,
+        gradeCount: gpaStats.gradeCount
+      }
     }
   });
 });
