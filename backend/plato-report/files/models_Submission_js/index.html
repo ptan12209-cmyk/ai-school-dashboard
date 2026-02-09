@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - models\Submission.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>models\Submission.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">68.17</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">330</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">42.99</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.51</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/**
+ * Submission Model
+ * ================
+ * Represents student submissions for assignments
+ */
+
+const { DataTypes } = require(&#039;sequelize&#039;);
+const { sequelize } = require(&#039;../config/database&#039;);
+
+const Submission = sequelize.define(&#039;Submission&#039;, {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+
+  // Relationships
+  assignment_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;assignments&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;CASCADE&#039;
+  },
+
+  student_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;students&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;CASCADE&#039;
+  },
+
+  // Attempt tracking
+  attempt_number: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+    comment: &#039;Lần làm bài thứ mấy&#039;
+  },
+
+  // Answers
+  answers: {
+    type: DataTypes.JSONB,
+    defaultValue: {},
+    comment: &#039;Object mapping question_id to answer: {question_id: {answer, is_correct, points_earned}}&#039;
+  },
+
+  // Grading
+  score: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: true,
+    comment: &#039;Điểm đạt được&#039;
+  },
+
+  max_score: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: false,
+    comment: &#039;Điểm tối đa&#039;
+  },
+
+  percentage: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: true,
+    comment: &#039;Phần trăm điểm (%)&#039;
+  },
+
+  // Status
+  status: {
+    type: DataTypes.ENUM(&#039;draft&#039;, &#039;submitted&#039;, &#039;grading&#039;, &#039;graded&#039;, &#039;returned&#039;),
+    defaultValue: &#039;draft&#039;,
+    allowNull: false
+  },
+
+  // Timing
+  started_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: &#039;Thời gian bắt đầu làm bài&#039;
+  },
+
+  submitted_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: &#039;Thời gian nộp bài&#039;
+  },
+
+  graded_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: &#039;Thời gian chấm xong&#039;
+  },
+
+  time_spent: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: &#039;Thời gian làm bài (giây)&#039;
+  },
+
+  // Late submission
+  is_late: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: &#039;Nộp muộn hay không&#039;
+  },
+
+  late_penalty: {
+    type: DataTypes.DECIMAL(5, 2),
+    defaultValue: 0,
+    comment: &#039;Phần trăm trừ điểm do nộp muộn&#039;
+  },
+
+  // Feedback
+  teacher_feedback: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: &#039;Nhận xét của giáo viên&#039;
+  },
+
+  graded_by: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: &#039;teachers&#039;,
+      key: &#039;id&#039;
+    },
+    comment: &#039;Giáo viên chấm bài&#039;
+  },
+
+  // Auto-grade flag
+  auto_graded: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: &#039;Được chấm tự động hay không&#039;
+  },
+
+  needs_manual_grading: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: &#039;Cần chấm tay (có câu essay/short answer)&#039;
+  },
+
+  // Metadata
+  metadata: {
+    type: DataTypes.JSONB,
+    defaultValue: {},
+    comment: &#039;File đính kèm, ghi chú, etc.&#039;
+  }
+}, {
+  tableName: &#039;submissions&#039;,
+  timestamps: true,
+  underscored: true,
+  indexes: [
+    { fields: [&#039;assignment_id&#039;] },
+    { fields: [&#039;student_id&#039;] },
+    { fields: [&#039;status&#039;] },
+    { fields: [&#039;submitted_at&#039;] },
+    { unique: true, fields: [&#039;assignment_id&#039;, &#039;student_id&#039;, &#039;attempt_number&#039;] }
+  ]
+});
+
+/**
+ * Instance Methods
+ */
+
+// Calculate score
+Submission.prototype.calculateScore = function() {
+  if (!this.answers || Object.keys(this.answers).length === 0) {
+    this.score = 0;
+    this.percentage = 0;
+    return;
+  }
+
+  let totalEarned = 0;
+
+  Object.values(this.answers).forEach(answer =&gt; {
+    if (answer.points_earned !== undefined) {
+      totalEarned += parseFloat(answer.points_earned);
+    }
+  });
+
+  // Apply late penalty
+  if (this.is_late &amp;&amp; this.late_penalty &gt; 0) {
+    const penalty = (totalEarned * this.late_penalty) / 100;
+    totalEarned = Math.max(0, totalEarned - penalty);
+  }
+
+  this.score = totalEarned.toFixed(2);
+  this.percentage = ((totalEarned / this.max_score) * 100).toFixed(2);
+};
+
+// Mark as submitted
+Submission.prototype.submit = async function() {
+  this.status = &#039;submitted&#039;;
+  this.submitted_at = new Date();
+
+  if (this.started_at) {
+    const timeSpent = Math.floor((this.submitted_at - new Date(this.started_at)) / 1000);
+    this.time_spent = timeSpent;
+  }
+
+  // Check if needs manual grading
+  const hasManualQuestions = Object.values(this.answers).some(
+    answer =&gt; answer.needs_manual_grading
+  );
+
+  if (hasManualQuestions) {
+    this.needs_manual_grading = true;
+    this.status = &#039;grading&#039;;
+  } else {
+    this.status = &#039;graded&#039;;
+    this.graded_at = new Date();
+    this.auto_graded = true;
+  }
+
+  this.calculateScore();
+  await this.save();
+};
+
+// Complete grading
+Submission.prototype.completeGrading = async function(gradedBy) {
+  this.status = &#039;graded&#039;;
+  this.graded_at = new Date();
+  this.graded_by = gradedBy;
+  this.needs_manual_grading = false;
+
+  this.calculateScore();
+  await this.save();
+};
+
+// Get attempt summary
+Submission.prototype.getSummary = function() {
+  const totalQuestions = Object.keys(this.answers).length;
+  const correctAnswers = Object.values(this.answers).filter(a =&gt; a.is_correct).length;
+
+  return {
+    totalQuestions,
+    correctAnswers,
+    incorrectAnswers: totalQuestions - correctAnswers,
+    score: this.score,
+    maxScore: this.max_score,
+    percentage: this.percentage,
+    status: this.status,
+    timeSpent: this.time_spent,
+    isLate: this.is_late
+  };
+};
+
+/**
+ * Static Methods
+ */
+
+// Get student&#039;s best attempt
+Submission.getBestAttempt = async function(assignmentId, studentId) {
+  return await Submission.findOne({
+    where: {
+      assignment_id: assignmentId,
+      student_id: studentId,
+      status: &#039;graded&#039;
+    },
+    order: [[&#039;score&#039;, &#039;DESC&#039;]]
+  });
+};
+
+// Get student&#039;s attempts count
+Submission.getAttemptsCount = async function(assignmentId, studentId) {
+  return await Submission.count({
+    where: {
+      assignment_id: assignmentId,
+      student_id: studentId
+    }
+  });
+};
+
+// Get submissions needing grading
+Submission.getNeedingGrading = async function(teacherId) {
+  const { Assignment } = require(&#039;./index&#039;);
+
+  return await Submission.findAll({
+    where: {
+      status: &#039;grading&#039;,
+      needs_manual_grading: true
+    },
+    include: [
+      {
+        model: Assignment,
+        as: &#039;assignment&#039;,
+        where: { teacher_id: teacherId }
+      }
+    ],
+    order: [[&#039;submitted_at&#039;, &#039;ASC&#039;]]
+  });
+};
+
+// Get assignment statistics
+Submission.getAssignmentStats = async function(assignmentId) {
+  const submissions = await Submission.findAll({
+    where: {
+      assignment_id: assignmentId,
+      status: &#039;graded&#039;
+    }
+  });
+
+  if (submissions.length === 0) {
+    return {
+      total: 0,
+      avgScore: 0,
+      maxScore: 0,
+      minScore: 0,
+      avgPercentage: 0
+    };
+  }
+
+  const scores = submissions.map(s =&gt; parseFloat(s.score));
+  const percentages = submissions.map(s =&gt; parseFloat(s.percentage));
+
+  return {
+    total: submissions.length,
+    avgScore: (scores.reduce((a, b) =&gt; a + b, 0) / scores.length).toFixed(2),
+    maxScore: Math.max(...scores).toFixed(2),
+    minScore: Math.min(...scores).toFixed(2),
+    avgPercentage: (percentages.reduce((a, b) =&gt; a + b, 0) / percentages.length).toFixed(2)
+  };
+};
+
+module.exports = Submission;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

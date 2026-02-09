@@ -14,6 +14,13 @@ const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validation');
 
 /**
+ * @route   GET /api/attendance/health
+ * @desc    Health check for attendance routes
+ * @access  Public
+ */
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok', scope: 'attendance' }));
+
+/**
  * @route   GET /api/attendance
  * @desc    Get all attendance records with pagination and filtering
  * @access  Teacher, Admin

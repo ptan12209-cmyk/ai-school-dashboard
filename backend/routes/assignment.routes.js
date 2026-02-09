@@ -10,9 +10,29 @@ const assignmentController = require('../controllers/assignmentController');
 const { verifyToken } = require('../middleware/authMiddleware');
 
 /**
+ * @route   GET /api/assignments/health
+ * @desc    Health check for assignment routes
+ * @access  Public
+ */
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok', scope: 'assignments' }));
+
+/**
  * All routes require authentication
  */
 router.use(verifyToken);
+
+/**
+ * @route   GET /api/assignments
+ * @desc    Get all assignments (for admin/teacher)
+ * @access  Private
+ */
+router.get('/', (req, res) => {
+    try {
+        return res.status(501).json({ status: 'not_implemented', endpoint: 'GET /assignments' });
+    } catch (e) {
+        return res.status(500).json({ error: 'internal_error', detail: String(e) });
+    }
+});
 
 /**
  * @route   GET /api/assignments/student

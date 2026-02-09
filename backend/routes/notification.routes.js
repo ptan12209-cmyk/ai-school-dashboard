@@ -10,6 +10,13 @@ const notificationController = require('../controllers/notificationController');
 const { verifyToken } = require('../middleware/authMiddleware');
 
 /**
+ * @route   GET /api/notifications/health
+ * @desc    Health check for notification routes
+ * @access  Public
+ */
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok', scope: 'notifications' }));
+
+/**
  * All notification routes require authentication
  */
 router.use(verifyToken);

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - services\emailService.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>services\emailService.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">65.12</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">309</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">20.80</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.26</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/**
+ * Email Service
+ * ==============
+ * Handles email sending with templates
+ */
+
+const nodemailer = require(&#039;nodemailer&#039;);
+
+class EmailService {
+  constructor() {
+    this.transporter = null;
+    this.initializeTransporter();
+  }
+
+  /**
+   * Initialize email transporter
+   */
+  initializeTransporter() {
+    try {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || &#039;smtp.gmail.com&#039;,
+        port: parseInt(process.env.SMTP_PORT || &#039;587&#039;),
+        secure: process.env.SMTP_SECURE === &#039;true&#039;, // true for 465, false for other ports
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD
+        }
+      });
+
+      console.log(&#039;✅ Email transporter initialized&#039;);
+    } catch (error) {
+      console.error(&#039;❌ Error initializing email transporter:&#039;, error);
+    }
+  }
+
+  /**
+   * Send email
+   */
+  async sendEmail(options) {
+    try {
+      if (!this.transporter) {
+        console.warn(&#039;Email transporter not initialized&#039;);
+        return false;
+      }
+
+      const mailOptions = {
+        from: process.env.SMTP_FROM || &#039;AI School Dashboard &lt;noreply@school.com&gt;&#039;,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(&#039;✅ Email sent:&#039;, info.messageId);
+      return true;
+    } catch (error) {
+      console.error(&#039;❌ Error sending email:&#039;, error);
+      return false;
+    }
+  }
+
+  /**
+   * Send notification email with template
+   */
+  async sendNotificationEmail(data) {
+    const { to, subject, type, data: notificationData } = data;
+
+    const html = this.generateNotificationTemplate(type, notificationData);
+    const text = this.generateTextVersion(notificationData);
+
+    return await this.sendEmail({
+      to,
+      subject,
+      html,
+      text
+    });
+  }
+
+  /**
+   * Generate HTML email template
+   */
+  generateNotificationTemplate(type, data) {
+    const priorityColors = {
+      low: &#039;#52c41a&#039;,
+      medium: &#039;#1890ff&#039;,
+      high: &#039;#faad14&#039;,
+      urgent: &#039;#f5222d&#039;
+    };
+
+    const priorityColor = priorityColors[data.priority] || &#039;#1890ff&#039;;
+
+    return `
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;vi&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+  &lt;title&gt;${data.title}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0; padding: 0; font-family: &#039;Segoe UI&#039;, Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;&quot;&gt;
+  &lt;table width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color: #f5f5f5; padding: 20px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;center&quot;&gt;
+        &lt;table width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);&quot;&gt;
+
+          &lt;!-- Header --&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;&quot;&gt;
+              &lt;h1 style=&quot;color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;&quot;&gt;
+                🎓 AI School Dashboard
+              &lt;/h1&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+
+          &lt;!-- Priority Badge --&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;padding: 20px 30px 0;&quot;&gt;
+              &lt;div style=&quot;display: inline-block; background-color: ${priorityColor}; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase;&quot;&gt;
+                ${this.getPriorityLabel(data.priority)}
+              &lt;/div&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+
+          &lt;!-- Content --&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;padding: 20px 30px;&quot;&gt;
+              &lt;h2 style=&quot;color: #333; margin: 0 0 15px; font-size: 20px;&quot;&gt;
+                ${data.title}
+              &lt;/h2&gt;
+              &lt;p style=&quot;color: #666; font-size: 16px; line-height: 1.6; margin: 0 0 20px;&quot;&gt;
+                Xin chào &lt;strong&gt;${data.userName}&lt;/strong&gt;,
+              &lt;/p&gt;
+              &lt;div style=&quot;background-color: #f9f9f9; border-left: 4px solid ${priorityColor}; padding: 15px; margin: 20px 0; border-radius: 4px;&quot;&gt;
+                &lt;p style=&quot;color: #333; font-size: 15px; line-height: 1.6; margin: 0;&quot;&gt;
+                  ${data.message}
+                &lt;/p&gt;
+              &lt;/div&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+
+          &lt;!-- Call to Action --&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;padding: 0 30px 30px; text-align: center;&quot;&gt;
+              &lt;a href=&quot;${process.env.FRONTEND_URL || &#039;http://localhost:5001&#039;}/dashboard&quot;
+                 style=&quot;display: inline-block; background-color: #1890ff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin-top: 10px;&quot;&gt;
+                Xem Chi Tiết
+              &lt;/a&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+
+          &lt;!-- Footer --&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;background-color: #fafafa; padding: 20px 30px; border-top: 1px solid #e8e8e8;&quot;&gt;
+              &lt;p style=&quot;color: #999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;&quot;&gt;
+                Email này được gửi tự động từ AI School Dashboard.&lt;br&gt;
+                Vui lòng không trả lời email này.&lt;br&gt;
+                &lt;br&gt;
+                &lt;strong&gt;AI School Dashboard&lt;/strong&gt; © ${new Date().getFullYear()}
+              &lt;/p&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+
+        &lt;/table&gt;
+      &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+    `;
+  }
+
+  /**
+   * Generate text version for email
+   */
+  generateTextVersion(data) {
+    return `
+🎓 AI School Dashboard
+
+${data.title}
+
+Xin chào ${data.userName},
+
+${data.message}
+
+---
+Email này được gửi tự động từ AI School Dashboard.
+Vui lòng không trả lời email này.
+
+AI School Dashboard © ${new Date().getFullYear()}
+    `.trim();
+  }
+
+  /**
+   * Get priority label in Vietnamese
+   */
+  getPriorityLabel(priority) {
+    const labels = {
+      low: &#039;Thấp&#039;,
+      medium: &#039;Trung Bình&#039;,
+      high: &#039;Cao&#039;,
+      urgent: &#039;Khẩn Cấp&#039;
+    };
+    return labels[priority] || &#039;Trung Bình&#039;;
+  }
+
+  /**
+   * Send grade notification email
+   */
+  async sendGradeNotification(to, studentName, gradeData) {
+    return await this.sendNotificationEmail({
+      to,
+      subject: `Thông Báo Điểm Số Mới - ${gradeData.subject}`,
+      type: &#039;grade_posted&#039;,
+      data: {
+        title: &#039;Điểm Số Mới&#039;,
+        message: `Học sinh ${studentName} nhận được điểm ${gradeData.score} cho môn ${gradeData.subject}.`,
+        userName: studentName,
+        priority: &#039;medium&#039;,
+        createdAt: new Date()
+      }
+    });
+  }
+
+  /**
+   * Send attendance notification email
+   */
+  async sendAttendanceNotification(to, studentName, attendanceData) {
+    const isAbsent = attendanceData.status === &#039;absent&#039;;
+
+    return await this.sendNotificationEmail({
+      to,
+      subject: isAbsent ? &#039;Thông Báo Vắng Mặt&#039; : &#039;Thông Báo Điểm Danh&#039;,
+      type: &#039;attendance_marked&#039;,
+      data: {
+        title: isAbsent ? &#039;Thông Báo Vắng Mặt&#039; : &#039;Điểm Danh&#039;,
+        message: isAbsent
+          ? `Học sinh ${studentName} đã vắng mặt buổi học ${attendanceData.subject} ngày ${attendanceData.date}.`
+          : `Học sinh ${studentName} đã có mặt buổi học ${attendanceData.subject} ngày ${attendanceData.date}.`,
+        userName: studentName,
+        priority: isAbsent ? &#039;high&#039; : &#039;low&#039;,
+        createdAt: new Date()
+      }
+    });
+  }
+
+  /**
+   * Send welcome email
+   */
+  async sendWelcomeEmail(to, userName) {
+    const html = `
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;vi&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;title&gt;Chào Mừng Đến AI School Dashboard&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;&quot;&gt;
+  &lt;table width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color: #f5f5f5; padding: 20px;&quot;&gt;
+    &lt;tr&gt;
+      &lt;td align=&quot;center&quot;&gt;
+        &lt;table width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;background-color: #ffffff; border-radius: 8px; overflow: hidden;&quot;&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;&quot;&gt;
+              &lt;h1 style=&quot;color: #ffffff; margin: 0; font-size: 28px;&quot;&gt;🎓 Chào Mừng!&lt;/h1&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;padding: 40px 30px;&quot;&gt;
+              &lt;h2 style=&quot;color: #333; margin: 0 0 20px;&quot;&gt;Xin chào ${userName}!&lt;/h2&gt;
+              &lt;p style=&quot;color: #666; font-size: 16px; line-height: 1.6;&quot;&gt;
+                Chào mừng bạn đến với &lt;strong&gt;AI School Dashboard&lt;/strong&gt; - nền tảng quản lý giáo dục thông minh.
+              &lt;/p&gt;
+              &lt;p style=&quot;color: #666; font-size: 16px; line-height: 1.6;&quot;&gt;
+                Bạn có thể bắt đầu khám phá các tính năng của hệ thống ngay bây giờ!
+              &lt;/p&gt;
+              &lt;div style=&quot;text-align: center; margin: 30px 0;&quot;&gt;
+                &lt;a href=&quot;${process.env.FRONTEND_URL || &#039;http://localhost:5001&#039;}/dashboard&quot;
+                   style=&quot;display: inline-block; background-color: #1890ff; color: white; padding: 14px 40px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;&quot;&gt;
+                  Truy Cập Dashboard
+                &lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;background-color: #fafafa; padding: 20px; text-align: center; border-top: 1px solid #e8e8e8;&quot;&gt;
+              &lt;p style=&quot;color: #999; font-size: 12px; margin: 0;&quot;&gt;
+                AI School Dashboard © ${new Date().getFullYear()}
+              &lt;/p&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/table&gt;
+      &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+    `;
+
+    return await this.sendEmail({
+      to,
+      subject: &#039;Chào Mừng Đến AI School Dashboard&#039;,
+      html,
+      text: `Chào mừng ${userName} đến với AI School Dashboard!`
+    });
+  }
+}
+
+module.exports = new EmailService();</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

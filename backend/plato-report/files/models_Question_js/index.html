@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - models\Question.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>models\Question.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">71.55</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">219</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">28.92</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.35</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/**
+ * Question Model
+ * ==============
+ * Represents individual questions in assignments
+ */
+
+const { DataTypes } = require(&#039;sequelize&#039;);
+const { sequelize } = require(&#039;../config/database&#039;);
+
+const Question = sequelize.define(&#039;Question&#039;, {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+
+  // Relationship
+  assignment_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: &#039;assignments&#039;,
+      key: &#039;id&#039;
+    },
+    onDelete: &#039;CASCADE&#039;
+  },
+
+  // Question Content
+  question_text: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: &#039;Câu hỏi không được để trống&#039; }
+    }
+  },
+
+  question_type: {
+    type: DataTypes.ENUM(&#039;multiple_choice&#039;, &#039;true_false&#039;, &#039;short_answer&#039;, &#039;essay&#039;, &#039;fill_blank&#039;),
+    allowNull: false,
+    defaultValue: &#039;multiple_choice&#039;
+  },
+
+  // Multiple Choice Options
+  options: {
+    type: DataTypes.JSONB,
+    defaultValue: [],
+    comment: &#039;Array of choices for multiple choice questions: [{id, text, isCorrect}]&#039;
+  },
+
+  // Correct Answer(s)
+  correct_answer: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: &#039;Đáp án đúng (option id for MC, text for others)&#039;
+  },
+
+  // Alternative Answers (for flexible grading)
+  alternative_answers: {
+    type: DataTypes.JSONB,
+    defaultValue: [],
+    comment: &#039;Các đáp án chấp nhận được khác&#039;
+  },
+
+  // Points
+  points: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 1,
+    validate: {
+      min: { args: [0], msg: &#039;Điểm phải &gt;= 0&#039; }
+    }
+  },
+
+  // Order
+  order: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    comment: &#039;Thứ tự hiển thị câu hỏi&#039;
+  },
+
+  // Explanation
+  explanation: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: &#039;Giải thích đáp án (hiển thị sau khi nộp bài)&#039;
+  },
+
+  // Settings
+  case_sensitive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: &#039;Phân biệt chữ hoa/thường (cho short answer)&#039;
+  },
+
+  // Metadata
+  metadata: {
+    type: DataTypes.JSONB,
+    defaultValue: {},
+    comment: &#039;Dữ liệu bổ sung (hints, images, etc.)&#039;
+  },
+
+  // Difficulty
+  difficulty: {
+    type: DataTypes.ENUM(&#039;easy&#039;, &#039;medium&#039;, &#039;hard&#039;),
+    allowNull: true,
+    comment: &#039;Độ khó của câu hỏi&#039;
+  },
+
+  // Statistics
+  times_answered: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    comment: &#039;Số lần được trả lời&#039;
+  },
+
+  times_correct: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    comment: &#039;Số lần trả lời đúng&#039;
+  }
+}, {
+  tableName: &#039;questions&#039;,
+  timestamps: true,
+  underscored: true,
+  indexes: [
+    { fields: [&#039;assignment_id&#039;] },
+    { fields: [&#039;question_type&#039;] },
+    { fields: [&#039;order&#039;] }
+  ]
+});
+
+/**
+ * Instance Methods
+ */
+
+// Check if answer is correct (for auto-gradable questions)
+Question.prototype.checkAnswer = function(studentAnswer) {
+  if (!studentAnswer) return false;
+
+  switch (this.question_type) {
+    case &#039;multiple_choice&#039;:
+    case &#039;true_false&#039;:
+      return studentAnswer === this.correct_answer;
+
+    case &#039;short_answer&#039;:
+    case &#039;fill_blank&#039;:
+      const correctAnswers = [
+        this.correct_answer,
+        ...(this.alternative_answers || [])
+      ];
+
+      if (this.case_sensitive) {
+        return correctAnswers.includes(studentAnswer);
+      } else {
+        const lowerAnswer = studentAnswer.toLowerCase().trim();
+        return correctAnswers.some(ans =&gt;
+          ans.toLowerCase().trim() === lowerAnswer
+        );
+      }
+
+    case &#039;essay&#039;:
+      // Essays require manual grading
+      return null;
+
+    default:
+      return false;
+  }
+};
+
+// Get success rate
+Question.prototype.getSuccessRate = function() {
+  if (this.times_answered === 0) return 0;
+  return ((this.times_correct / this.times_answered) * 100).toFixed(2);
+};
+
+// Update statistics
+Question.prototype.updateStatistics = async function(isCorrect) {
+  this.times_answered += 1;
+  if (isCorrect) {
+    this.times_correct += 1;
+  }
+  await this.save();
+};
+
+// Is auto-gradable
+Question.prototype.isAutoGradable = function() {
+  return [&#039;multiple_choice&#039;, &#039;true_false&#039;, &#039;short_answer&#039;, &#039;fill_blank&#039;].includes(this.question_type);
+};
+
+/**
+ * Static Methods
+ */
+
+// Get questions by assignment with order
+Question.getByAssignment = async function(assignmentId, shuffle = false) {
+  const questions = await Question.findAll({
+    where: { assignment_id: assignmentId },
+    order: shuffle ? [sequelize.fn(&#039;RANDOM&#039;)] : [[&#039;order&#039;, &#039;ASC&#039;]]
+  });
+
+  return questions;
+};
+
+// Get difficult questions (success rate &lt; 50%)
+Question.getDifficultQuestions = async function(assignmentId) {
+  const questions = await Question.findAll({
+    where: {
+      assignment_id: assignmentId,
+      times_answered: {
+        [sequelize.Sequelize.Op.gt]: 0
+      }
+    }
+  });
+
+  return questions.filter(q =&gt; parseFloat(q.getSuccessRate()) &lt; 50);
+};
+
+module.exports = Question;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

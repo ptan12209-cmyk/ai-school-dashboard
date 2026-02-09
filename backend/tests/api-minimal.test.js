@@ -58,18 +58,18 @@ describe('🧪 API Tests', () => {
   
   test('List users', async () => {
     const res = await request(app)
-      .get('/api/user')
+      .get('/api/users')
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
     
-    console.log(`✅ Listed ${res.body.data.user.length} users`);
+    console.log(`✅ Listed ${res.body.data.users.length} users`);
   });
 });
 // In tests/api-minimal.test.js, add:
 
 test('Create teacher', async () => {
   const res = await request(app)
-    .post('/api/teacher')
+    .post('/api/teachers')
     .set('Authorization', `Bearer ${adminToken}`)
     .send({
       email: `teacher${Date.now()}@test.com`,
@@ -85,7 +85,7 @@ test('Create teacher', async () => {
 
 test('Create student', async () => {
   const res = await request(app)
-    .post('/api/student')
+    .post('/api/students')
     .set('Authorization', `Bearer ${adminToken}`)
     .send({
       email: `student${Date.now()}@test.com`,

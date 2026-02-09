@@ -321,7 +321,7 @@ describe('Authentication API', () => {
 
         // Deactivate account
         await request(app)
-          .patch(`/api/user/${user.id}/deactivate`)
+          .patch(`/api/users/${user.id}/deactivate`)
           .set('Authorization', `Bearer ${(await TestHelpers.createAdmin()).token}`);
 
         // Try to login

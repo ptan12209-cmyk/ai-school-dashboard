@@ -14,6 +14,13 @@ const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validation');
 
 /**
+ * @route   GET /api/students/health
+ * @desc    Health check for student routes
+ * @access  Public
+ */
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok', scope: 'students' }));
+
+/**
  * All routes require authentication
  */
 router.use(verifyToken);
@@ -228,5 +235,57 @@ router.delete('/:id',
 router.get('/:id/grade',
   studentController.getStudentGrades
 );
+
+// --- ALIASES for /:studentId and other missing routes ---
+
+const createNotImplementedHandler = (endpoint) => (req, res) => {
+    try {
+        return res.status(501).json({ status: 'not_implemented', endpoint });
+    } catch (e) {
+        return res.status(500).json({ error: 'internal_error', detail: String(e) });
+    }
+};
+
+// NOTE: The following aliases map :studentId to the existing :id routes.
+// This is for backward compatibility with the frontend.
+// TODO: Unify frontend to use a consistent parameter name.
+
+router.get('/:studentId', (req, res, next) => {
+    req.params.id = req.params.studentId;
+    return studentController.getStudentById(req, res, next);
+});
+
+// Note: This alias for PUT does not re-run the validation middleware.
+// This is a temporary measure. The routes should be unified.
+router.put('/:studentId', (req, res, next) => {
+    req.params.id = req.params.studentId;
+    return studentController.updateStudent(req, res, next);
+});
+
+router.delete('/:studentId', (req, res, next) => {
+    req.params.id = req.params.studentId;
+    return studentController.deleteStudent(req, res, next);
+});
+
+// Alias for grades (plural vs singular)
+router.get('/:studentId/grades', (req, res, next) => {
+    req.params.id = req.params.studentId;
+    return studentController.getStudentGrades(req, res, next);
+});
+
+// --- NEW Student-specific routes ---
+router.get('/:studentId/activities', createNotImplementedHandler('GET /students/:studentId/activities'));
+router.post('/:studentId/archive', createNotImplementedHandler('POST /students/:studentId/archive'));
+router.post('/:studentId/avatar', createNotImplementedHandler('POST /students/:studentId/avatar'));
+router.get('/:studentId/courses', createNotImplementedHandler('GET /students/:studentId/courses'));
+router.get('/:studentId/id-card', createNotImplementedHandler('GET /students/:studentId/id-card'));
+router.get('/:studentId/parent', createNotImplementedHandler('GET /students/:studentId/parent'));
+router.put('/:studentId/parent', createNotImplementedHandler('PUT /students/:studentId/parent'));
+router.get('/:studentId/report-card', createNotImplementedHandler('GET /students/:studentId/report-card'));
+router.post('/:studentId/restore', createNotImplementedHandler('POST /students/:studentId/restore'));
+router.post('/:studentId/send-email', createNotImplementedHandler('POST /students/:studentId/send-email'));
+router.post('/:studentId/send-sms', createNotImplementedHandler('POST /students/:studentId/send-sms'));
+router.get('/:studentId/stats', createNotImplementedHandler('GET /students/:studentId/stats'));
+router.post('/:studentId/transfer', createNotImplementedHandler('POST /students/:studentId/transfer'));
 
 module.exports = router;

@@ -14,6 +14,13 @@ const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validation');
 
 /**
+ * @route   GET /api/users/health
+ * @desc    Health check for user routes
+ * @access  Public
+ */
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok', scope: 'users' }));
+
+/**
  * Apply authentication to all routes
  */
 router.use(verifyToken);

@@ -1,0 +1,5 @@
+# requirements.txt for AI Service
+
+Flask>=2.0
+Flask-Cors>=3.0
+
